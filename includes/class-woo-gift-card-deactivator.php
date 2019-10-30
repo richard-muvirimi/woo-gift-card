@@ -36,5 +36,7 @@ class Woo_gift_card_Deactivator
 		if (get_term_by('slug', 'woo-gift-card', 'product_type')) {
 			wp_delete_term('woo-gift-card', 'product_type');
 		}
+
+		flush_rewrite_rules();
 	}
 }

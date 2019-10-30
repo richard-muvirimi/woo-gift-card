@@ -179,8 +179,21 @@ class Woo_gift_card
 		//save product type
 		$this->loader->add_action('woocommerce_process_product_meta_' . $this->plugin_name, $plugin_admin, 'save_woo_gift_card_value');
 
-		//add admin menu
-		$this->loader->add_action('admin_menu', $plugin_admin, 'add_admin_menu');
+		//on init
+		$this->loader->add_action('init', $plugin_admin, 'onInitialise');
+
+		//add payment gateways
+		$this->loader->add_filter('woocommerce_payment_gateways', $plugin_admin, 'add_gateway');
+
+		//on save post
+		$this->loader->add_filter('save_post_woo-gift-card', $plugin_admin, 'save_post');
+
+		//admin notices
+		$this->loader->add_action('admin_notices', $plugin_admin, 'show_admin_notice');
+
+		// admin gateways list
+		$this->loader->add_filter('manage_woo-gift-card_posts_columns', $plugin_admin, 'add_columns');
+		$this->loader->add_action('manage_woo-gift-card_posts_custom_column', $plugin_admin, 'add_column_data', 10, 2);
 	}
 
 	/**
@@ -198,8 +211,17 @@ class Woo_gift_card
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
 		$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
 
+		//on order completed
+		$this->loader->add_action('woocommerce_order_status_completed', $plugin_public, 'payment_complete');
+
+		//my account page items
+		$this->loader->add_filter('woocommerce_account_menu_items', $plugin_public, 'filter_account_menu_items');
+
 		//on init
-		$this->loader->add_action('woocommerce_payment_complete', $plugin_public, 'payment_complete');
+		$this->loader->add_action('init', $plugin_public, 'onInitialise');
+
+		//display gift cards
+		$this->loader->add_action('woocommerce_account_woo-gift-card_endpoint', $plugin_public, 'show_gift_cards');
 	}
 
 	/**

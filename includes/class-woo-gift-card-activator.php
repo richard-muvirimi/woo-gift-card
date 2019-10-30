@@ -36,5 +36,8 @@ class Woo_gift_card_Activator
 		if (!get_term_by('slug', 'woo-gift-card', 'product_type')) {
 			wp_insert_term('woo-gift-card', 'product_type');
 		}
+
+		add_rewrite_endpoint('woo-gift-card',  EP_PAGES);
+		flush_rewrite_rules();
 	}
 }

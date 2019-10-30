@@ -1,7 +1,7 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 /**
@@ -25,26 +25,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Woo_gift_cards_utils
 {
 
-    public static function getPostLabels($title)
+    /**
+     * Gets a unique gift card key for each customer
+     *
+     * @param string $email
+     * @return void
+     */
+    public static function get_unique_key($email)
     {
-        return array(
-            'name' => __($title),
-            'singular_name' => __($title),
-            'add_new' => __('Add New'),
-            'add_new_item' => __('Add New ' . $title),
-            'edit_item' => __('Edit ' . $title),
-            'new_item' => __('New ' . $title),
-            'view_item' => __('View ' . $title),
-            'search_items' => __('Search ' . $title),
-            'not_found' => __('No ' . $title . ' found, Add new.'),
-            'not_found_in_trash' => __('No ' . $title . ' found in trash'),
-            'parent_item_colon' => __('Parent ' . $title . ':'),
-            'all_items' => __($title),
-            'archives' => __($title . ' archives'),
-            'insert_into_item' => __('Insert into ' . $title . ' profile'),
-            'uploaded_to_this_item' => __('Uploaded to ' . $title . ' profile'),
-            'menu_name' => __($title),
-            'name_admin_bar' => __($title)
-        );
+
+        $key = strtoupper(wp_generate_password());
+
+        $giftCards = get_posts(array(
+            'posts_per_page' => 1,
+            'post_type' => 'woo-gift-card',
+            'author' => $email,
+            'meta_key' => 'woo-gift-card-key',
+            'meta_value' => $key,
+            'fields' => 'ids'
+        ));
+
+        //if exists then redo
+        if (count($giftCards)) {
+
+            return Woo_gift_cards_utils::get_unique_key($email);
+        }
+
+        return $key;
     }
 }

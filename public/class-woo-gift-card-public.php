@@ -102,7 +102,50 @@ class Woo_gift_card_Public
 	}
 
 	/**
-	 * Called when the customer order has been paid
+	 * Add gift card link to my account items
+	 *
+	 * @param array $items
+	 * @return void
+	 */
+	public function filter_account_menu_items($items)
+	{
+		$links = array();
+
+		foreach ($items as $key => $item) {
+			$links[$key] = $item;
+
+			if ($key === 'downloads') {
+				$links['woo-gift-card'] = __('Gift Cards', 'woo-gift-card');
+			}
+		}
+
+		return $links;
+	}
+
+	/**
+	 * On initialise
+	 *
+	 * @return void
+	 */
+	public function onInitialise()
+	{
+
+		add_rewrite_endpoint('woo-gift-card',  EP_PAGES);
+	}
+
+	/**
+	 * Display user gift cards on the front end
+	 *
+	 * @return void
+	 */
+	public function show_gift_cards()
+	{
+
+		include_once plugin_dir_path(dirname(__FILE__)) . "public/partials/woo-gift-card-public-display.php";
+	}
+
+	/**
+	 * Called when the customer order has been paid. creates the gift card if it does not already exists.
 	 *
 	 * @param int $order_id
 	 * @return void
@@ -110,17 +153,44 @@ class Woo_gift_card_Public
 	public function payment_complete($order_id)
 	{
 		$order = wc_get_order($order_id);
-		die("passed here");
-		foreach ($order as $key => $value) {
-			# code...
+
+		//if already processed skip
+		$posts = get_posts(array(
+			'posts_per_page' => 1,
+			'post_type' => 'woo-gift-card',
+			'meta_key' => 'woo-gift-card-order',
+			'meta_value' => $order->id,
+			'fields' => 'ids'
+		));
+
+		if (empty($posts)) {
+
+			foreach ($order->get_items() as  $item) {
+
+				$product = $item->get_product();
+				if ($product->get_type() == 'woo-gift-card') {
+
+					//if gift card create for tracking 
+					for ($i = 0; $i < $item->get_quantity(); $i++) {
+						$value = get_post_meta($product->id, '_gift_card_value', true);
+
+						$gift_card_value = $value ? $value : $product->get_regular_price();
+
+						wp_insert_post(array(
+							'post_type' => 'woo-gift-card',
+							'post_title' => $product->get_name(),
+							'post_status' => 'publish',
+							'meta_input' => array(
+								'woo-gift-card-order' => $order->id,
+								'woo-gift-card-product' => $product->id,
+								'woo-gift-card-balance' => $gift_card_value,
+								'woo-gift-card-value' => $gift_card_value,
+								'woo-gift-card-key' => Woo_gift_cards_utils::get_unique_key($order->get_user())
+							)
+						));
+					}
+				}
+			}
 		}
 	}
-
-	/**
-	 * add gift card as a product
-	 * 
-	 * expire
-	 * amount
-	 * 
-	 */
 }

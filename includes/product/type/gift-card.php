@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
  * @subpackage Woo_gift_card/includes/product/type
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class WC_Product_Woo_Gift_Card extends WC_Product
+class WC_Product_Woo_Gift_Card extends WC_Product_Simple
 {
 
     /**
