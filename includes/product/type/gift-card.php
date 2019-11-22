@@ -22,16 +22,15 @@ if (!defined('ABSPATH')) {
  * @subpackage Woo_gift_card/includes/product/type
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class WC_Product_Woo_Gift_Card extends WC_Product_Simple
-{
+class WC_Product_Woo_Gift_Card extends WC_Product_Simple {
 
     /**
      * Return the product type
      *
      * @return string
      */
-    public function get_type()
-    {
-        return "woo-gift-card";
+    public function get_type() {
+	return "woo-gift-card";
     }
+
 }

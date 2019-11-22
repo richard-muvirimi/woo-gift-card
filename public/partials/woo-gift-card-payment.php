@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Provide a payment view for the plugin
  *
@@ -15,26 +14,26 @@
 
 <p class="form-row form-row-wide validate-required validate-email" id="woo-gift-card-email-field">
     <label for="woo-gift-card-email" class="">
-        <?php _e('Gift Card Owner', 'woo-gift-card') ?>
+	<?php _e('Gift Card Owner', 'woo-gift-card') ?>
         <abbr class="required" title="required">
             *
         </abbr>
     </label>
     <span class="woocommerce-input-wrapper">
         <input class="input-text" type="email" name="woo-gift-card-email" id="woo-gift-card-email"
-            placeholder="<?php _e('Email', 'woo-gift-card') ?>" required=" true" autocomplete="email" />
+	       placeholder="<?php _e('Email', 'woo-gift-card') ?>" required=" true" autocomplete="email" />
     </span>
 </p>
 
 <p class="form-row form-row-wide validate-required" id="woo-gift-card-key-field">
     <label for="woo-gift-card-key" class="">
-        <?php _e('Gift Voucher', 'woo-gift-card') ?>
+	<?php _e('Gift Voucher', 'woo-gift-card') ?>
         <abbr class="required" title="required">
             *
         </abbr>
     </label>
     <span class="woocommerce-input-wrapper">
         <input class="input-text" type="text" name="woo-gift-card-key" id="woo-gift-card-key" placeholder=""
-            required=" true" />
+	       required=" true" />
     </span>
 </p>

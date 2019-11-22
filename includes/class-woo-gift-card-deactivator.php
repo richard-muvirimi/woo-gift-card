@@ -20,23 +20,22 @@
  * @subpackage Woo_gift_card/includes
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class Woo_gift_card_Deactivator
-{
+class Woo_gift_card_Deactivator {
 
-	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public static function deactivate()
-	{
+    /**
+     * Short Description. (use period)
+     *
+     * Long Description.
+     *
+     * @since    1.0.0
+     */
+    public static function deactivate() {
 
-		if (get_term_by('slug', 'woo-gift-card', 'product_type')) {
-			wp_delete_term('woo-gift-card', 'product_type');
-		}
-
-		flush_rewrite_rules();
+	if (get_term_by('slug', 'woo-gift-card', 'product_type')) {
+	    wp_delete_term('woo-gift-card', 'product_type');
 	}
+
+	flush_rewrite_rules();
+    }
+
 }

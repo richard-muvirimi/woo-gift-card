@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Provide a admin area view for the plugin
  *
@@ -11,6 +10,7 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/admin/partials
  */
+defined('ABSPATH') || exit;
 ?>
 
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->

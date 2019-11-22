@@ -1,0 +1,18 @@
+.woo-gift-card-template-help {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.woo-gift-card-template-help td {
+    border-bottom: 1px solid grey;
+    border-left: 1px solid grey;
+    padding: 5px 0px 5px 5px;
+}
+
+.woo-gift-card-template-help td:first-child {
+    border-left: none;
+}
+
+.woo-gift-card-template-help tr:last-child td {
+    border-bottom: none;
+}

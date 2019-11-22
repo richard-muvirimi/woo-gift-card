@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Provide a admin notification area for the plugin
  *
@@ -11,10 +10,11 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/admin/partials
  */
+defined('ABSPATH') || exit;
 ?>
 
-
-
 <div class="notice <?php echo get_transient('woo-gift-card-notice-class'); ?> is-dismissible">
-    <p><?php echo get_transient('woo-gift-card-notice'); ?> </p>
+    <p>
+	<?php echo get_transient('woo-gift-card-notice'); ?>
+    </p>
 </div>
