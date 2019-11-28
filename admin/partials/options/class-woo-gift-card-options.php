@@ -18,6 +18,7 @@ class Woo_gift_card_Options {
 	register_setting('wgc-generation', 'wgc-code-suffix');
 
 	register_setting('wgc-email', 'wgc-message-length', array('type' => 'integer', 'default' => 300));
+	register_setting('wgc-email', 'wgc-message-disclaimer');
     }
 
     public function add_settings_section() {
@@ -60,6 +61,9 @@ class Woo_gift_card_Options {
 
     public function do_email_options() {
 	add_settings_field('wgc-message-length', __('Gift Voucher message length', 'woo-gift-card'), array($this, 'output_message_length_field'), 'wgc-email', 'woo-gift-card-email-section', array('label_for' => 'wgc-message-length')
+	);
+
+	add_settings_field('wgc-message-disclaimer', __('Gift Voucher message disclaimer', 'woo-gift-card'), array($this, 'output_message_disclaimer_field'), 'wgc-email', 'woo-gift-card-email-section', array('label_for' => 'wgc-message-disclaimer')
 	);
     }
 
@@ -203,6 +207,22 @@ class Woo_gift_card_Options {
 	    'name' => "wgc-message-length",
 	    'id' => "wgc-message-length",
 	    'required' => "true"
+	);
+
+	$this->outputfield($attr);
+
+	echo '<p class="description">' . __("The maximum message length a customer can send.", "woo-gift-card") . '</p>';
+    }
+
+    public function output_message_disclaimer_field() {
+
+	$setting = get_option('wgc-message-disclaimer');
+
+	$attr = array(
+	    'type' => "text",
+	    'value' => $setting,
+	    'name' => "wgc-message-disclaimer",
+	    'id' => "wgc-message-disclaimer",
 	);
 
 	$this->outputfield($attr);
