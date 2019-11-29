@@ -11,6 +11,7 @@ class Woo_gift_card_Options {
     public function register_settings() {
 	register_setting('wgc-customise', 'wgc-tax-calculation', array('default' => 'off'));
 	register_setting('wgc-customise', 'wgc-list-shop', array('default' => 'on'));
+	register_setting('wgc-customise', 'wgc-thank-you');
 
 	register_setting('wgc-generation', 'wgc-code-length', array('type' => 'integer', 'default' => 12));
 	register_setting('wgc-generation', 'wgc-code-special');
@@ -19,6 +20,7 @@ class Woo_gift_card_Options {
 
 	register_setting('wgc-email', 'wgc-message-length', array('type' => 'integer', 'default' => 300));
 	register_setting('wgc-email', 'wgc-message-disclaimer');
+	register_setting('wgc-email', 'wgc-message-bcc');
     }
 
     public function add_settings_section() {
@@ -41,7 +43,11 @@ class Woo_gift_card_Options {
 	);
 
 	add_settings_field(
-		'wgc-list-shop', __('List Gift Vouchers in shop', 'woo-gift-card'), array($this, 'output_list_vouchers_field'), 'wgc-customise', 'woo-gift-card-customise-section', array('label_for' => 'wgc-list-shop')
+		'wgc-list-shop', __('Gift Vouchers in shop', 'woo-gift-card'), array($this, 'output_list_vouchers_field'), 'wgc-customise', 'woo-gift-card-customise-section', array('label_for' => 'wgc-list-shop')
+	);
+
+	add_settings_field(
+		'wgc-thank-you', __('Thank you gift vouchers', 'woo-gift-card'), array($this, 'output_thank_you_vouchers_field'), 'wgc-customise', 'woo-gift-card-customise-section', array('label_for' => 'wgc-thank-you')
 	);
     }
 
@@ -116,6 +122,23 @@ class Woo_gift_card_Options {
 	$this->outputfield($attr);
 
 	echo '<p class="description">' . __("Calculate tax on gift voucher products.", "woo-gift-card") . '</p>';
+    }
+
+    public function output_thank_you_vouchers_field() {
+
+	$setting = get_option('wgc-thank-you');
+
+	$attr = array(
+	    'type' => "checkbox",
+	    'class' => "checkbox",
+	    'checked' => $setting == "on" ? 'checked' : "",
+	    'name' => "wgc-thank-you",
+	    'id' => "wgc-thank-you"
+	);
+
+	$this->outputfield($attr);
+
+	echo '<p class="description">' . __("check to enable thank you gift vouchers.", "woo-gift-card") . '</p>';
     }
 
     public function output_code_length_field() {
@@ -218,16 +241,11 @@ class Woo_gift_card_Options {
 
 	$setting = get_option('wgc-message-disclaimer');
 
-	$attr = array(
-	    'type' => "text",
-	    'value' => $setting,
-	    'name' => "wgc-message-disclaimer",
-	    'id' => "wgc-message-disclaimer",
-	);
+	wp_editor($setting, "wgc-message-disclaimer", array(
+	    'media_buttons' => false,
+	    'editor_height' => 100));
 
-	$this->outputfield($attr);
-
-	echo '<p class="description">' . __("The maximum message length a customer can send.", "woo-gift-card") . '</p>';
+	echo '<p class="description">' . __("The disclaimer message to show to customer.", "woo-gift-card") . '</p>';
     }
 
     public function outputfield($attr) {
