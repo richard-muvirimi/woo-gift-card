@@ -206,7 +206,7 @@ class Woo_gift_card_Admin {
 
 	include_once plugin_dir_path(__DIR__) . "/admin/partials/options/class-woo-gift-card-options.php";
 
-	add_submenu_page('wgc-template', __('Options', 'woo-gift-card'), __('Options', 'woo-gift-card'), 'manage_options', 'woo-gift-card-options', array($this, 'render_options_page'));
+	add_submenu_page('wgc-template', __('Options', 'woo-gift-card'), __('Options', 'woo-gift-card'), 'manage_options', 'wgc-options', array($this, 'render_options_page'));
     }
 
     public function render_options_page() {
@@ -219,7 +219,7 @@ class Woo_gift_card_Admin {
      * @return void
      */
     public function register_gift_card_meta_box() {
-	add_meta_box('woo-gift-card-customiser', __('Gift Voucher Options', 'woo-gift-card'), array($this, 'gift_card_meta_box'), 'woo-gift-card', 'normal', 'high');
+	add_meta_box('wgc-customiser', __('Gift Voucher Options', 'woo-gift-card'), array($this, 'gift_card_meta_box'), 'woo-gift-card', 'normal', 'high');
     }
 
     /**
@@ -228,7 +228,7 @@ class Woo_gift_card_Admin {
      * @return void
      */
     public function register_template_meta_box() {
-	add_meta_box('woo-gift-card-custom-css', __('Gift Voucher Custom Css', 'woo-gift-card'), array($this, 'gift_card_custom_css_meta_box'), 'wgc-template', 'normal', 'high');
+	add_meta_box('wgc-custom-css', __('Gift Voucher Custom Css', 'woo-gift-card'), array($this, 'gift_card_custom_css_meta_box'), 'wgc-template', 'normal', 'high');
     }
 
     /**
@@ -241,8 +241,8 @@ class Woo_gift_card_Admin {
 
 	woocommerce_wp_text_input(
 		array(
-		    'id' => 'woo-gift-card-value',
-		    'value' => esc_html(get_post_meta($post->ID, 'woo-gift-card-value', true)),
+		    'id' => 'wgc-value',
+		    'value' => esc_html(get_post_meta($post->ID, 'wgc-value', true)),
 		    'data_type' => 'price',
 		    'label' => __('Gift Voucher Value', $this->plugin_name) . ' (' . get_woocommerce_currency_symbol() . ')',
 		    'description' => '<br>' . __('The monetary value of the gift voucher ', $this->plugin_name) . '(' . __('Will default to gift voucher value if not set', $this->plugin_name) . ')',
@@ -251,8 +251,8 @@ class Woo_gift_card_Admin {
 
 	woocommerce_wp_text_input(
 		array(
-		    'id' => 'woo-gift-card-balance',
-		    'value' => esc_html(get_post_meta($post->ID, 'woo-gift-card-balance', true)),
+		    'id' => 'wgc-balance',
+		    'value' => esc_html(get_post_meta($post->ID, 'wgc-balance', true)),
 		    'data_type' => 'price',
 		    'label' => __('Gift Voucher Balance', $this->plugin_name) . ' (' . get_woocommerce_currency_symbol() . ')',
 		    'description' => '<br>' . __('The monetary balance of the gift voucher ', $this->plugin_name) . '(' . __('Will default to gift voucher value if not set', $this->plugin_name) . ')',
@@ -261,8 +261,8 @@ class Woo_gift_card_Admin {
 
 	woocommerce_wp_text_input(
 		array(
-		    'id' => 'woo-gift-card-key',
-		    'value' => esc_html(get_post_meta($post->ID, 'woo-gift-card-key', true)),
+		    'id' => 'wgc-key',
+		    'value' => esc_html(get_post_meta($post->ID, 'wgc-key', true)),
 		    'data_type' => 'text',
 		    'label' => __('Gift Voucher Key', $this->plugin_name),
 		    'description' => '<br>' . __('The gift voucher unique key ', $this->plugin_name) . '(' . __('A new key will be generated if not set', $this->plugin_name) . ')',
@@ -330,11 +330,11 @@ class Woo_gift_card_Admin {
      */
     public function show_admin_notice() {
 
-	if (get_transient('woo-gift-card-notice')) {
+	if (get_transient('wgc-notice')) {
 	    include_once plugin_dir_path(__DIR__) . "/admin/partials/woo-gift-card-admin-notice.php";
 
-	    delete_transient('woo-gift-card-notice');
-	    delete_transient('woo-gift-card-notice-class');
+	    delete_transient('wgc-notice');
+	    delete_transient('wgc-notice-class');
 	}
     }
 
@@ -345,14 +345,14 @@ class Woo_gift_card_Admin {
      */
     public function save_post($post_id) {
 
-	$value = sanitize_text_field(filter_input(INPUT_POST, 'woo-gift-card-value'));
-	$balance = sanitize_text_field(filter_input(INPUT_POST, 'woo-gift-card-balance'));
-	$key = sanitize_text_field(filter_input(INPUT_POST, 'woo-gift-card-key'));
+	$value = sanitize_text_field(filter_input(INPUT_POST, 'wgc-value'));
+	$balance = sanitize_text_field(filter_input(INPUT_POST, 'wgc-balance'));
+	$key = sanitize_text_field(filter_input(INPUT_POST, 'wgc-key'));
 
 	if (empty($value) || empty($balance) || empty($key)) {
 
-	    set_transient('woo-gift-card-notice', __('Empty gift voucher values set to defaults'));
-	    set_transient('woo-gift-card-notice-class', 'notice-info');
+	    set_transient('wgc-notice', __('Empty gift voucher values set to defaults'));
+	    set_transient('wgc-notice-class', 'notice-info');
 	}
 
 	if (empty($value)) {
@@ -360,10 +360,10 @@ class Woo_gift_card_Admin {
 //Here we get product and set $value to gift card value defaulting to product price if empty
 	    $products = wc_get_products(array(
 		'posts_per_page' => 1,
-		'id' => get_post_meta($post_id, 'woo-gift-card-product', true)
+		'id' => get_post_meta($post_id, 'wgc-product', true)
 	    ));
 
-	    $price = get_post_meta($products[0]->id, 'woo-gift-card-value', true);
+	    $price = get_post_meta($products[0]->id, 'wgc-value', true);
 
 	    $value = $price ? $price : $products[0]->get_regular_price();
 	}
@@ -385,9 +385,9 @@ class Woo_gift_card_Admin {
 	    $key = Woo_gift_cards_utils::get_unique_key(get_user_by('id', $posts[0]['post_author']));
 	}
 
-	update_post_meta($post_id, 'woo-gift-card-value', sanitize_text_field($value));
-	update_post_meta($post_id, 'woo-gift-card-balance', sanitize_text_field($balance));
-	update_post_meta($post_id, 'woo-gift-card-key', sanitize_text_field($key));
+	update_post_meta($post_id, 'wgc-value', sanitize_text_field($value));
+	update_post_meta($post_id, 'wgc-balance', sanitize_text_field($balance));
+	update_post_meta($post_id, 'wgc-key', sanitize_text_field($key));
     }
 
     /**
@@ -472,31 +472,31 @@ class Woo_gift_card_Admin {
 	$product = new WC_Product_Woo_Gift_Card($post_id);
 
 	//discount
-	$product->update_meta_data("woo-gift-card-discount", filter_input(INPUT_POST, 'woo-gift-card-discount'));
+	$product->update_meta_data("wgc-discount", filter_input(INPUT_POST, 'wgc-discount'));
 
-	switch ($product->get_meta('woo-gift-card-discount')) {
+	switch ($product->get_meta('wgc-discount')) {
 	    case 'fixed':
-		$product->update_meta_data("woo-gift-card-discount-fixed", filter_input(INPUT_POST, 'woo-gift-card-discount-fixed'));
-		$product->delete_meta_data('woo-gift-card-discount-percentage');
+		$product->update_meta_data("wgc-discount-fixed", filter_input(INPUT_POST, 'wgc-discount-fixed'));
+		$product->delete_meta_data('wgc-discount-percentage');
 		break;
 	    case 'percentage':
-		$product->update_meta_data("woo-gift-card-discount-percentage", filter_input(INPUT_POST, 'woo-gift-card-discount-percentage'));
-		$product->delete_meta_data('woo-gift-card-discount-fixed');
+		$product->update_meta_data("wgc-discount-percentage", filter_input(INPUT_POST, 'wgc-discount-percentage'));
+		$product->delete_meta_data('wgc-discount-fixed');
 		break;
 	    default :
-		$product->delete_meta_data('woo-gift-card-discount-percentage');
-		$product->delete_meta_data('woo-gift-card-discount-fixed');
+		$product->delete_meta_data('wgc-discount-percentage');
+		$product->delete_meta_data('wgc-discount-fixed');
 	}
 
 	//custom options
-	$product->update_meta_data("woo-gift-card-template", $_POST['woo-gift-card-template']);
-	$product->update_meta_data("woo-gift-card-sale", filter_input(INPUT_POST, 'woo-gift-card-sale'));
-	$product->update_meta_data("woo-gift-card-multiple", filter_input(INPUT_POST, 'woo-gift-card-multiple'));
-	$product->update_meta_data("woo-gift-card-expiry-days", filter_input(INPUT_POST, 'woo-gift-card-expiry-days'));
-	$product->update_meta_data("woo-gift-card-cart-min", filter_input(INPUT_POST, 'woo-gift-card-cart-min'));
-	$product->update_meta_data("woo-gift-card-cart-max", filter_input(INPUT_POST, 'woo-gift-card-cart-max'));
-	$product->update_meta_data("woo-gift-card-individual", filter_input(INPUT_POST, 'woo-gift-card-individual'));
-	$product->update_meta_data("woo-gift-card-schedule", filter_input(INPUT_POST, 'woo-gift-card-schedule'));
+	$product->update_meta_data("wgc-template", $_POST['wgc-template']);
+	$product->update_meta_data("wgc-sale", filter_input(INPUT_POST, 'wgc-sale'));
+	$product->update_meta_data("wgc-multiple", filter_input(INPUT_POST, 'wgc-multiple'));
+	$product->update_meta_data("wgc-expiry-days", filter_input(INPUT_POST, 'wgc-expiry-days'));
+	$product->update_meta_data("wgc-cart-min", filter_input(INPUT_POST, 'wgc-cart-min'));
+	$product->update_meta_data("wgc-cart-max", filter_input(INPUT_POST, 'wgc-cart-max'));
+	$product->update_meta_data("wgc-individual", filter_input(INPUT_POST, 'wgc-individual'));
+	$product->update_meta_data("wgc-schedule", filter_input(INPUT_POST, 'wgc-schedule'));
 
 	//qrcode
 	$product->update_meta_data("wgc-coupon-type", filter_input(INPUT_POST, 'wgc-coupon-type'));
@@ -531,7 +531,6 @@ class Woo_gift_card_Admin {
 	if ($product->is_thankyouvoucher()) {
 	    //clear pricing data
 
-	    $product = new WC_Product_Woo_Gift_Card($post_id);
 	    $product->set_date_on_sale_from(null);
 	    $product->set_date_on_sale_to(null);
 
@@ -550,27 +549,27 @@ class Woo_gift_card_Admin {
 	    $product->delete_meta_data('wgc-thankyou-max-cart');
 
 	    //pricing
-	    $product->update_meta_data("woo-gift-card-pricing", filter_input(INPUT_POST, 'woo-gift-card-pricing'));
+	    $product->update_meta_data("wgc-pricing", filter_input(INPUT_POST, 'wgc-pricing'));
 
-	    switch ($product->get_meta("woo-gift-card-pricing")) {
+	    switch ($product->get_meta("wgc-pricing")) {
 		case "selected":
-		    $product->update_meta_data("woo-gift-card-selected", filter_input(INPUT_POST, 'woo-gift-card-selected'));
-		    $product->delete_meta_data('woo-gift-card-range-from');
-		    $product->delete_meta_data('woo-gift-card-range-to');
+		    $product->update_meta_data("wgc-selected", filter_input(INPUT_POST, 'wgc-selected'));
+		    $product->delete_meta_data('wgc-range-from');
+		    $product->delete_meta_data('wgc-range-to');
 		    break;
 		case "range":
-		    $product->update_meta_data("woo-gift-card-range-from", filter_input(INPUT_POST, 'woo-gift-card-range-from'));
-		    $product->update_meta_data("woo-gift-card-range-to", filter_input(INPUT_POST, 'woo-gift-card-range-to'));
-		    $product->delete_meta_data('woo-gift-card-selected');
+		    $product->update_meta_data("wgc-range-from", filter_input(INPUT_POST, 'wgc-range-from'));
+		    $product->update_meta_data("wgc-range-to", filter_input(INPUT_POST, 'wgc-range-to'));
+		    $product->delete_meta_data('wgc-selected');
 		    break;
+		case 'fixed':
+		//handled in function below
 		default:
-		    $product->delete_meta_data('woo-gift-card-range-from');
-		    $product->delete_meta_data('woo-gift-card-range-to');
-		    $product->delete_meta_data('woo-gift-card-selected');
+		    $product->delete_meta_data('wgc-range-from');
+		    $product->delete_meta_data('wgc-range-to');
+		    $product->delete_meta_data('wgc-selected');
 	    }
 	}
-
-	//save prices correctly
 
 	$product->save();
 	$product->save_meta_data();
@@ -597,7 +596,7 @@ class Woo_gift_card_Admin {
 
 	if ($product->is_type('woo-gift-card')) {
 
-	    $type = isset($_POST['woo-gift-card-pricing']) ? wc_clean(wp_unslash($_POST['woo-gift-card-pricing'])) : "fixed";
+	    $type = isset($_POST['wgc-pricing']) ? wc_clean(wp_unslash($_POST['wgc-pricing'])) : "fixed";
 
 	    if ($type == "fixed" && !$product->is_thankyouvoucher()) {
 		// Handle dates.
@@ -625,8 +624,8 @@ class Woo_gift_card_Admin {
 		$product->set_date_on_sale_from($date_on_sale_from);
 		$product->set_date_on_sale_to($date_on_sale_to);
 
-		$regular_price = isset($_POST['_woo-gift-card-regular-price']) ? wc_clean(wp_unslash($_POST['_woo-gift-card-regular-price'])) : null;
-		$sale_price = isset($_POST['_woo-gift-card-sale-price']) ? wc_clean(wp_unslash($_POST['_woo-gift-card-sale-price'])) : null;
+		$regular_price = isset($_POST['_wgc-regular-price']) ? wc_clean(wp_unslash($_POST['_wgc-regular-price'])) : null;
+		$sale_price = isset($_POST['_wgc-sale-price']) ? wc_clean(wp_unslash($_POST['_wgc-sale-price'])) : null;
 
 		$product->set_regular_price($regular_price);
 		$product->set_sale_price($sale_price);
@@ -642,7 +641,7 @@ class Woo_gift_card_Admin {
     }
 
     /**
-     * out put our data for each custom culumn added to the woo gift card manage screen
+     * out put our data for each custom column added to the woo gift card manage screen
      *
      * @param string $column
      * @param int $post_id
@@ -651,8 +650,8 @@ class Woo_gift_card_Admin {
     public function add_column_data($column, $post_id) {
 
 	switch ($column) {
-	    case 'woo-gift-card-value':
-	    case 'woo-gift-card-balance':
+	    case 'wgc-value':
+	    case 'wgc-balance':
 		echo get_woocommerce_currency_symbol() . get_post_meta($post_id, $column, true);
 		break;
 	}
@@ -691,8 +690,8 @@ class Woo_gift_card_Admin {
 	    $cols[$key] = $item;
 
 	    if ($key === 'author') {
-		$cols['woo-gift-card-value'] = __('Initial Value', 'woo-gift-card');
-		$cols['woo-gift-card-balance'] = __('Balance', 'woo-gift-card');
+		$cols['wgc-value'] = __('Initial Value', 'woo-gift-card');
+		$cols['wgc-balance'] = __('Balance', 'woo-gift-card');
 	    }
 	}
 
