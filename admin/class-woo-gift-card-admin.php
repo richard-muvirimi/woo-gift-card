@@ -462,6 +462,34 @@ class Woo_gift_card_Admin {
     }
 
     /**
+     * Clean up if product is no longer our type
+     * @param \WC_Product $product
+     */
+    public function save_product_object($product) {
+
+	if ($product->get_type() != 'woo-gift-card') {
+	    $product->delete_meta_data("wgc-discount");
+
+	    $product->delete_meta_data("wgc-template");
+	    $product->delete_meta_data("wgc-sale");
+	    $product->delete_meta_data("wgc-multiple");
+	    $product->delete_meta_data("wgc-expiry-days");
+	    $product->delete_meta_data("wgc-cart-min");
+	    $product->delete_meta_data("wgc-cart-max");
+	    $product->delete_meta_data("wgc-individual");
+	    $product->delete_meta_data("wgc-schedule");
+
+	    $product->delete_meta_data("wgc-coupon-type");
+
+	    $product->delete_meta_data("wgc-excluded-product-ids");
+	    $product->delete_meta_data("wgc-excluded-product-categories");
+
+	    //thank you
+	    $product->delete_meta_data("_thankyouvoucher");
+	}
+    }
+
+    /**
      * Save woo gift card custom fields after sanitizing
      *
      * @param int $post_id
@@ -513,7 +541,7 @@ class Woo_gift_card_Admin {
 	    $product->update_meta_data("wgc-coupon-qrcode-margin", filter_input(INPUT_POST, 'wgc-coupon-qrcode-margin'));
 
 	    //qrcode and code
-	    $product->update_meta_data("gc-coupon-qrcode-code", filter_input(INPUT_POST, 'gc-coupon-qrcode-code'));
+	    $product->update_meta_data("wgc-coupon-qrcode-code", filter_input(INPUT_POST, 'wgc-coupon-qrcode-code'));
 	} else {
 	    $product->delete_meta_data('wgc-coupon-qrcode-ecc');
 	    $product->delete_meta_data('wgc-coupon-qrcode-size');
@@ -528,20 +556,25 @@ class Woo_gift_card_Admin {
 	//thank you
 	$product->update_meta_data("_thankyouvoucher", filter_input(INPUT_POST, '_thankyouvoucher'));
 
+	//clear prices before setting
+	$product->set_date_on_sale_from(null);
+	$product->set_date_on_sale_to(null);
+	$product->set_regular_price(null);
+	$product->set_sale_price(null);
+
+	$product->delete_meta_data('wgc-range-from');
+	$product->delete_meta_data('wgc-range-to');
+	$product->delete_meta_data('wgc-selected');
+
 	if ($product->is_thankyouvoucher()) {
-	    //clear pricing data
-
-	    $product->set_date_on_sale_from(null);
-	    $product->set_date_on_sale_to(null);
-
-	    $product->set_regular_price(null);
-	    $product->set_sale_price(null);
 
 	    //thank you validation order status
 	    $product->update_meta_data("wgc-thankyou-order-status", filter_input(INPUT_POST, 'wgc-thankyou-order-status'));
 	    $product->update_meta_data("wgc-thankyou-orders", filter_input(INPUT_POST, 'wgc-thankyou-orders'));
 	    $product->update_meta_data("wgc-thankyou-min-cart", filter_input(INPUT_POST, 'wgc-thankyou-min-cart'));
 	    $product->update_meta_data("wgc-thankyou-max-cart", filter_input(INPUT_POST, 'wgc-thankyou-max-cart'));
+
+	    $product->delete_meta_data('wgc-pricing');
 	} else {
 	    $product->delete_meta_data('wgc-thankyou-order-status');
 	    $product->delete_meta_data('wgc-thankyou-orders');
@@ -554,20 +587,31 @@ class Woo_gift_card_Admin {
 	    switch ($product->get_meta("wgc-pricing")) {
 		case "selected":
 		    $product->update_meta_data("wgc-selected", filter_input(INPUT_POST, 'wgc-selected'));
-		    $product->delete_meta_data('wgc-range-from');
-		    $product->delete_meta_data('wgc-range-to');
 		    break;
 		case "range":
 		    $product->update_meta_data("wgc-range-from", filter_input(INPUT_POST, 'wgc-range-from'));
 		    $product->update_meta_data("wgc-range-to", filter_input(INPUT_POST, 'wgc-range-to'));
-		    $product->delete_meta_data('wgc-selected');
 		    break;
 		case 'fixed':
-		//handled in function below
+		    $date_on_sale_from = wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price-dates-from')));
+		    $date_on_sale_to = wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price-dates-to')));
+
+		    // Force date from to beginning of day.
+		    if ($date_on_sale_from) {
+			$date_on_sale_from = date('Y-m-d 00:00:00', strtotime($date_on_sale_from));
+		    }
+
+		    // Force date to to the end of the day.
+		    if ($date_on_sale_to) {
+			$date_on_sale_to = date('Y-m-d 23:59:59', strtotime($date_on_sale_to));
+		    }
+
+		    $product->set_date_on_sale_from($date_on_sale_from);
+		    $product->set_date_on_sale_to($date_on_sale_to);
+		    $product->set_regular_price(wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-regular-price'))));
+		    $product->set_sale_price(wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price'))));
+		    break;
 		default:
-		    $product->delete_meta_data('wgc-range-from');
-		    $product->delete_meta_data('wgc-range-to');
-		    $product->delete_meta_data('wgc-selected');
 	    }
 	}
 
@@ -586,58 +630,6 @@ class Woo_gift_card_Admin {
 
 	    update_post_meta($post_id, 'wgc-template-css', $css);
 	}
-    }
-
-    /**
-     *
-     * @param WC_Product_Woo_Gift_Card $product
-     */
-    public function save_woo_gift_card_product_object($product) {
-
-	if ($product->is_type('woo-gift-card')) {
-
-	    $type = isset($_POST['wgc-pricing']) ? wc_clean(wp_unslash($_POST['wgc-pricing'])) : "fixed";
-
-	    if ($type == "fixed" && !$product->is_thankyouvoucher()) {
-		// Handle dates.
-		$date_on_sale_from = '';
-		$date_on_sale_to = '';
-
-		// Force date from to beginning of day.
-		if (isset($_POST['_woo-gift-card_sale_price_dates_from'])) {
-		    $date_on_sale_from = wc_clean(wp_unslash($_POST['_woo-gift-card_sale_price_dates_from']));
-
-		    if (!empty($date_on_sale_from)) {
-			$date_on_sale_from = date('Y-m-d 00:00:00', strtotime($date_on_sale_from));
-		    }
-		}
-
-		// Force date to to the end of the day.
-		if (isset($_POST['_woo-gift-card_sale_price_dates_to'])) {
-		    $date_on_sale_to = wc_clean(wp_unslash($_POST['_woo-gift-card_sale_price_dates_to']));
-
-		    if (!empty($date_on_sale_to)) {
-			$date_on_sale_to = date('Y-m-d 23:59:59', strtotime($date_on_sale_to));
-		    }
-		}
-
-		$product->set_date_on_sale_from($date_on_sale_from);
-		$product->set_date_on_sale_to($date_on_sale_to);
-
-		$regular_price = isset($_POST['_wgc-regular-price']) ? wc_clean(wp_unslash($_POST['_wgc-regular-price'])) : null;
-		$sale_price = isset($_POST['_wgc-sale-price']) ? wc_clean(wp_unslash($_POST['_wgc-sale-price'])) : null;
-
-		$product->set_regular_price($regular_price);
-		$product->set_sale_price($sale_price);
-	    } else {
-		$product->set_date_on_sale_from(null);
-		$product->set_date_on_sale_to(null);
-
-		$product->set_regular_price(null);
-		$product->set_sale_price(null);
-	    }
-	}
-	return $product;
     }
 
     /**
@@ -699,6 +691,51 @@ class Woo_gift_card_Admin {
 	$cols['author'] = __('Owner', 'woo-gift-card');
 
 	return $cols;
+    }
+
+    /**
+     * Filter gift cards if they can be displayed in store
+     * @param array $tax_query
+     * @param \WC_Query $query_object
+     */
+    public function woocommerce_product_query_tax_query($tax_query, $query_object) {
+
+	if (get_option("wgc-list-shop") != "on") {
+	    $tax_query[] = array(
+		'taxonomy' => 'product_type',
+		'field' => 'slug',
+		'terms' => 'woo-gift-card',
+		'operator' => 'NOT IN',
+	    );
+	}
+
+	return $tax_query;
+    }
+
+    /**
+     * Filter woo gift card products to those that can be displayed in store
+     * @global type $product
+     * @param array $query
+     * @param \WC_Query $query_object
+     */
+    public function woocommerce_product_query_meta_query($meta_query, $query_object) {
+
+	include( ABSPATH . WPINC . '/version.php' );
+
+	$meta_query[] = array(
+	    'relation' => 'OR',
+	    array(
+		"key" => "_thankyouvoucher",
+		"value" => "off",
+	    ),
+	    array(
+		"key" => "_thankyouvoucher",
+		"value" => version_compare($wp_version, "3.9", ">=") ? null : "off",
+		"compare" => "NOT EXISTS"
+	    )
+	);
+
+	return $meta_query;
     }
 
 }
