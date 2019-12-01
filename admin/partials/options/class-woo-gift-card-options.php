@@ -9,7 +9,6 @@ defined('ABSPATH') || exit;
 class Woo_gift_card_Options {
 
     public function register_settings() {
-	register_setting('wgc-customise', 'wgc-tax-calculation', array('default' => 'off'));
 	register_setting('wgc-customise', 'wgc-list-shop', array('default' => 'on'));
 	register_setting('wgc-customise', 'wgc-thank-you');
 
@@ -25,51 +24,48 @@ class Woo_gift_card_Options {
 
     public function add_settings_section() {
 	add_settings_section(
-		'woo-gift-card-customise-section', __('General Options', 'woo-gift-card'), array($this, 'print_general_options_section'), 'wgc-customise'
+		'wgc-customise-section', __('General Options', 'woo-gift-card'), array($this, 'print_general_options_section'), 'wgc-customise'
 	);
 
 	add_settings_section(
-		'woo-gift-card-generation-section', __('Gift Voucher Generation', 'woo-gift-card'), array($this, 'print_generation_options_section'), 'wgc-generation'
+		'wgc-generation-section', __('Gift Voucher Generation', 'woo-gift-card'), array($this, 'print_generation_options_section'), 'wgc-generation'
 	);
 
 	add_settings_section(
-		'woo-gift-card-email-section', __('Gift Voucher Email Options', 'woo-gift-card'), array($this, 'print_email_options_section'), 'wgc-email'
+		'wgc-email-section', __('Gift Voucher Email Options', 'woo-gift-card'), array($this, 'print_email_options_section'), 'wgc-email'
 	);
     }
 
     public function do_customise_options() {
+
 	add_settings_field(
-		'wgc-tax-calculation', __('Calculate Tax', 'woo-gift-card'), array($this, 'output_tax_field'), 'wgc-customise', 'woo-gift-card-customise-section', array('label_for' => 'wgc-tax-calculation')
+		'wgc-list-shop', __('Gift Vouchers in shop', 'woo-gift-card'), array($this, 'output_list_vouchers_field'), 'wgc-customise', 'wgc-customise-section', array('label_for' => 'wgc-list-shop')
 	);
 
 	add_settings_field(
-		'wgc-list-shop', __('Gift Vouchers in shop', 'woo-gift-card'), array($this, 'output_list_vouchers_field'), 'wgc-customise', 'woo-gift-card-customise-section', array('label_for' => 'wgc-list-shop')
-	);
-
-	add_settings_field(
-		'wgc-thank-you', __('Thank you gift vouchers', 'woo-gift-card'), array($this, 'output_thank_you_vouchers_field'), 'wgc-customise', 'woo-gift-card-customise-section', array('label_for' => 'wgc-thank-you')
+		'wgc-thank-you', __('Thank you gift vouchers', 'woo-gift-card'), array($this, 'output_thank_you_vouchers_field'), 'wgc-customise', 'wgc-customise-section', array('label_for' => 'wgc-thank-you')
 	);
     }
 
     public function do_generation_options() {
-	add_settings_field('wgc-code-length', __('Gift Voucher length', 'woo-gift-card'), array($this, 'output_code_length_field'), 'wgc-generation', 'woo-gift-card-generation-section', array('label_for' => 'wgc-code-length')
+	add_settings_field('wgc-code-length', __('Gift Voucher length', 'woo-gift-card'), array($this, 'output_code_length_field'), 'wgc-generation', 'wgc-generation-section', array('label_for' => 'wgc-code-length')
 	);
 
-	add_settings_field('wgc-code-special', __('Gift Voucher special characters', 'woo-gift-card'), array($this, 'output_code_special_field'), 'wgc-generation', 'woo-gift-card-generation-section', array('label_for' => 'wgc-code-special')
+	add_settings_field('wgc-code-special', __('Gift Voucher special characters', 'woo-gift-card'), array($this, 'output_code_special_field'), 'wgc-generation', 'wgc-generation-section', array('label_for' => 'wgc-code-special')
 	);
 
-	add_settings_field('wgc-code-prefix', __('Gift Voucher prefix', 'woo-gift-card'), array($this, 'output_code_prefix_field'), 'wgc-generation', 'woo-gift-card-generation-section', array('label_for' => 'wgc-code-prefix')
+	add_settings_field('wgc-code-prefix', __('Gift Voucher prefix', 'woo-gift-card'), array($this, 'output_code_prefix_field'), 'wgc-generation', 'wgc-generation-section', array('label_for' => 'wgc-code-prefix')
 	);
 
-	add_settings_field('wgc-code-suffix', __('Gift Voucher suffix', 'woo-gift-card'), array($this, 'output_code_suffix_field'), 'wgc-generation', 'woo-gift-card-generation-section', array('label_for' => 'wgc-code-suffix')
+	add_settings_field('wgc-code-suffix', __('Gift Voucher suffix', 'woo-gift-card'), array($this, 'output_code_suffix_field'), 'wgc-generation', 'wgc-generation-section', array('label_for' => 'wgc-code-suffix')
 	);
     }
 
     public function do_email_options() {
-	add_settings_field('wgc-message-length', __('Gift Voucher message length', 'woo-gift-card'), array($this, 'output_message_length_field'), 'wgc-email', 'woo-gift-card-email-section', array('label_for' => 'wgc-message-length')
+	add_settings_field('wgc-message-length', __('Gift Voucher message length', 'woo-gift-card'), array($this, 'output_message_length_field'), 'wgc-email', 'wgc-email-section', array('label_for' => 'wgc-message-length')
 	);
 
-	add_settings_field('wgc-message-disclaimer', __('Gift Voucher message disclaimer', 'woo-gift-card'), array($this, 'output_message_disclaimer_field'), 'wgc-email', 'woo-gift-card-email-section', array('label_for' => 'wgc-message-disclaimer')
+	add_settings_field('wgc-message-disclaimer', __('Gift Voucher message disclaimer', 'woo-gift-card'), array($this, 'output_message_disclaimer_field'), 'wgc-email', 'wgc-email-section', array('label_for' => 'wgc-message-disclaimer')
 	);
     }
 
