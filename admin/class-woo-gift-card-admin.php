@@ -562,9 +562,10 @@ class Woo_gift_card_Admin {
 	$product->set_regular_price(null);
 	$product->set_sale_price(null);
 
-	$product->delete_meta_data('wgc-range-from');
-	$product->delete_meta_data('wgc-range-to');
-	$product->delete_meta_data('wgc-selected');
+	$product->delete_meta_data('wgc-price-range-from');
+	$product->delete_meta_data('wgc-price-range-to');
+	$product->delete_meta_data('wgc-price-selected');
+	$product->delete_meta_data('wgc-price-user');
 
 	if ($product->is_thankyouvoucher()) {
 
@@ -586,11 +587,11 @@ class Woo_gift_card_Admin {
 
 	    switch ($product->get_meta("wgc-pricing")) {
 		case "selected":
-		    $product->update_meta_data("wgc-selected", filter_input(INPUT_POST, 'wgc-selected'));
+		    $product->update_meta_data("wgc-price-selected", filter_input(INPUT_POST, 'wgc-price-selected'));
 		    break;
 		case "range":
-		    $product->update_meta_data("wgc-range-from", filter_input(INPUT_POST, 'wgc-range-from'));
-		    $product->update_meta_data("wgc-range-to", filter_input(INPUT_POST, 'wgc-range-to'));
+		    $product->update_meta_data("wgc-price-range-from", filter_input(INPUT_POST, 'wgc-price-range-from'));
+		    $product->update_meta_data("wgc-price-range-to", filter_input(INPUT_POST, 'wgc-price-range-to'));
 		    break;
 		case 'fixed':
 		    $date_on_sale_from = wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price-dates-from')));
@@ -598,18 +599,19 @@ class Woo_gift_card_Admin {
 
 		    // Force date from to beginning of day.
 		    if ($date_on_sale_from) {
-			$date_on_sale_from = date('Y-m-d 00:00:00', strtotime($date_on_sale_from));
+			$product->set_date_on_sale_from(date('Y-m-d 00:00:00', strtotime($date_on_sale_from)));
 		    }
 
 		    // Force date to to the end of the day.
 		    if ($date_on_sale_to) {
-			$date_on_sale_to = date('Y-m-d 23:59:59', strtotime($date_on_sale_to));
+			$product->set_date_on_sale_to(date('Y-m-d 23:59:59', strtotime($date_on_sale_to)));
 		    }
 
-		    $product->set_date_on_sale_from($date_on_sale_from);
-		    $product->set_date_on_sale_to($date_on_sale_to);
-		    $product->set_regular_price(wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-regular-price'))));
-		    $product->set_sale_price(wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price'))));
+		    $product->set_regular_price(wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-price-regular'))));
+		    $product->set_sale_price(wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-price-sale'))));
+		    break;
+		case 'user':
+		    $product->update_meta_data("wgc-price-user", filter_input(INPUT_POST, 'wgc-price-user'));
 		    break;
 		default:
 	    }
@@ -736,6 +738,21 @@ class Woo_gift_card_Admin {
 	);
 
 	return $meta_query;
+    }
+
+    public function woocommerce_before_add_to_cart_button() {
+	/**
+	 * todo: add default price for user price
+	 *
+	 * send gift card
+	 * emails, from name, gift message
+	 *
+	 * schedule gift card
+	 * image for gift card
+	 *
+	 * pricing
+	 * range, selected, user
+	 */
     }
 
 }
