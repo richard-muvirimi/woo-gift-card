@@ -232,4 +232,90 @@ class Woo_gift_card_Public {
 	}
     }
 
+    /**
+     * This function outputs the content displayed before the add to cart button
+     * @global type $product
+     */
+    public function woocommerce_before_add_to_cart_button() {
+
+	include_once plugin_dir_path(__DIR__) . "/public/partials/add-cart-woo-gift-card.php";
+    }
+
+    /**
+     * If product can be purchased depending on the pricing model used
+     * @global \WC_Product $product
+     * @param bool $purchasable
+     * @return bool
+     */
+    public function woocommerce_is_purchasable($purchasable) {
+
+	global $product;
+
+	if ($product->is_type('woo-gift-card')) {
+
+	    if (is_product()) {
+		$purchasable = true;
+	    }
+	}
+
+	return $purchasable;
+    }
+
+    public function woocommerce_get_price_html($display_price, $product) {
+
+	if ($product->is_type('woo-gift-card')) {
+	    switch ($product->get_meta("wgc-pricing")) {
+		case "range":
+		    $from = $product->get_meta('wgc-price-range-from');
+		    $to = $product->get_meta('wgc-price-range-to');
+
+		    //if values are the same treat as one value
+		    if ($from !== $to) {
+
+			//if not single product page
+			if (!is_product()) {
+			    $display_price = wc_format_price_range(wc_get_price_to_display($product, array('price' => $from)) . $product->get_price_suffix($from), wc_get_price_to_display($product, array('price' => $to)) . $product->get_price_suffix($to));
+			}
+			break;
+		    }
+		//fall through if the prices are the same
+		case 'user':
+
+		    if (is_null($from)) {
+			$from = $product->get_meta('wgc-price-user');
+		    }
+
+		    $display_price = wc_price(wc_get_price_to_display($product, array('price' => $from))) . $product->get_price_suffix($from);
+		    break;
+		case "selected":
+		    $display_price = __("Select Price", 'woo-gift-card');
+		    break;
+		case 'fixed':
+		default:
+	    }
+	}
+
+	return $display_price;
+    }
+
+    /**
+     * Filter whether product can be displayed in store
+     * @param boolean $visible
+     * @param int $product_id
+     * @return boolean
+     */
+    public function woocommerce_product_is_visible($visible, $product_id) {
+	$product = wc_get_product($product_id);
+
+	if ($product->is_type('woo-gift-card')) {
+	    $visible = $product->is_thankyouvoucher() === false;
+	}
+
+	return $visible;
+    }
+
+    public function woocommerce_add_to_cart() {
+	wc_get_template('single-product/add-to-cart/simple.php');
+    }
+
 }
