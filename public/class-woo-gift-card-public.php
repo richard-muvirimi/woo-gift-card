@@ -237,8 +237,11 @@ class Woo_gift_card_Public {
      * @global type $product
      */
     public function woocommerce_before_add_to_cart_button() {
+	global $product;
 
-	include_once plugin_dir_path(__DIR__) . "/public/partials/add-cart-woo-gift-card.php";
+	if ($product->is_type('woo-gift-card')) {
+	    include_once plugin_dir_path(__DIR__) . "/public/partials/add-cart-woo-gift-card.php";
+	}
     }
 
     /**
@@ -281,11 +284,15 @@ class Woo_gift_card_Public {
 		//fall through if the prices are the same
 		case 'user':
 
-		    if (is_null($from)) {
-			$from = $product->get_meta('wgc-price-user');
-		    }
+		    //if not single product page
+		    if (!is_product()) {
 
-		    $display_price = wc_price(wc_get_price_to_display($product, array('price' => $from))) . $product->get_price_suffix($from);
+			if (is_null($from)) {
+			    $from = $product->get_meta('wgc-price-user');
+			}
+
+			$display_price = wc_price(wc_get_price_to_display($product, array('price' => $from))) . $product->get_price_suffix($from);
+		    }
 		    break;
 		case "selected":
 		    $display_price = __("Select Price", 'woo-gift-card');
