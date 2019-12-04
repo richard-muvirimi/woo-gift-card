@@ -93,6 +93,18 @@ class Woo_gift_card_Public {
 	 * class.
 	 */
 	wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/woo-gift-card-public.js', array('jquery'), $this->version, false);
+
+	if (is_product()) {
+
+	    global $post;
+
+	    $product = wc_get_product($post);
+
+	    if ($product->is_type('woo-gift-card')) {
+		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/woo-gift-card-product.js', array('jquery'), $this->version, false);
+		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array("maxlength" => get_option('wgc-message-length')));
+	    }
+	}
     }
 
     /**
@@ -246,13 +258,11 @@ class Woo_gift_card_Public {
 
     /**
      * If product can be purchased depending on the pricing model used
-     * @global \WC_Product $product
      * @param bool $purchasable
+     * @param \WC_Product $product
      * @return bool
      */
-    public function woocommerce_is_purchasable($purchasable) {
-
-	global $product;
+    public function woocommerce_is_purchasable($purchasable, $product) {
 
 	if ($product->is_type('woo-gift-card')) {
 
