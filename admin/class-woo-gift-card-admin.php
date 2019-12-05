@@ -301,7 +301,7 @@ class Woo_gift_card_Admin {
     public function post_row_actions($actions, $post) {
 	if ($post->post_type == 'wgc-template') {
 
-	    // $actions["view"] = '<a href="#" class="template-preview">' . __("Preview") . "</a>";
+// $actions["view"] = '<a href="#" class="template-preview">' . __("Preview") . "</a>";
 	}
 
 	return $actions;
@@ -467,7 +467,7 @@ class Woo_gift_card_Admin {
      */
     public function save_product_object($product) {
 
-	if ($product->get_type() != 'woo-gift-card') {
+	if ($product->is_type('woo-gift-card')) {
 	    $product->delete_meta_data("wgc-discount");
 
 	    $product->delete_meta_data("wgc-template");
@@ -484,7 +484,7 @@ class Woo_gift_card_Admin {
 	    $product->delete_meta_data("wgc-excluded-product-ids");
 	    $product->delete_meta_data("wgc-excluded-product-categories");
 
-	    //thank you
+//thank you
 	    $product->delete_meta_data("_thankyouvoucher");
 	}
     }
@@ -499,7 +499,7 @@ class Woo_gift_card_Admin {
 
 	$product = new WC_Product_Woo_Gift_Card($post_id);
 
-	//discount
+//discount
 	$product->update_meta_data("wgc-discount", filter_input(INPUT_POST, 'wgc-discount'));
 
 	switch ($product->get_meta('wgc-discount')) {
@@ -516,7 +516,7 @@ class Woo_gift_card_Admin {
 		$product->delete_meta_data('wgc-discount-fixed');
 	}
 
-	//custom options
+//custom options
 	$product->update_meta_data("wgc-template", $_POST['wgc-template']);
 	$product->update_meta_data("wgc-sale", filter_input(INPUT_POST, 'wgc-sale'));
 	$product->update_meta_data("wgc-multiple", filter_input(INPUT_POST, 'wgc-multiple'));
@@ -529,34 +529,41 @@ class Woo_gift_card_Admin {
 	//qrcode
 	$product->update_meta_data("wgc-coupon-type", filter_input(INPUT_POST, 'wgc-coupon-type'));
 
-	if ($product->get_meta('wgc-coupon-type') === 'qrcode') {
+	switch ($product->get_meta('wgc-coupon-type')) {
+	    case 'qrcode':
 
-	    //qrcode ecc level
-	    $product->update_meta_data("wgc-coupon-qrcode-ecc", filter_input(INPUT_POST, 'wgc-coupon-qrcode-ecc'));
+		//qrcode ecc level
+		$product->update_meta_data("wgc-coupon-qrcode-ecc", filter_input(INPUT_POST, 'wgc-coupon-qrcode-ecc'));
 
-	    //qrcode size
-	    $product->update_meta_data("wgc-coupon-qrcode-size", filter_input(INPUT_POST, 'wgc-coupon-qrcode-size'));
+		//qrcode size
+		$product->update_meta_data("wgc-coupon-qrcode-size", filter_input(INPUT_POST, 'wgc-coupon-qrcode-size'));
 
-	    //qrcode margin
-	    $product->update_meta_data("wgc-coupon-qrcode-margin", filter_input(INPUT_POST, 'wgc-coupon-qrcode-margin'));
+		//qrcode margin
+		$product->update_meta_data("wgc-coupon-qrcode-margin", filter_input(INPUT_POST, 'wgc-coupon-qrcode-margin'));
 
-	    //qrcode and code
-	    $product->update_meta_data("wgc-coupon-qrcode-code", filter_input(INPUT_POST, 'wgc-coupon-qrcode-code'));
-	} else {
-	    $product->delete_meta_data('wgc-coupon-qrcode-ecc');
-	    $product->delete_meta_data('wgc-coupon-qrcode-size');
-	    $product->delete_meta_data('wgc-coupon-qrcode-margin');
-	    $product->delete_meta_data('wgc-coupon-qrcode-code');
+		//qrcode and code
+		$product->update_meta_data("wgc-coupon-qrcode-code", filter_input(INPUT_POST, 'wgc-coupon-qrcode-code'));
+
+		$product->delete_meta_data('wgc-coupon-barcode-type');
+		break;
+	    case 'barcode':
+		$product->update_meta_data("wgc-coupon-barcode-type", filter_input(INPUT_POST, 'wgc-coupon-barcode-type'));
+	    //fall through to delete qrcode data
+	    default:
+		$product->delete_meta_data('wgc-coupon-qrcode-ecc');
+		$product->delete_meta_data('wgc-coupon-qrcode-size');
+		$product->delete_meta_data('wgc-coupon-qrcode-margin');
+		$product->delete_meta_data('wgc-coupon-qrcode-code');
 	}
 
-	//linked products
+//linked products
 	$product->update_meta_data("wgc-excluded-product-ids", $_POST['wgc-excluded-product-ids']);
 	$product->update_meta_data("wgc-excluded-product-categories", $_POST['wgc-excluded-product-categories']);
 
-	//thank you
+//thank you
 	$product->update_meta_data("_thankyouvoucher", filter_input(INPUT_POST, '_thankyouvoucher'));
 
-	//clear prices before setting
+//clear prices before setting
 	$product->set_date_on_sale_from(null);
 	$product->set_date_on_sale_to(null);
 	$product->set_regular_price(null);
@@ -569,7 +576,7 @@ class Woo_gift_card_Admin {
 
 	if ($product->is_thankyouvoucher()) {
 
-	    //thank you validation order status
+//thank you validation order status
 	    $product->update_meta_data("wgc-thankyou-order-status", filter_input(INPUT_POST, 'wgc-thankyou-order-status'));
 	    $product->update_meta_data("wgc-thankyou-orders", filter_input(INPUT_POST, 'wgc-thankyou-orders'));
 	    $product->update_meta_data("wgc-thankyou-min-cart", filter_input(INPUT_POST, 'wgc-thankyou-min-cart'));
@@ -582,7 +589,7 @@ class Woo_gift_card_Admin {
 	    $product->delete_meta_data('wgc-thankyou-min-cart');
 	    $product->delete_meta_data('wgc-thankyou-max-cart');
 
-	    //pricing
+//pricing
 	    $product->update_meta_data("wgc-pricing", filter_input(INPUT_POST, 'wgc-pricing'));
 
 	    switch ($product->get_meta("wgc-pricing")) {
@@ -590,19 +597,22 @@ class Woo_gift_card_Admin {
 		    $product->update_meta_data("wgc-price-selected", filter_input(INPUT_POST, 'wgc-price-selected'));
 		    break;
 		case "range":
-		    $product->update_meta_data("wgc-price-range-from", filter_input(INPUT_POST, 'wgc-price-range-from'));
-		    $product->update_meta_data("wgc-price-range-to", filter_input(INPUT_POST, 'wgc-price-range-to'));
+		    $price1 = filter_input(INPUT_POST, 'wgc-price-range-from');
+		    $price2 = filter_input(INPUT_POST, 'wgc-price-range-to');
+
+		    $product->update_meta_data("wgc-price-range-from", min(array($price1, $price2)));
+		    $product->update_meta_data("wgc-price-range-to", max(array($price1, $price2)));
 		    break;
 		case 'fixed':
 		    $date_on_sale_from = wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price-dates-from')));
 		    $date_on_sale_to = wc_clean(wp_unslash(filter_input(INPUT_POST, 'wgc-sale-price-dates-to')));
 
-		    // Force date from to beginning of day.
+// Force date from to beginning of day.
 		    if ($date_on_sale_from) {
 			$product->set_date_on_sale_from(date('Y-m-d 00:00:00', strtotime($date_on_sale_from)));
 		    }
 
-		    // Force date to to the end of the day.
+// Force date to to the end of the day.
 		    if ($date_on_sale_to) {
 			$product->set_date_on_sale_to(date('Y-m-d 23:59:59', strtotime($date_on_sale_to)));
 		    }
@@ -657,7 +667,7 @@ class Woo_gift_card_Admin {
 	$product_types['downloadable']['wrapper_class'] .= " show_if_" . $this->plugin_name;
 
 	if (get_option('wgc-thank-you', false)) {
-	    //add custom product option
+//add custom product option
 	    $product_types['thankyouvoucher'] = array(
 		'id' => '_thankyouvoucher',
 		'wrapper_class' => "show_if_" . $this->plugin_name,
@@ -712,47 +722,6 @@ class Woo_gift_card_Admin {
 	}
 
 	return $tax_query;
-    }
-
-    /**
-     * Filter woo gift card products to those that can be displayed in store
-     * @global type $product
-     * @param array $query
-     * @param \WC_Query $query_object
-     */
-    public function woocommerce_product_query_meta_query($meta_query, $query_object) {
-
-	include( ABSPATH . WPINC . '/version.php' );
-
-	$meta_query[] = array(
-	    'relation' => 'OR',
-	    array(
-		"key" => "_thankyouvoucher",
-		"value" => "off",
-	    ),
-	    array(
-		"key" => "_thankyouvoucher",
-		"value" => version_compare($wp_version, "3.9", ">=") ? null : "off",
-		"compare" => "NOT EXISTS"
-	    )
-	);
-
-	return $meta_query;
-    }
-
-    public function woocommerce_before_add_to_cart_button() {
-	/**
-	 * todo: add default price for user price
-	 *
-	 * send gift card
-	 * emails, from name, gift message
-	 *
-	 * schedule gift card
-	 * image for gift card
-	 *
-	 * pricing
-	 * range, selected, user
-	 */
     }
 
 }
