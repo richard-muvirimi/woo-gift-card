@@ -28,7 +28,7 @@ defined('ABSPATH') || exit;
 		    }
 		}
 		?>
-	    </select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                         ?>
+	    </select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                             ?>
 	</p>
 
 	<?php
@@ -44,13 +44,13 @@ defined('ABSPATH') || exit;
 	    'id' => 'wgc-multiple',
 	    'wrapper_class' => 'show_if_woo-gift-card',
 	    'label' => __('Multiple Usability', 'woo-gift-card'),
-	    'description' => __('The gift voucher can be used multiple times or just once', 'woo-gift-card'),
+	    'description' => __('The gift voucher can be used multiple times (if checked) or just once', 'woo-gift-card'),
 	    'value' => $product_object->get_meta('wgc-multiple')
 	));
 
 	woocommerce_wp_text_input(array(
 	    'id' => 'wgc-expiry-days',
-	    'value' => $product_object->get_meta('wgc-expiry-days'),
+	    'value' => $product_object->get_meta('wgc-expiry-days') ?: 5,
 	    'label' => __('Expiry Days', 'woo-gift-card'),
 	    'description' => __('The number of days after purchase that a gift voucher will become invalid', 'woo-gift-card'),
 	    'desc_tip' => true,
@@ -117,7 +117,7 @@ defined('ABSPATH') || exit;
 
 		woocommerce_wp_text_input(array(
 		    'id' => 'wgc-coupon-qrcode-size',
-		    'value' => $product_object->get_meta('wgc-coupon-qrcode-size'),
+		    'value' => $product_object->get_meta('wgc-coupon-qrcode-size') ?: 3,
 		    'label' => __('Qr Code Size', 'woo-gift-card'),
 		    'description' => __('The pixel size of the QrCode', 'woo-gift-card'),
 		    'custom_attributes' => array(
@@ -130,7 +130,7 @@ defined('ABSPATH') || exit;
 
 		woocommerce_wp_text_input(array(
 		    'id' => 'wgc-coupon-qrcode-margin',
-		    'value' => $product_object->get_meta('wgc-coupon-qrcode-margin'),
+		    'value' => $product_object->get_meta('wgc-coupon-qrcode-margin') ?: 4,
 		    'label' => __('QrCode Margin', 'woo-gift-card'),
 		    'description' => __('The margin of the Qr Code', 'woo-gift-card'),
 		    'custom_attributes' => array(
@@ -144,7 +144,7 @@ defined('ABSPATH') || exit;
 		    'id' => 'wgc-coupon-qrcode-code',
 		    'label' => __('Show Coupon Code', 'woo-gift-card'),
 		    'description' => __('Show coupon code below the QrCode', 'woo-gift-card'),
-		    'value' => $product_object->get_meta('wgc-coupon-qrcode-code')
+		    'value' => $product_object->get_meta('wgc-coupon-qrcode-code') ?: 'yes'
 		));
 		?>
 	    </div>
@@ -200,7 +200,7 @@ defined('ABSPATH') || exit;
 			"jpg" => __("Jpg", 'woo-gift-card'),
 			"html" => __("Html", 'woo-gift-card'),
 		    ),
-		    'value' => $product_object->get_meta('wgc-coupon-barcode-image-type'),
+		    'value' => $product_object->get_meta('wgc-coupon-barcode-image-type') ?: "html",
 		    'desc_tip' => true
 		));
 
