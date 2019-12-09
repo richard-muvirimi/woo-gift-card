@@ -78,6 +78,7 @@ class Woo_gift_card {
 	$this->set_locale();
 	$this->define_admin_hooks();
 	$this->define_public_hooks();
+	$this->define_rest_hooks();
     }
 
     /**
@@ -122,9 +123,29 @@ class Woo_gift_card {
 	require_once plugin_dir_path(dirname(__FILE__)) . 'public/class-woo-gift-card-public.php';
 
 	/**
+	 * The class responsible for defining all actions that occur in the rest api
+	 * side of the site.
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'rest/class-woo-gift-card-rest.php';
+
+	/**
 	 * The class responsible for all plugin utility methods.
 	 */
 	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/Utils.php';
+
+	/**
+	 * The bar code generating classes
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGenerator.php';
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorPNG.php';
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorSVG.php';
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorJPG.php';
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorHTML.php';
+
+	/**
+	 * Qrcode generating classes
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/phpqrcode/phpqrcode.php';
 
 	$this->loader = new Woo_gift_card_Loader();
     }
@@ -168,10 +189,11 @@ class Woo_gift_card {
 	//product type tabs
 	$this->loader->add_filter('woocommerce_product_data_tabs', $plugin_admin, 'setup_product_data_tabs');
 
-	//woo gift card value
-	$this->loader->add_action('woocommerce_product_options_pricing', $plugin_admin, 'setup_woo_gift_card_product');
+	//woo gift card thank you options
+	$this->loader->add_action('woocommerce_product_options_general_product_data', $plugin_admin, 'setup_woo_gift_card_product');
 
 	//save product type
+	$this->loader->add_filter('woocommerce_admin_process_product_object', $plugin_admin, 'save_product_object');
 	$this->loader->add_filter('woocommerce_process_product_meta_' . $this->plugin_name, $plugin_admin, 'save_woo_gift_card_product');
 
 	//on init
@@ -193,9 +215,6 @@ class Woo_gift_card {
 	//admin menu initialising
 	$this->loader->add_action('admin_menu', $plugin_admin, 'on_admin_menu');
 
-	//save the woo gift card object
-	$this->loader->add_action("woocommerce_admin_process_product_object", $plugin_admin, "save_woo_gift_card_product_object");
-
 	//product type options
 	$this->loader->add_filter("product_type_options", $plugin_admin, "product_type_options");
 
@@ -213,6 +232,27 @@ class Woo_gift_card {
 
 	//edit the quick links
 	$this->loader->add_filter('post_row_actions', $plugin_admin, 'post_row_actions', 10, 2);
+
+	//filter product meta and tax query
+	$this->loader->add_filter('woocommerce_product_query_tax_query', $plugin_admin, 'woocommerce_product_query_tax_query', 10, 2);
+    }
+
+    /**
+     * Register all of the hooks related to the rest api functionality
+     * of the plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_rest_hooks() {
+
+	$plugin_rest = new Woo_gift_card_Rest($this->get_plugin_name(), $this->get_version());
+
+	//on init the rest api
+	$this->loader->add_action('rest_api_init', $plugin_rest, 'rest_api_init');
+
+	//short codes
+	$this->loader->add_shortcode('woo-gift-card', $plugin_rest, 'wgc_shortcode');
     }
 
     /**
@@ -241,8 +281,24 @@ class Woo_gift_card {
 	//display gift cards
 	$this->loader->add_action('woocommerce_account_woo-gift-card_endpoint', $plugin_public, 'show_gift_cards');
 
-	//short codes
-	add_shortcode('woo-gift-card', array($plugin_public, 'wgc_shortcode'));
+	//display before the add to cart button
+	$this->loader->add_action('woocommerce_before_add_to_cart_button', $plugin_public, 'woocommerce_before_add_to_cart_button');
+	$this->loader->add_action('woocommerce_after_add_to_cart_button', $plugin_public, 'woocommerce_after_add_to_cart_button');
+
+	//if item can be bought
+	$this->loader->add_filter('woocommerce_is_purchasable', $plugin_public, 'woocommerce_is_purchasable', 10, 2);
+
+	//filter the product price do display correct values
+	$this->loader->add_filter('woocommerce_get_price_html', $plugin_public, 'woocommerce_get_price_html', 10, 2);
+
+	//filter whether product can be displayed in store
+	$this->loader->add_filter('woocommerce_product_is_visible', $plugin_public, 'woocommerce_product_is_visible', 10, 2);
+
+	//add customise gift card form
+	$this->loader->add_action('woocommerce_' . $this->get_plugin_name() . '_add_to_cart', $plugin_public, 'woocommerce_add_to_cart');
+
+	//on calculate cart totals
+	$this->loader->add_action('woocommerce_before_calculate_totals', $plugin_public, 'woocommerce_before_calculate_totals');
     }
 
     /**
