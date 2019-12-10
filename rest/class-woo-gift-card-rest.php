@@ -39,6 +39,15 @@ class Woo_gift_card_Rest {
     private $version;
 
     /**
+     * The request parameters
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var array $params The parameters of the request
+     */
+    private $params;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    1.0.0
@@ -54,44 +63,57 @@ class Woo_gift_card_Rest {
     /**
      * On initialize the rest api
      */
-    public function rest_api_init() {
+    public function register_routes() {
 	register_rest_route('woo-gift-card/v1', '/template', array(
 	    'methods' => WP_REST_Server::CREATABLE,
 	    'callback' => array($this, 'process_product_preview'),
 	    'args' => array(
 		'required' => true,
-		'product' => array(
+		'wgc-product' => array(
 		    'validate_callback' => function($param, $request, $key) {
-			return $param && is_numeric($param) && !is_null(get_post($param));
+			if ($param && is_numeric($param)) {
+			    $product = wc_get_product($param);
+			    return !is_null($product) && $product->is_type('woo-gift-card');
+			}
+			return false;
 		    }
 		),
-		'template' => array(
+		'wgc-receiver-template' => array(
 		    'validate_callback' => function($param, $request, $key) {
-			return $param && is_numeric($param) && !is_null(get_post($param));
+			if ($param) {
+			    //if set validate
+			    return $param && is_numeric($param) && !is_null(get_post($param));
+			} else {
+			    return true;
+			}
 		    }
 		),
-		'amount' => array(
+		'wgc-receiver-price' => array(
 		    'validate_callback' => function($param, $request, $key) {
-			return $param && is_numeric($param) && !is_null(get_post($param));
+			return $param && is_numeric($param);
 		    }
 		),
-		'name' => array(
+		'wgc-receiver-name' => array(
 		    'validate_callback' => function($param, $request, $key) {
 			return true;
 		    }
 		),
-		'email' => array(
+		'wgc-receiver-email' => array(
 		    'validate_callback' => function($param, $request, $key) {
 			return $param && is_email($param);
 		    },
-		// 'default' => current_,
 		),
-		'message' => array(
+		'wgc-receiver-message' => array(
 		    'validate_callback' => function($param, $request, $key) {
-			return $param;
+			return true;
 		    }
 		),
-		'image' => array(
+		'wgc-receiver-image' => array(
+		    'validate_callback' => function($param, $request, $key) {
+			return true;
+		    }
+		),
+		'wgc-event' => array(
 		    'validate_callback' => function($param, $request, $key) {
 			return true;
 		    }
@@ -105,11 +127,8 @@ class Woo_gift_card_Rest {
 
     public function process_product_preview(WP_REST_Request $request) {
 
-	$template_id = $request->get_param('template');
-	$product_id = $request->get_param('product');
-
-	$template = get_post($template_id);
-	$product = wc_get_product($product_id);
+	$this->params = $request->get_params();
+	$template = get_post($request->get_param('wgc-receiver-template'));
 
 	ob_start();
 	?>
@@ -119,11 +138,11 @@ class Woo_gift_card_Rest {
 
 		<meta charset="<?php bloginfo('charset'); ?>">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" >
-		<style><?php echo get_post_meta($template->ID, 'wgc-template-css', true); ?></style>
+		<style><?php esc_textarea(get_post_meta($template->ID, 'wgc-template-css', true)); ?></style>
 
 	    </head>
 	    <body>
-		<?php echo do_shortcode($template->post_content); ?>
+		<?php esc_html_e(do_shortcode($template->post_content)); ?>
 	    </body>
 	</html>
 
@@ -143,46 +162,62 @@ class Woo_gift_card_Rest {
      * @return void
      */
     public function wgc_shortcode($atts) {
-//todo short codes
-	$attributes = shortcode_atts(array("attr" => "code"), $atts, 'woogiftcard');
+	$template = get_post($this->params['wgc-receiver-template']);
+	$product = wc_get_product($this->params['wgc-product']);
 
+	$shortcode = '';
+
+	$attributes = shortcode_atts(array("attr" => "code"), $atts, 'woogiftcard');
 	switch ($attributes['attr']) {
 	    case "amount":
-
+		switch ($product->get_meta("wgc-pricing")) {
+		    case "range":
+		    case 'user':
+		    case "selected":
+			$shortcode = $this->params['wgc-receiver-price'];
+			break;
+		    case 'fixed':
+		    default:
+			$shortcode = $product->get_price();
+		}
 		break;
 	    case "disclaimer":
-
+		$shortcode = esc_html__(get_option('wgc-message-disclaimer', ''));
 		break;
 	    case "event":
-
+		$shortcode = $this->params['wgc-event'] ?: $template->post_title;
 		break;
 	    case "expiry-date":
-
+		$shortcode = 'todo caluculate date';
 		break;
 	    case "featured-image":
 
 		break;
 	    case "from":
-
+		$shortcode = get_user_option("display_name");
 		break;
 	    case "logo":
-
 		break;
 	    case "message":
-
+		$shortcode = $this->params['wgc-receiver-message'];
 		break;
 	    case "order-id":
-
 		break;
 	    case "product-name":
-
+		$shortcode = $product->get_name();
 		break;
 	    case "to":
-
+		$shortcode = $this->params['wgc-receiver-email'];
 		break;
 	    case "code":
-	    default:
+		break;
 	}
+
+	if (empty($shortcode)) {
+	    $shortcode = '[' . strtoupper($attributes['attr']) . ']';
+	}
+
+	return $shortcode;
     }
 
 }
