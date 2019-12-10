@@ -32,7 +32,7 @@ $attr = array(
 );
 ?>
 
-<table class="woo-gift-card-template-help">
+<table class="wgc-template-help">
     <thead>
         <tr>
             <th>&nbsp;</th>
@@ -45,8 +45,8 @@ $attr = array(
 	<?php foreach ($attr as $key => $value) : ?>
     	<tr>
     	    <td>&diamondsuit;</td>
-    	    <td><code><?php echo $key ?></code></td>
-    	    <td><?php echo $value ?></td>
+    	    <td><code><?php esc_html_e($key) ?></code></td>
+    	    <td><?php esc_html_e($value) ?></td>
     	</tr>
 	<?php endforeach; ?>
     </tbody>

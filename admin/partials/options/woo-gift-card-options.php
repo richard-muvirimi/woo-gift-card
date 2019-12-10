@@ -38,8 +38,13 @@ if (!current_user_can('manage_options')) {
 	<?php
 	settings_fields('wgc-customise');
 	do_settings_sections('wgc-customise');
+
+	settings_fields('wgc-generation');
 	do_settings_sections('wgc-generation');
+
+	settings_fields('wgc-email');
 	do_settings_sections('wgc-email');
+
 	submit_button();
 	?>
     </form>

@@ -481,6 +481,18 @@ class Woo_gift_card_Admin {
 
 	    $product->delete_meta_data("wgc-coupon-type");
 
+	    //qrcode
+	    $product->delete_meta_data('wgc-coupon-qrcode-ecc');
+	    $product->delete_meta_data('wgc-coupon-qrcode-size');
+	    $product->delete_meta_data('wgc-coupon-qrcode-margin');
+	    $product->delete_meta_data('wgc-coupon-qrcode-code');
+
+	    //barcode
+	    $product->delete_meta_data('wgc-coupon-barcode-type');
+	    $product->delete_meta_data('wgc-coupon-barcode-image-type');
+	    $product->delete_meta_data('wgc-coupon-barcode-width');
+	    $product->delete_meta_data('wgc-coupon-barcode-height');
+
 	    $product->delete_meta_data("wgc-excluded-product-ids");
 	    $product->delete_meta_data("wgc-excluded-product-categories");
 
@@ -543,17 +555,13 @@ class Woo_gift_card_Admin {
 
 		//qrcode and code
 		$product->update_meta_data("wgc-coupon-qrcode-code", filter_input(INPUT_POST, 'wgc-coupon-qrcode-code'));
-
-		$product->delete_meta_data('wgc-coupon-barcode-type');
 		break;
 	    case 'barcode':
 		$product->update_meta_data("wgc-coupon-barcode-type", filter_input(INPUT_POST, 'wgc-coupon-barcode-type'));
-	    //fall through to delete qrcode data
-	    default:
-		$product->delete_meta_data('wgc-coupon-qrcode-ecc');
-		$product->delete_meta_data('wgc-coupon-qrcode-size');
-		$product->delete_meta_data('wgc-coupon-qrcode-margin');
-		$product->delete_meta_data('wgc-coupon-qrcode-code');
+		$product->update_meta_data("wgc-coupon-barcode-image-type", filter_input(INPUT_POST, 'wgc-coupon-barcode-image-type'));
+		$product->update_meta_data("wgc-coupon-barcode-width", filter_input(INPUT_POST, 'wgc-coupon-barcode-width'));
+		$product->update_meta_data("wgc-coupon-barcode-height", filter_input(INPUT_POST, 'wgc-coupon-barcode-height'));
+		break;
 	}
 
 //linked products

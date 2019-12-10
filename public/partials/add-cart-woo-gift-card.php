@@ -66,11 +66,13 @@ if ($product->is_virtual()):
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	<label for="wgc-receiver-name"><?php esc_html_e('Receiver name', 'woo-gift-card'); ?>&nbsp;<span class="required">*</span></label>
     	<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-name" id="wgc-receiver-name" value="<?php esc_attr_e(get_user_option("display_name")); ?>" required/>
+    	<span><em><?php esc_html_e('Will default to account name', 'woo-gift-card') ?></em></span>
         </p>
 
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	<label for="wgc-receiver-email"><?php esc_html_e('Receiver email', 'woo-gift-card'); ?>&nbsp;<span class="required">*</span></label>
     	<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-email" id="wgc-receiver-email" value="<?php esc_attr_e(get_user_option("user_email")); ?>" required/>
+    	<span><em><?php esc_html_e('Will default to account email', 'woo-gift-card') ?></em></span>
         </p>
 
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
@@ -84,6 +86,7 @@ if ($product->is_virtual()):
 	$templates = $product->get_meta('wgc-template');
 	if (!empty($templates)):
 	    ?>
+
 	    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		<label for="wgc-receiver-template"><?php esc_html_e('Gift Voucher template', 'woo-gift-card'); ?></label>
 		<?php foreach ($templates as $template) : ?>
@@ -93,13 +96,16 @@ if ($product->is_virtual()):
 	    </p>
 
 	    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+		<label for="wgc-event"><?php esc_html_e('Event Title', 'woo-gift-card'); ?></label>
+		<input class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-event" id="wgc-event"/>
+		<span><em><?php esc_html_e('Will default to template name if empty', 'woo-gift-card') ?></em></span>
+	    </p>
+
+	    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		<label for="wgc-receiver-image"><?php esc_html_e('Gift Voucher image', 'woo-gift-card'); ?></label>
 		<input type="file" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-image" id="wgc-receiver-image"/>
 	    </p>
 	<?php endif; ?>
-
-        <!--add calculate entered text code-->
-        <span><em><?php esc_html_e('Will default to account details if empty', 'woo-gift-card') ?></em></span>
 
     </fieldset>
 

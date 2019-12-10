@@ -19,7 +19,7 @@ class Woo_gift_card_Options {
 
 	register_setting('wgc-email', 'wgc-message-length', array('type' => 'integer', 'default' => 300));
 	register_setting('wgc-email', 'wgc-message-disclaimer');
-	register_setting('wgc-email', 'wgc-message-bcc');
+	//register_setting('wgc-email', 'wgc-message-bcc');
     }
 
     public function add_settings_section() {

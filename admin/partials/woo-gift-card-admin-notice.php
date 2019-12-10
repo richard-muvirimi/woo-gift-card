@@ -13,8 +13,8 @@
 defined('ABSPATH') || exit;
 ?>
 
-<div class="notice <?php echo get_transient('woo-gift-card-notice-class'); ?> is-dismissible">
+<div class="notice <?php echo get_transient('wgc-notice-class'); ?> is-dismissible">
     <p>
-	<?php echo get_transient('woo-gift-card-notice'); ?>
+	<?php echo get_transient('wgc-notice'); ?>
     </p>
 </div>

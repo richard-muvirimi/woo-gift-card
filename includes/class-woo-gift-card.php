@@ -249,10 +249,10 @@ class Woo_gift_card {
 	$plugin_rest = new Woo_gift_card_Rest($this->get_plugin_name(), $this->get_version());
 
 	//on init the rest api
-	$this->loader->add_action('rest_api_init', $plugin_rest, 'rest_api_init');
+	$this->loader->add_action('rest_api_init', $plugin_rest, 'register_routes');
 
 	//short codes
-	$this->loader->add_shortcode('woo-gift-card', $plugin_rest, 'wgc_shortcode');
+	$this->loader->add_shortcode('woogiftcard', $plugin_rest, 'wgc_shortcode');
     }
 
     /**

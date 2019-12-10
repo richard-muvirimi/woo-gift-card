@@ -73,4 +73,9 @@ function run_woo_gift_card() {
     $plugin->run();
 }
 
+// If the WC class doesn't exist
+// it means WooCommerce is not installed on the site
+// so do nothing
+//if (function_exists('WC')) {
 run_woo_gift_card();
+//}

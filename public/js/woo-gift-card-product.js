@@ -29,4 +29,20 @@
      * practising this, we should strive to set a better example in our own work.
      */
 
+    $(document).ready(function () {
+
+	$('textarea#wgc-receiver-message').keydown(set_text_count);
+	$('textarea#wgc-receiver-message').keyup(set_text_count);
+
+	function set_text_count() {
+	    let text = $('textarea#wgc-receiver-message').val();
+	    if (text.length === 0) {
+		$('span#wgc-message-length').text("");
+	    } else {
+		$('span#wgc-message-length').text(text.length + '/' + wgc_product.maxlength);
+	    }
+	}
+    });
+
+
 })(jQuery);

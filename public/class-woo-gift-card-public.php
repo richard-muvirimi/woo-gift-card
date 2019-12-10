@@ -156,7 +156,7 @@ class Woo_gift_card_Public {
     public function payment_complete($order_id) {
 	$order = wc_get_order($order_id);
 
-	//if already processed skip
+//if already processed skip
 	$posts = get_posts(array(
 	    'posts_per_page' => 1,
 	    'post_type' => 'woo-gift-card',
@@ -172,7 +172,7 @@ class Woo_gift_card_Public {
 		$product = $item->get_product();
 		if ($product->get_type() == 'woo-gift-card') {
 
-		    //if gift card create for tracking
+//if gift card create for tracking
 		    for ($i = 0; $i < $item->get_quantity(); $i++) {
 			$value = get_post_meta($product->id, '_gift_card_value', true);
 
@@ -197,54 +197,6 @@ class Woo_gift_card_Public {
     }
 
     /**
-     * Handle woo gift card template short codes
-     *
-     * @return void
-     */
-    public function wgc_shortcode($atts) {
-	//todo short codes
-	$attributes = shortcode_atts(array("attr" => "code"), $atts, 'woogiftcard');
-
-	switch ($attributes['attr']) {
-	    case "amount":
-
-		break;
-	    case "disclaimer":
-
-		break;
-	    case "event":
-
-		break;
-	    case "expiry-date":
-
-		break;
-	    case "featured-image":
-
-		break;
-	    case "from":
-
-		break;
-	    case "logo":
-
-		break;
-	    case "message":
-
-		break;
-	    case "order-id":
-
-		break;
-	    case "product-name":
-
-		break;
-	    case "to":
-
-		break;
-	    case "code":
-	    default:
-	}
-    }
-
-    /**
      * This function outputs the content displayed before the add to cart button
      * @global type $product
      */
@@ -254,6 +206,26 @@ class Woo_gift_card_Public {
 	if ($product->is_type('woo-gift-card')) {
 	    include_once plugin_dir_path(__DIR__) . "/public/partials/add-cart-woo-gift-card.php";
 	}
+    }
+
+    /**
+     * This function outputs the content displayed after the add to cart button
+     * @global type $product
+     */
+    public function woocommerce_after_add_to_cart_button() {
+	global $product;
+
+	if ($product->is_type('woo-gift-card')) {
+	    include_once plugin_dir_path(__DIR__) . "/public/partials/preview-woo-gift-card-button.php";
+	}
+    }
+
+    /**
+     *
+     * @param \WC_Cart $cart
+     */
+    public function woocommerce_before_calculate_totals($cart) {
+
     }
 
     /**
@@ -282,19 +254,19 @@ class Woo_gift_card_Public {
 		    $from = $product->get_meta('wgc-price-range-from');
 		    $to = $product->get_meta('wgc-price-range-to');
 
-		    //if values are the same treat as one value
+//if values are the same treat as one value
 		    if ($from !== $to) {
 
-			//if not single product page
+//if not single product page
 			if (!is_product()) {
 			    $display_price = wc_format_price_range(wc_get_price_to_display($product, array('price' => $from)) . $product->get_price_suffix($from), wc_get_price_to_display($product, array('price' => $to)) . $product->get_price_suffix($to));
 			}
 			break;
 		    }
-		//fall through if the prices are the same
+//fall through if the prices are the same
 		case 'user':
 
-		    //if not single product page
+//if not single product page
 		    if (!is_product()) {
 
 			if (is_null($from)) {

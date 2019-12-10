@@ -4,7 +4,12 @@
     $(document).ready(function () {
 
 	//hide all internal pricing tabs
-	$('.options_group.pricing').addClass('hide_if_woo-gift-card');
+	$('#general_product_data .options_group.pricing:has(p._regular_price_field)').addClass('hide_if_woo-gift-card');
+
+	//show tax fields if taxing enabled
+	$('#general_product_data .options_group:has(p._tax_status_field)').addClass('show_if_woo-gift-card');
+	$('#inventory_product_data .options_group:has(p._sold_individually_field)').addClass('show_if_woo-gift-card');
+	$('#inventory_product_data .options_group p').addClass('show_if_woo-gift-card');
 
 	//handle pricing type changes
 	$('#wgc-pricing').change(() => {
@@ -52,8 +57,9 @@
 	}).change();
 
 	function show_hide_panels() {
+
 	    var product_type = $('select#product-type').val();
-	    var is_thankyou = $('input#_thankyouvoucher:checked').length;
+	    var is_thankyou = $('input#_thankyouvoucher').prop('checked');
 	    // Hide/Show all with rules.
 	    var hide_classes = '.hide_if_thankyouvoucher';
 	    var show_classes = '.show_if_thankyouvoucher';
