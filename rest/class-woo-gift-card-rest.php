@@ -170,16 +170,19 @@ class Woo_gift_card_Rest {
 	$attributes = shortcode_atts(array("attr" => "code"), $atts, 'woogiftcard');
 	switch ($attributes['attr']) {
 	    case "amount":
+		$price = '';
 		switch ($product->get_meta("wgc-pricing")) {
 		    case "range":
 		    case 'user':
 		    case "selected":
-			$shortcode = $this->params['wgc-receiver-price'];
+			$price = $this->params['wgc-receiver-price'];
 			break;
 		    case 'fixed':
 		    default:
-			$shortcode = $product->get_price();
+			$price = $product->get_price();
 		}
+
+		$shortcode = wc_price(wc_get_price_to_display($product, array('price' => $price))) . $product->get_price_suffix($price);
 		break;
 	    case "disclaimer":
 		$shortcode = esc_html__(get_option('wgc-message-disclaimer', ''));
