@@ -254,22 +254,22 @@ class Woo_gift_card_Public {
 		    $from = $product->get_meta('wgc-price-range-from');
 		    $to = $product->get_meta('wgc-price-range-to');
 
-//if values are the same treat as one value
+		    //if values are the same treat as one value
 		    if ($from !== $to) {
 
-//if not single product page
+			//if not single product page
 			if (!is_product()) {
 			    $display_price = wc_format_price_range(wc_get_price_to_display($product, array('price' => $from)) . $product->get_price_suffix($from), wc_get_price_to_display($product, array('price' => $to)) . $product->get_price_suffix($to));
 			}
 			break;
 		    }
-//fall through if the prices are the same
+		//fall through if the prices are the same
 		case 'user':
 
-//if not single product page
+		    //if not single product page
 		    if (!is_product()) {
 
-			if (is_null($from)) {
+			if (!isset($from)) {
 			    $from = $product->get_meta('wgc-price-user');
 			}
 

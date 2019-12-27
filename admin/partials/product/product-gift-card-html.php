@@ -6,8 +6,6 @@
  */
 
 defined('ABSPATH') || exit;
-
-$meta = get_post_meta($thepostid);
 ?>
 
 <div class="options_group show_if_woo-gift-card hide_if_thankyouvoucher">
