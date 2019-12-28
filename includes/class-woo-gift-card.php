@@ -252,7 +252,10 @@ class Woo_gift_card {
 	$this->loader->add_action('rest_api_init', $plugin_rest, 'register_routes');
 
 	//short codes
-	$this->loader->add_shortcode('woogiftcard', $plugin_rest, 'wgc_shortcode');
+	$shortCodes = array_keys(WooGiftCardsUtils::getSupportedShortCodes());
+	foreach ($shortCodes as $shortCode) {
+	    $this->loader->add_shortcode('wgc-' . $shortCode, $plugin_rest, "template_shortcode");
+	}
     }
 
     /**

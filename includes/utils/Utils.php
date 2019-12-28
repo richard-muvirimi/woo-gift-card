@@ -22,7 +22,28 @@ if (!defined('ABSPATH')) {
  * @subpackage Woo_gift_card/includes/utils
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class Woo_gift_cards_utils {
+class WooGiftCardsUtils {
+
+    public static function getSupportedShortCodes() {
+	return array(
+	    "amount" => __("The monetary value of the gift voucher.", 'woo-gift-card'),
+	    "code" => __("The code to uniquely identify the gift voucher.", 'woo-gift-card'),
+	    "disclaimer" => __("Disclaimer message to show to the receipent of the gift voucher.", 'woo-gift-card'),
+	    "event" => __("What event is this gift voucher for.", 'woo-gift-card'),
+	    "expiry-date" => __("The expiry date of the gift voucher", 'woo-gift-card'),
+	    "featured-image" => __("An actual image to place on the gift voucher", 'woo-gift-card'),
+	    "from" => __("The sender of the gift voucher", 'woo-gift-card'),
+	    "logo" => __("This companies logo", 'woo-gift-card'),
+	    "message" => __("A message sent by customer to the recipient of the gift voucher", 'woo-gift-card'),
+	    "order-id" => __("The order id to use as reference of the gift voucher", 'woo-gift-card'),
+	    "product-name" => __("The product name of this gift voucher", 'woo-gift-card'),
+	    "to" => __("The recipient of the gift voucher", 'woo-gift-card')
+	);
+    }
+
+    public static function getShortCodePrefix() {
+	return "wgc-";
+    }
 
     /**
      * Gets a unique gift card key for each customer
@@ -46,7 +67,7 @@ class Woo_gift_cards_utils {
 	//if exists then redo
 	if (count($giftCards)) {
 
-	    return Woo_gift_cards_utils::get_unique_key($email);
+	    return WooGiftCardsUtils::get_unique_key($email);
 	}
 
 	return $key;

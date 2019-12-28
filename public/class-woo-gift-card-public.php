@@ -187,7 +187,7 @@ class Woo_gift_card_Public {
 				'woo-gift-card-product' => $product->id,
 				'woo-gift-card-balance' => $gift_card_value,
 				'woo-gift-card-value' => $gift_card_value,
-				'woo-gift-card-key' => Woo_gift_cards_utils::get_unique_key($order->get_user())
+				'woo-gift-card-key' => WooGiftCardsUtils::get_unique_key($order->get_user())
 			    )
 			));
 		    }

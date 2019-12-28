@@ -382,7 +382,7 @@ class Woo_gift_card_Admin {
 	    ));
 
 //get a unique key for user
-	    $key = Woo_gift_cards_utils::get_unique_key(get_user_by('id', $posts[0]['post_author']));
+	    $key = WooGiftCardsUtils::get_unique_key(get_user_by('id', $posts[0]['post_author']));
 	}
 
 	update_post_meta($post_id, 'wgc-value', sanitize_text_field($value));

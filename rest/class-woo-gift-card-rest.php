@@ -132,22 +132,24 @@ class Woo_gift_card_Rest {
 
 	ob_start();
 	?>
-	<!DOCTYPE html>;
+	<!DOCTYPE html>
 	<html class="no-js" <?php language_attributes(); ?>>
 	    <head>
 
 		<meta charset="<?php bloginfo('charset'); ?>">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" >
-		<style><?php esc_textarea(get_post_meta($template->ID, 'wgc-template-css', true)); ?></style>
+		<style><?php echo get_post_meta($template->ID, 'wgc-template-css', true); ?></style>
 
 	    </head>
 	    <body>
-		<?php esc_html_e(do_shortcode($template->post_content)); ?>
+		<?php echo do_shortcode($template->post_content); ?>
 	    </body>
 	</html>
 
 	<?php
-	return array("template" => ob_get_clean());
+	$output["template"] = ob_get_clean();
+
+	return new WP_REST_Response($output);
 	//amount
 	//to name
 	//to email
@@ -161,14 +163,13 @@ class Woo_gift_card_Rest {
      *
      * @return void
      */
-    public function wgc_shortcode($atts) {
+    public function template_shortcode($atts, $content = "", $shortcode) {
+	$shortcode = ltrim($shortcode, WooGiftCardsUtils::getShortCodePrefix());
+
 	$template = get_post($this->params['wgc-receiver-template']);
 	$product = wc_get_product($this->params['wgc-product']);
 
-	$shortcode = '';
-
-	$attributes = shortcode_atts(array("attr" => "code"), $atts, 'woogiftcard');
-	switch ($attributes['attr']) {
+	switch ($shortcode) {
 	    case "amount":
 		$price = '';
 		switch ($product->get_meta("wgc-pricing")) {
@@ -191,7 +192,7 @@ class Woo_gift_card_Rest {
 		$shortcode = $this->params['wgc-event'] ?: $template->post_title;
 		break;
 	    case "expiry-date":
-		$shortcode = 'todo caluculate date';
+		$shortcode = 'todo calculate date';
 		break;
 	    case "featured-image":
 
@@ -217,7 +218,7 @@ class Woo_gift_card_Rest {
 	}
 
 	if (empty($shortcode)) {
-	    $shortcode = '[' . strtoupper($attributes['attr']) . ']';
+	    $shortcode = '[' . strtoupper($shortcode) . ']';
 	}
 
 	return $shortcode;
