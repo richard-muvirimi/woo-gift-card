@@ -90,7 +90,10 @@ class Woo_gift_card_Rest {
 		),
 		'wgc-receiver-price' => array(
 		    'validate_callback' => function($param, $request, $key) {
-			return $param && is_numeric($param);
+			if ($param) {
+			    return is_numeric($param);
+			}
+			return true;
 		    }
 		),
 		'wgc-receiver-name' => array(

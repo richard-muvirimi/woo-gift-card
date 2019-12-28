@@ -102,7 +102,9 @@ class Woo_gift_card_Public {
 
 	    if ($product->is_type('woo-gift-card')) {
 		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/woo-gift-card-product.js', array('jquery'), $this->version, false);
-		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array("maxlength" => get_option('wgc-message-length')));
+		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array(
+		    "maxlength" => get_option('wgc-message-length'),
+		    "template_url" => get_rest_url()));
 	    }
 	}
     }
