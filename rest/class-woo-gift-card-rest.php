@@ -83,9 +83,8 @@ class Woo_gift_card_Rest {
 			if ($param) {
 			    //if set validate
 			    return $param && is_numeric($param) && !is_null(get_post($param));
-			} else {
-			    return true;
 			}
+			return false;
 		    }
 		),
 		'wgc-receiver-price' => array(
@@ -153,12 +152,6 @@ class Woo_gift_card_Rest {
 	$output["template"] = ob_get_clean();
 
 	return new WP_REST_Response($output);
-	//amount
-	//to name
-	//to email
-	//message
-	//template
-	//image
     }
 
     /**
@@ -198,7 +191,21 @@ class Woo_gift_card_Rest {
 		$shortcode = 'todo calculate date';
 		break;
 	    case "featured-image":
+		//if preview handle image upload if available
+		if ($_FILES['wgc-receiver-image']) {
 
+		    if (!function_exists("media_handle_upload")) {
+			require_once ABSPATH . "wp-admin/includes/image.php";
+			require_once ABSPATH . "wp-admin/includes/media.php";
+			require_once ABSPATH . "wp-admin/includes/file.php";
+		    }
+
+		    $upload = media_handle_upload('wgc-receiver-image', 0, array(), array(
+			"test_form" => false,
+			"unique_filename_callback" => array($this, "uniqueFileName")
+		    ));
+		    $shortcode = print_r($upload, true);
+		}
 		break;
 	    case "from":
 		$shortcode = get_user_option("display_name");
@@ -225,6 +232,10 @@ class Woo_gift_card_Rest {
 	}
 
 	return $shortcode;
+    }
+
+    public function uniqueFileName($dir, $name, $ext) {
+	return wp_generate_password(12, false) . $ext;
     }
 
 }

@@ -41,24 +41,33 @@
 
 	});
 
-	$("[name='wgc-preview']").click((e) => {
+	$("#wgc-preview").click((e) => {
 	    e.preventDefault();
 
-	    let data = JSON.parse('{"wgc-product":"' + $("[name='wgc-preview']").val() + '"}');
-
+	    let data = new FormData();
 	    let form = $("form.cart .wgc-options textarea,form.cart .wgc-options input:not(:file)");
-
 	    for (let i = 0; i < form.length; i++) {
 		let input = form.eq(i);
 
-		data[input.attr("id")] = input.val();
+		data.append(input.attr("id"), input.val());
 	    }
 
-	    $.post(window.wgc_product.template_url + "woo-gift-card/v1/template",
-		    data,
-		    function (data, status) {
-			alert("Data: " + data.template + "\nStatus: " + status);
-		    });
+	    data.append("wgc-product", $("#wgc-preview").val());
+	    data.append("wgc-receiver-image", $("#wgc-receiver-image")[0].files[0]);
+
+	    $.ajax({
+		url: window.wgc_product.template_url,
+		dataType: "json",
+		cache: false,
+		contentType: false,
+		processData: false,
+		data: data,
+		type: "POST",
+		success: function (response) {
+		    console.log(response);
+		    alert(response.template);
+		}
+	    });
 	});
     });
 

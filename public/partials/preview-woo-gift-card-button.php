@@ -12,4 +12,4 @@
  */
 ?>
 
-<button type="submit" id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview", 'woo-gift-card'); ?></button>
+<button type="submit" id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>

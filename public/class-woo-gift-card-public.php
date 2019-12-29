@@ -71,7 +71,18 @@ class Woo_gift_card_Public {
 	 * between the defined hooks and the functions defined in this
 	 * class.
 	 */
-	wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-gift-card-public.css', array(), $this->version, 'all');
+	wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-gift-card-public.css', array(), $this->version);
+
+	if (is_product()) {
+
+	    global $post;
+
+	    $product = wc_get_product($post);
+
+	    if ($product->is_type('woo-gift-card')) {
+		wp_enqueue_style($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'css/wgc-product-preview.css', array(), $this->version);
+	    }
+	}
     }
 
     /**
@@ -104,7 +115,7 @@ class Woo_gift_card_Public {
 		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/woo-gift-card-product.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array(
 		    "maxlength" => get_option('wgc-message-length'),
-		    "template_url" => get_rest_url()));
+		    "template_url" => get_rest_url(null, "woo-gift-card/v1/template")));
 	    }
 	}
     }
