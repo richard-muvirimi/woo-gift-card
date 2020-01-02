@@ -10,6 +10,20 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/public/partials
  */
+//wp_nonce_field('wgc-preview', 'wgc-preview-nonce');
 ?>
+
+<div class="wgc-preview-modal">
+    <div class="wgc-preview-content">
+	<div class="wgc-preview-modal-header">
+	    <span class="wgc-preview-modal-close" onclick="jQuery('form.cart .wgc-preview-modal').hide();">
+		&times;
+	    </span>
+	</div>
+	<div class="wgc-preview-modal-content">
+	    <iframe name="wgc-preview-frame" class="wgc-preview-frame"></iframe>
+	</div>
+    </div>
+</div>
 
 <button type="submit" id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>

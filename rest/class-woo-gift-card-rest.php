@@ -122,7 +122,7 @@ class Woo_gift_card_Rest {
 		)
 	    ),
 	    'permission_callback' => function () {
-		return true;
+		return true; // wp_verify_nonce($_POST['wgc-preview-nonce'], 'wgc-preview');
 	    }
 	));
     }
@@ -144,7 +144,7 @@ class Woo_gift_card_Rest {
 
 	    </head>
 	    <body>
-		<?php echo do_shortcode($template->post_content); ?>
+		<?php echo apply_filters('the_content', do_shortcode($template->post_content)); ?>
 	    </body>
 	</html>
 
@@ -159,8 +159,9 @@ class Woo_gift_card_Rest {
      *
      * @return void
      */
-    public function template_shortcode($atts, $content = "", $shortcode) {
-	$shortcode = ltrim($shortcode, WooGiftCardsUtils::getShortCodePrefix());
+    public function template_shortcode($atts, $content = "", $sCode) {
+	$shortcode = ltrim($sCode, WooGiftCardsUtils::getShortCodePrefix());
+	$html = "";
 
 	$template = get_post($this->params['wgc-receiver-template']);
 	$product = wc_get_product($this->params['wgc-product']);
@@ -179,20 +180,27 @@ class Woo_gift_card_Rest {
 			$price = $product->get_price();
 		}
 
-		$shortcode = wc_price(wc_get_price_to_display($product, array('price' => $price))) . $product->get_price_suffix($price);
+		$html = wc_price(wc_get_price_to_display($product, array('price' => $price))) . $product->get_price_suffix($price);
 		break;
 	    case "disclaimer":
-		$shortcode = esc_html__(get_option('wgc-message-disclaimer', ''));
+		$html = esc_html__(get_option('wgc-message-disclaimer', ''));
 		break;
 	    case "event":
-		$shortcode = $this->params['wgc-event'] ?: $template->post_title;
+		$html = $this->params['wgc-event'] ?: $template->post_title;
 		break;
 	    case "expiry-date":
-		$shortcode = 'todo calculate date';
+		$html = 'todo calculate date';
 		break;
 	    case "featured-image":
 		//if preview handle image upload if available
-		if ($_FILES['wgc-receiver-image']) {
+		$imgAttr = shortcode_atts(array(
+		    "width" => "",
+		    "height" => "",
+		    "alt" => ""
+			), $atts, $sCode);
+
+		if (isset($_FILES['wgc-receiver-image'])) {
+
 
 		    if (!function_exists("media_handle_upload")) {
 			require_once ABSPATH . "wp-admin/includes/image.php";
@@ -204,38 +212,76 @@ class Woo_gift_card_Rest {
 			"test_form" => false,
 			"unique_filename_callback" => array($this, "uniqueFileName")
 		    ));
-		    $shortcode = print_r($upload, true);
+		    $html = print_r($_FILES['wgc-receiver-image'], true);
+		} elseif (has_post_thumbnail($template)) {
+
+		    $img = wp_get_attachment_image_src(get_post_thumbnail_id($template), "full");
+
+		    $attributes = shortcode_atts(array(
+			"width" => $img[1] . "px",
+			"height" => $img[2] . "px",
+			"alt" => ""
+			    ), $atts, $sCode);
+		    extract($attributes);
+
+		    //extract img size attributes
+		    $style = array(
+			"background" => "url('" . $img[0] . "')",
+			"background-repeat" => "no-repeat",
+			"background-size" => $width . " " . $height
+		    );
+
+		    $style = implode(" ", array_map(array($this, "implodeStyle"), array_keys($style), array_values($style)));
+
+		    $attributes = compact("width", "height", "style", "alt");
+		    $attributes["id"] = $sCode;
+
+		    $html = '<div ';
+
+		    $html .= implode(" ", array_map(array($this, "implodeAttr"), array_keys($attributes), array_values($attributes)));
+
+		    $html .= "/>";
+		} else {
+		    $html = "test";
 		}
 		break;
 	    case "from":
-		$shortcode = get_user_option("display_name");
+		$html = get_user_option("display_name");
 		break;
 	    case "logo":
 		break;
 	    case "message":
-		$shortcode = $this->params['wgc-receiver-message'];
+		$html = $this->params['wgc-receiver-message'];
 		break;
 	    case "order-id":
 		break;
 	    case "product-name":
-		$shortcode = $product->get_name();
+		$html = $product->get_name();
 		break;
 	    case "to":
-		$shortcode = $this->params['wgc-receiver-email'];
+		$html = $this->params['wgc-receiver-email'];
 		break;
 	    case "code":
 		break;
 	}
 
-	if (empty($shortcode)) {
-	    $shortcode = '[' . strtoupper($shortcode) . ']';
+	if (empty($html)) {
+	    $html = '[' . strtoupper($shortcode) . ']';
 	}
 
-	return $shortcode;
+	return $html;
     }
 
     public function uniqueFileName($dir, $name, $ext) {
 	return wp_generate_password(12, false) . $ext;
+    }
+
+    private function implodeAttr($attribute, $value) {
+	return $attribute . '="' . $value . '"';
+    }
+
+    private function implodeStyle($attribute, $value) {
+	return $attribute . ':' . $value . ';';
     }
 
 }

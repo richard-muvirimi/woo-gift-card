@@ -20,7 +20,7 @@ $pricing = $product->get_meta("wgc-pricing");
 	?>
 
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-            <label for="wgc-receiver-price"><?php echo sprintf(esc_html('Gift Voucher Price (%s)', 'woo-gift-card'), get_woocommerce_currency_symbol()); ?>&nbsp;<span class="required">*</span></label>
+    	<label for="wgc-receiver-price"><?php echo sprintf(esc_html('Gift Voucher Price (%s)', 'woo-gift-card'), get_woocommerce_currency_symbol()); ?>&nbsp;<span class="required">*</span></label>
 	    <?php
 	    switch ($product->get_meta("wgc-pricing")) :
 		case "range":
@@ -63,27 +63,27 @@ $pricing = $product->get_meta("wgc-pricing");
 	?>
 
         <fieldset>
-            <legend><?php esc_html_e("Details to customise the gift voucher", 'woo-gift-card'); ?></legend>
+    	<legend><?php esc_html_e("Details to customise the gift voucher", 'woo-gift-card'); ?></legend>
 
-            <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+    	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-receiver-name"><?php esc_html_e('Receiver name', 'woo-gift-card'); ?>&nbsp;<span class="required">*</span></label>
     	    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-name" id="wgc-receiver-name" value="<?php esc_attr_e(get_user_option("display_name")); ?>" required/>
     	    <span><em><?php esc_html_e('Will default to account name', 'woo-gift-card') ?></em></span>
-            </p>
+    	</p>
 
-            <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+    	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-receiver-email"><?php esc_html_e('Receiver email', 'woo-gift-card'); ?>&nbsp;<span class="required">*</span></label>
     	    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-email" id="wgc-receiver-email" value="<?php esc_attr_e(get_user_option("user_email")); ?>" required/>
     	    <span><em><?php esc_html_e('Will default to account email', 'woo-gift-card') ?></em></span>
-            </p>
+    	</p>
 
-            <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+    	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-receiver-message"><?php esc_html_e('Receiver message', 'woo-gift-card'); ?></label>
     	    <textarea class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-message" id="wgc-receiver-message" rows="3" maxlength="<?php esc_attr_e(get_option('wgc-message-length')) ?>"></textarea>
     	    <span id="wgc-message-length"></span>
-            </p>
+    	</p>
 
-            <!-- if has template file-->
+    	<!-- if has template file-->
 	    <?php
 	    $templates = $product->get_meta('wgc-template');
 	    if (!empty($templates)):
@@ -105,7 +105,7 @@ $pricing = $product->get_meta("wgc-pricing");
 
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		    <label for="wgc-receiver-image"><?php esc_html_e('Gift Voucher image', 'woo-gift-card'); ?></label>
-		    <input type="file" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-image" id="wgc-receiver-image"/>
+		    <input type="file" accept="image/*" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-image" id="wgc-receiver-image"/>
 		</p>
 	    <?php endif; ?>
 
