@@ -31,7 +31,6 @@ class WooGiftCardsUtils {
 	    "disclaimer" => __("Disclaimer message to show to the receipent of the gift voucher.", 'woo-gift-card'),
 	    "event" => __("What event is this gift voucher for.", 'woo-gift-card'),
 	    "expiry-date" => __("The expiry date of the gift voucher", 'woo-gift-card'),
-	    "featured-image" => __("An actual image to place on the gift voucher", 'woo-gift-card'),
 	    "from" => __("The sender of the gift voucher", 'woo-gift-card'),
 	    "logo" => __("This companies logo", 'woo-gift-card'),
 	    "message" => __("A message sent by customer to the recipient of the gift voucher", 'woo-gift-card'),

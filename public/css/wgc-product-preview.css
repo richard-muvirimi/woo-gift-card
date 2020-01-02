@@ -6,7 +6,11 @@ form.cart #wgc-preview {
     margin-top: 5px;
 }
 
-form.cart .wgc-preview-modal {
+.wgc-preview-body {
+    background-repeat: no-repeat;
+}
+
+form.cart  .wgc-preview-modal {
     display: none;
     position: fixed;
     z-index: 1;

@@ -143,7 +143,7 @@ class Woo_gift_card_Rest {
 		<style><?php echo get_post_meta($template->ID, 'wgc-template-css', true); ?></style>
 
 	    </head>
-	    <body>
+	    <body class="wgc-preview-body" style="<?php echo $this->getBackGroundImageStyle() ?>">
 		<?php echo apply_filters('the_content', do_shortcode($template->post_content)); ?>
 	    </body>
 	</html>
@@ -152,6 +152,24 @@ class Woo_gift_card_Rest {
 	$output["template"] = ob_get_clean();
 
 	return new WP_REST_Response($output);
+    }
+
+    private function getBackGroundImageStyle() {
+	$template = get_post($this->params['wgc-receiver-template']);
+	$style = "";
+
+	//if we have a background image we want to show it
+	if (has_post_thumbnail($template)) {
+	    $thumb_id = get_post_thumbnail_id($template);
+
+	    $style .= "background-repeat: no-repeat;";
+	    $style .= "background-attachment: local;";
+	    // $style .= "background-size: 100% 100%;";
+	    // $style .= "width: 100%;";
+	    //$style .= "height: 100%;";
+	    $style .= "background-image: url('" . esc_attr(wp_get_attachment_image_url($thumb_id, "full")) . "');";
+	}
+	return $style;
     }
 
     /**
@@ -190,60 +208,6 @@ class Woo_gift_card_Rest {
 		break;
 	    case "expiry-date":
 		$html = 'todo calculate date';
-		break;
-	    case "featured-image":
-		//if preview handle image upload if available
-		$imgAttr = shortcode_atts(array(
-		    "width" => "",
-		    "height" => "",
-		    "alt" => ""
-			), $atts, $sCode);
-
-		if (isset($_FILES['wgc-receiver-image'])) {
-
-
-		    if (!function_exists("media_handle_upload")) {
-			require_once ABSPATH . "wp-admin/includes/image.php";
-			require_once ABSPATH . "wp-admin/includes/media.php";
-			require_once ABSPATH . "wp-admin/includes/file.php";
-		    }
-
-		    $upload = media_handle_upload('wgc-receiver-image', 0, array(), array(
-			"test_form" => false,
-			"unique_filename_callback" => array($this, "uniqueFileName")
-		    ));
-		    $html = print_r($_FILES['wgc-receiver-image'], true);
-		} elseif (has_post_thumbnail($template)) {
-
-		    $img = wp_get_attachment_image_src(get_post_thumbnail_id($template), "full");
-
-		    $attributes = shortcode_atts(array(
-			"width" => $img[1] . "px",
-			"height" => $img[2] . "px",
-			"alt" => ""
-			    ), $atts, $sCode);
-		    extract($attributes);
-
-		    //extract img size attributes
-		    $style = array(
-			"background" => "url('" . $img[0] . "')",
-			"background-repeat" => "no-repeat",
-			"background-size" => $width . " " . $height
-		    );
-
-		    $style = implode(" ", array_map(array($this, "implodeStyle"), array_keys($style), array_values($style)));
-
-		    $attributes = compact("width", "height", "style", "alt");
-		    $attributes["id"] = $sCode;
-
-		    $html = '<div ';
-
-		    $html .= implode(" ", array_map(array($this, "implodeAttr"), array_keys($attributes), array_values($attributes)));
-
-		    $html .= "/>";
-		} else {
-		    $html = "test";
-		}
 		break;
 	    case "from":
 		$html = get_user_option("display_name");
