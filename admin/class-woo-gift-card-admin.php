@@ -186,7 +186,11 @@ class Woo_gift_card_Admin {
 		'insert_into_item' => __('Insert into Gift Voucher Template profile', 'woo-gift-card'),
 		'uploaded_to_this_item' => __('Uploaded to Gift Voucher Template profile', 'woo-gift-card'),
 		'menu_name' => __('Gift Voucher Templates', 'woo-gift-card'),
-		'name_admin_bar' => __('Gift Voucher Templates', 'woo-gift-card')
+		'name_admin_bar' => __('Gift Voucher Templates', 'woo-gift-card'),
+		'featured_image' => __('Template Background Image', 'woo-gift-card'),
+		'set_featured_image' => __('Set template background image', 'woo-gift-card'),
+		'remove_featured_image' => __('Remove template background image', 'woo-gift-card'),
+		'use_featured_image' => __('Use as template background image', 'woo-gift-card'),
 	    ),
 	    'rewrite' => array('slug' => 'wgc-template', 'gift-card-template'),
 	    'supports' => array('title', 'author', 'editor', 'revisions', 'thumbnail'),
