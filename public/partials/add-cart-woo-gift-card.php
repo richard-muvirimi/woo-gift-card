@@ -90,21 +90,37 @@ $pricing = $product->get_meta("wgc-pricing");
 		?>
 
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-		    <label for="wgc-receiver-template"><?php esc_html_e('Gift Voucher template', 'woo-gift-card'); ?></label>
-		    <?php foreach ($templates as $template) : ?>
-	    	    <input type="radio" class="woocommerce-Input woocommerce-Input--text input-radio" name="wgc-receiver-template" id="wgc-receiver-template" value="<?php esc_attr_e($template); ?>" required <?php checked($templates[0], $template); ?>/>
-	    	    <span><?php esc_html_e(get_post_field('post_title', $template)) ?></span>
-		    <?php endforeach; ?>
-		</p>
-
-		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		    <label for="wgc-event"><?php esc_html_e('Event Title', 'woo-gift-card'); ?></label>
-		    <input class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-event" id="wgc-event"/>
+		    <input class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-event" id="wgc-event" />
 		    <span><em><?php esc_html_e('Will default to template name if empty', 'woo-gift-card') ?></em></span>
 		</p>
 
+		<div class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+		    <span><?php esc_html_e('Gift Voucher Template', 'woo-gift-card'); ?></span>
+		    <div class="wgc-flex-container">
+			<?php foreach ($templates as $template) : ?>
+	    		<div>
+	    		    <input type="radio" class="woocommerce-Input woocommerce-Input--text input-radio" name="wgc-receiver-template" id="wgc-template-<?php esc_attr_e($template) ?>" value="<?php esc_attr_e($template); ?>" required <?php checked($templates[0], $template); ?>/>
+	    		    <label for="wgc-template-<?php esc_attr_e($template) ?>">
+	    			<span>
+					<?php esc_html_e(get_post_field('post_title', $template)) ?>
+	    			</span>
+				    <?php
+				    if (has_post_thumbnail($template)) {
+					$thumbnail_id = get_post_thumbnail_id($template);
+					echo wp_get_attachment_image($thumbnail_id);
+				    } else {
+					echo $product->get_image("thumbnail");
+				    }
+				    ?>
+	    		    </label>
+	    		</div>
+			<?php endforeach; ?>
+		    </div>
+		</div>
+
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-		    <label for="wgc-receiver-image"><?php esc_html_e('Gift Voucher image', 'woo-gift-card'); ?></label>
+		    <label for="wgc-receiver-image"><?php esc_html_e('Gift Voucher background image', 'woo-gift-card'); ?></label>
 		    <input type="file" accept="image/*" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-image" id="wgc-receiver-image"/>
 		</p>
 	    <?php endif; ?>
@@ -142,27 +158,3 @@ $pricing = $product->get_meta("wgc-pricing");
      */
     ?>
 </div>
-
-  <!--<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
-    <label for="account_first_name"><?php esc_html_e('First name', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
-    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_first_name" id="account_first_name" autocomplete="given-name" value="<?php esc_attr_e($user->first_name); ?>" />
-</p>
-<p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last">
-    <label for="account_last_name"><?php esc_html_e('Last name', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
-    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_last_name" id="account_last_name" autocomplete="family-name" value="<?php esc_attr_e($user->last_name); ?>" />
-</p>
-<div class="clear"></div>
-
-<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-    <label for="account_display_name"><?php esc_html_e('Display name', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
-    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_display_name" id="account_display_name" value="<?php esc_attr_e($user->display_name); ?>" /> <span><em><?php esc_html_e('This will be how your name will be displayed in the account section and in reviews', 'woocommerce'); ?></em></span>
-</p>
-<div class="clear"></div>
-
-<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-    <label for="account_email"><?php esc_html_e('Email address', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
-    <input type="email" class="woocommerce-Input woocommerce-Input--email input-text" name="account_email" id="account_email" autocomplete="email" value="<?php esc_attr_e($user->user_email); ?>" />
-</p>-->
-
-
-

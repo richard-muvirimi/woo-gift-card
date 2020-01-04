@@ -3,17 +3,26 @@
  */
 
 form.cart #wgc-preview {
-    margin-top: 5px;
+
 }
 
-.wgc-preview-body {
-    background-repeat: no-repeat;
+form.cart .wgc-flex-container{
+    display: flex;
+    flex-wrap: wrap;
 }
 
-form.cart  .wgc-preview-modal {
+form.cart .wgc-flex-container div{
+    margin: 5px;
+}
+
+form.cart .wgc-flex-container div label{
+    display: inline;
+}
+
+form.cart .wgc-preview-modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 10000000;
     left: 0;
     top: 0;
     width: 100%;
@@ -23,13 +32,19 @@ form.cart  .wgc-preview-modal {
     background-color: rgba(0,0,0,0.4);
 }
 
+form.cart .wgc-preview-modal-header::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
 form.cart .wgc-preview-content{
     background-color: #fefefe;
-    margin: 15% auto;
-    height: calc(100vh - 30%);
+    margin: 5%;
+    height: calc(100vh - 15%);
     padding: 5px;
     border: 1px solid #888;
-    width: 80%;
+    width: calc(100vw - 10%);
     position: relative;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     animation-name: wgc-animate-top;

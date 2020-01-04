@@ -147,6 +147,11 @@ class Woo_gift_card {
 	 */
 	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/phpqrcode/phpqrcode.php';
 
+	/**
+	 * Template dimensions
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/template/dimension.php';
+
 	$this->loader = new Woo_gift_card_Loader();
     }
 
@@ -235,6 +240,9 @@ class Woo_gift_card {
 
 	//filter product meta and tax query
 	$this->loader->add_filter('woocommerce_product_query_tax_query', $plugin_admin, 'woocommerce_product_query_tax_query', 10, 2);
+
+	//filter template background image properties
+	$this->loader->add_filter('admin_post_thumbnail_html', $plugin_admin, 'admin_post_thumbnail_html', 10, 2);
     }
 
     /**

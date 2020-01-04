@@ -1,6 +1,5 @@
 (function ($) {
     'use strict';
-
     /**
      * All of the code for your public-facing JavaScript source
      * should reside in this file.
@@ -40,30 +39,20 @@
 	    }
 
 	});
-
 	$("#wgc-preview").click((e) => {
 	    e.preventDefault();
-
-	    let data = new FormData();
-	    let form = $("form.cart .wgc-options textarea,form.cart .wgc-options input:not(:file)");
-	    for (let i = 0; i < form.length; i++) {
-		let input = form.eq(i);
-
-		data.append(input.attr("id"), input.val());
-	    }
-
-	    data.append("wgc-product", $("#wgc-preview").val());
-
-	    if ($("#wgc-receiver-image")[0].files.length > 0) {
-		data.append("wgc-receiver-image", $("#wgc-receiver-image")[0].files[0]);
-	    }
-
+	    let data = getFormData();
 	    //clear iframe
 	    $("form.cart .wgc-preview-frame:visible").attr("srcdoc", "");
 	    $("form.cart .wgc-preview-modal").show();
+	    getTemplate(window.wgc_product.template_url, data, function (response) {
+		$("form.cart .wgc-preview-frame:visible").attr("srcdoc", response.template);
+	    });
+	});
+	function getTemplate(url, data, success) {
 
 	    $.ajax({
-		url: window.wgc_product.template_url,
+		url: url,
 		dataType: "json",
 		cache: false,
 		contentType: false,
@@ -71,52 +60,25 @@
 		data: data,
 		type: "POST",
 		success: function (response) {
-
-		    $("form.cart .wgc-preview-frame:visible").attr("srcdoc", response.template);
-
-
-		    //console.log(response);
-		    //alert(response.template);
+		    success(response);
 		}
 	    });
-	});
+	}
 
-//	$("#wgc-preview").click((e) => {
-//	    e.preventDefault();
-//
-//	    let data = new FormData();
-//	    let form = $("form.cart .wgc-options textarea,form.cart .wgc-options input:not(:file)");
-//	    for (let i = 0; i < form.length; i++) {
-//		let input = form.eq(i);
-//
-//		data.append(input.attr("id"), input.val());
-//	    }
-//
-//	    data.append("wgc-product", $("#wgc-preview").val());
-//	    data.append("wgc-receiver-image", $("#wgc-receiver-image")[0].files[0]);
-//
-//	    //clear iframe
-//	    $("form.cart .wgc-preview-frame:visible").attr("srcdoc", "");
-//	    $("form.cart .wgc-preview-modal").show();
-//
-//	    $.ajax({
-//		url: window.wgc_product.template_url,
-//		dataType: "json",
-//		cache: false,
-//		contentType: false,
-//		processData: false,
-//		data: data,
-//		type: "POST",
-//		success: function (response) {
-//
-//		    $("form.cart .wgc-preview-frame:visible").attr("srcdoc", response.template);
-//
-//
-//		    //console.log(response);
-//		    //alert(response.template);
-//		}
-//	    });
-//	});
+	function getFormData() {
+	    let data = new FormData();
+	    let form = $("form.cart .wgc-options textarea,form.cart .wgc-options input:not(:file)");
+	    for (let i = 0; i < form.length; i++) {
+		let input = form.eq(i);
+		data.append(input.attr("name"), input.val());
+	    }
+
+	    data.append("wgc-product", $("#wgc-preview").val());
+	    if ($("#wgc-receiver-image")[0].files.length > 0) {
+		data.append("wgc-receiver-image", $("#wgc-receiver-image")[0].files[0]);
+	    }
+
+	    return data;
+	}
     });
-
 })(jQuery);

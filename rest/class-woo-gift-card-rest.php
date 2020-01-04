@@ -162,8 +162,8 @@ class Woo_gift_card_Rest {
 	if (has_post_thumbnail($template)) {
 	    $thumb_id = get_post_thumbnail_id($template);
 
-	    $style .= "background-repeat: no-repeat;";
-	    $style .= "background-attachment: local;";
+	    //$style .= "background-repeat: no-repeat;";
+	    //$style .= "background-attachment: local;";
 	    // $style .= "background-size: 100% 100%;";
 	    // $style .= "width: 100%;";
 	    //$style .= "height: 100%;";
@@ -204,7 +204,7 @@ class Woo_gift_card_Rest {
 		$html = esc_html__(get_option('wgc-message-disclaimer', ''));
 		break;
 	    case "event":
-		$html = $this->params['wgc-event'] ?: $template->post_title;
+		$html = $this->params['wgc-event'] ?: apply_filters('the_title', $template->post_title);
 		break;
 	    case "expiry-date":
 		$html = 'todo calculate date';

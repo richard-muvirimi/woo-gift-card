@@ -650,9 +650,15 @@ class Woo_gift_card_Admin {
     public function save_wgc_template($post_id) {
 
 	if (current_user_can('manage_woocommerce')) {
-	    $css = isset($_POST['wgc-template-css']) ? wc_clean(wp_unslash($_POST['wgc-template-css'])) : "";
 
-	    update_post_meta($post_id, 'wgc-template-css', $css);
+	    $fields = array("wgc-template-css", "wgc-template-dimension", "wgc-template-orientation");
+
+	    foreach ($fields as $field) {
+		$value = isset($_POST[$field]) ? wc_clean(wp_unslash($_POST[$field])) : "";
+		update_post_meta($post_id, $field, $value);
+	    }
+
+	    //todo save screen shot
 	}
     }
 
@@ -734,6 +740,39 @@ class Woo_gift_card_Admin {
 	}
 
 	return $tax_query;
+    }
+
+    /**
+     * Add content at the end of template background metabox
+     *
+     * @param string $content
+     * @param int $post_id
+     */
+    public function admin_post_thumbnail_html($content, $post_id) {
+	if (get_post_type($post_id) == "wgc-template") {
+
+	    //template sizes
+	    $content .= "<p>";
+	    $content .= '<Label for="wgc-template-dimension">' . __("Template Size", "woo-gift-card") . '</label>';
+	    $content .= '<select size="5" name="wgc-template-dimension" id="wgc-template-dimension">';
+
+	    $dimensions = WooGiftCardsUtils::getTemplateSizes();
+	    foreach ($dimensions as $dimension) {
+		$content .= '<option value="' . esc_attr($dimension->get_id()) . '" ' . selected($dimension->get_id(), get_post_meta($post_id, "wgc-template-dimension", true) ?: "a4", false) . '>' . esc_html($dimension->get_fullname()) . '</option>';
+	    }
+	    $content .= '</select></p>';
+
+	    //image orientation
+	    $content .= "<p>";
+	    $content .= '<select name="wgc-template-orientation" id="wgc-template-orientation">';
+
+	    $orientations = array("landscape", "potrait");
+	    foreach ($orientations as $orientation) {
+		$content .= '<option value="' . esc_attr($orientation) . '" ' . selected($orientation, get_post_meta($post_id, "wgc-template-orientation", true) ?: $orientation[0], false) . '>' . esc_html(ucfirst($orientation)) . '</option>';
+	    }
+	    $content .= '</select></p>';
+	}
+	return $content;
     }
 
 }
