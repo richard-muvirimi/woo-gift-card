@@ -152,6 +152,12 @@ class Woo_gift_card {
 	 */
 	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/template/dimension.php';
 
+	/**
+	 * Pdf libraries
+	 * @filesource https://github.com/dompdf/dompdf/releases
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/dompdf/autoload.inc.php';
+
 	$this->loader = new Woo_gift_card_Loader();
     }
 
