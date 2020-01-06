@@ -42,11 +42,13 @@
 	$("#wgc-preview").click((e) => {
 	    e.preventDefault();
 	    let data = getFormData();
+
 	    //clear iframe
-	    $("form.cart .wgc-preview-frame:visible").attr("srcdoc", "");
+	    $("form.cart .wgc-preview-content:visible").html("");
+
 	    $("form.cart .wgc-preview-modal").show();
 	    getTemplate(window.wgc_product.template_url, data, function (response) {
-		$("form.cart .wgc-preview-frame:visible").attr("srcdoc", response.template);
+		$("form.cart .wgc-preview-content:visible").html(response);
 	    });
 	});
 	function getTemplate(url, data, success) {

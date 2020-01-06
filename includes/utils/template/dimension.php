@@ -62,12 +62,24 @@ class Dimension {
 	return $this->unit;
     }
 
-    /**
-     * template size
-     *
-     * background image placing
-     * center, top, left, tile,  etc
-     *
-     *
-     */
+    public function getSizeInPoints() {
+	$value1 = $this->get_value1();
+	$value2 = $this->get_value2();
+
+	switch ($this->get_unit()) {
+	    case "mm":
+		$value1 *= 2.835;
+		$value2 *= 2.835;
+		break;
+	    case "in":
+		$value1 *= 75;
+		$value2 *= 75;
+		break;
+	    case "pt":
+	    default :
+	}
+
+	return array(0, 0, min($value1, $value2), max($value1, $value2));
+    }
+
 }

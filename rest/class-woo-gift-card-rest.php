@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The rest api functionality of the plugin.
  *
@@ -18,6 +19,8 @@
  * @subpackage Woo_gift_card/rest
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
+use Dompdf\Dompdf;
+
 class Woo_gift_card_Rest {
 
     /**
@@ -64,9 +67,9 @@ class Woo_gift_card_Rest {
      * On initialize the rest api
      */
     public function register_routes() {
-	register_rest_route('woo-gift-card/v1', '/template', array(
+	register_rest_route('woo-gift-card/v1', '/template/preview', array(
 	    'methods' => WP_REST_Server::CREATABLE,
-	    'callback' => array($this, 'process_product_preview'),
+	    'callback' => array($this, 'ajax_template_iframe'),
 	    'args' => array(
 		'required' => true,
 		'wgc-product' => array(
@@ -82,7 +85,7 @@ class Woo_gift_card_Rest {
 		    'validate_callback' => function($param, $request, $key) {
 			if ($param) {
 			    //if set validate
-			    return $param && is_numeric($param) && !is_null(get_post($param));
+			    return $param && is_numeric($param) && is_object(get_post($param));
 			}
 			return false;
 		    }
@@ -125,33 +128,105 @@ class Woo_gift_card_Rest {
 		return true; // wp_verify_nonce($_POST['wgc-preview-nonce'], 'wgc-preview');
 	    }
 	));
+
+	register_rest_route('woo-gift-card/v1', '/pdf', array(
+	    'methods' => WP_REST_Server::READABLE,
+	    'callback' => array($this, 'ajax_pdf'),
+	    'args' => array(
+		'required' => true,
+		'wgc-file' => array(
+		    'validate_callback' => function($param, $request, $key) {
+			if ($param) {
+			    //if set validate
+
+			    return true;
+			    //return $param && is_numeric($param) && is_object(get_post($param));
+			}
+			return false;
+		    }
+		)
+	    ),
+	    'permission_callback' => function () {
+		return true; // wp_verify_nonce($_POST['wgc-preview-nonce'], 'wgc-preview');
+	    }
+	));
     }
 
-    public function process_product_preview(WP_REST_Request $request) {
+    public function ajax_pdf(WP_REST_Request $request) {
 
-	$this->params = $request->get_params();
-	$template = get_post($request->get_param('wgc-receiver-template'));
+	$this->params = get_transient($request->get_param("wgc-file"));
 
-	ob_start();
-	?>
-	<!DOCTYPE html>
-	<html class="no-js" <?php language_attributes(); ?>>
-	    <head>
+	$template = get_post($this->params['wgc-receiver-template']);
 
-		<meta charset="<?php bloginfo('charset'); ?>">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" >
-		<style><?php echo get_post_meta($template->ID, 'wgc-template-css', true); ?></style>
+	$html = $this->get_pdf($template);
 
-	    </head>
-	    <body class="wgc-preview-body" style="<?php echo $this->getBackGroundImageStyle() ?>">
-		<?php echo apply_filters('the_content', do_shortcode($template->post_content)); ?>
-	    </body>
-	</html>
+	$header = array(
+	    "Attachment" => 0
+		// "Content-type" => 'text/plain', //"application/pdf",
+		//"Content-Length" => strlen($html->output())
+	);
+	ob_clean();
+	$html->stream("document.pdf", $header);
+	return;
+	//return new WP_REST_Response(trim($html->output(array('compress' => 0)), '"'), 200, $header);
+    }
 
-	<?php
-	$output["template"] = ob_get_clean();
+    public function ajax_template_iframe(WP_REST_Request $request) {
 
-	return new WP_REST_Response($output);
+	//generate a pdf and save to a transient to retrive later
+	$rand_name = "";
+	do {
+	    $rand_name = sanitize_file_name(wp_generate_password(12, false)) . ".pdf";
+	} while (get_transient($rand_name));
+
+	set_transient($rand_name, $request->get_params(), 3600);
+
+	$src = add_query_arg(array(
+	    "file" => urlencode(get_rest_url(null, 'woo-gift-card/v1/pdf?wgc-file=') . $rand_name)
+		), plugin_dir_url(__DIR__) . 'includes/libs/pdfjs-2.2/web/viewer.html'
+	);
+
+	$html = '<iframe name="wgc-preview-frame" class="wgc-preview-frame" src="' . $src . '"></iframe>';
+
+	return new WP_REST_Response($html);
+    }
+
+    private function get_pdf($template) {
+	//generate a temporary pdf
+	$options = array(
+	    'isHtml5ParserEnabled' => true,
+	    "tempDir" => get_temp_dir()
+	);
+
+	$dompdf = new Dompdf($options);
+
+	$dompdf->loadHtml($this->get_html($template));
+
+	//paper size and orientation
+	$dimension = WooGiftCardsUtils::getTemplateDimension(get_post_meta($template->ID, "wgc-template-dimension", true));
+
+	$dompdf->setPaper($dimension->getSizeInPoints(), get_post_meta($template->ID, "wgc-template-orientation", true));
+
+	$dompdf->render();
+
+	// return the generated PDF
+	return $dompdf;
+    }
+
+    private function get_html($template) {
+
+	$html = '<!DOCTYPE html>';
+	$html .= '<html class="no-js" ' . language_attributes() . '>';
+	$html .= '<head>';
+	$html .= '<meta charset="' . bloginfo('charset') . '">';
+	$html .= '<meta name="viewport" content="width=device-width, initial-scale=1.0" >';
+	$html .= '<style>' . get_post_meta($template->ID, 'wgc-template-css', true) . '</style>';
+	$html .= '</head>';
+	$html .= '<body class="wgc-preview-body" style="' . $this->getBackGroundImageStyle() . '">';
+	$html .= apply_filters('the_content', do_shortcode($template->post_content));
+	$html .= '</body></html>';
+
+	return $html;
     }
 
     private function getBackGroundImageStyle() {
@@ -182,29 +257,31 @@ class Woo_gift_card_Rest {
 	$html = "";
 
 	$template = get_post($this->params['wgc-receiver-template']);
-	$product = wc_get_product($this->params['wgc-product']);
+	$product = isset($this->params['wgc-product']) ? wc_get_product($this->params['wgc-product']) : null;
 
 	switch ($shortcode) {
 	    case "amount":
-		$price = '';
-		switch ($product->get_meta("wgc-pricing")) {
-		    case "range":
-		    case 'user':
-		    case "selected":
-			$price = $this->params['wgc-receiver-price'];
-			break;
-		    case 'fixed':
-		    default:
-			$price = $product->get_price();
-		}
+		if ($product && is_object($product)) {
+		    $price = '';
+		    switch ($product->get_meta("wgc-pricing")) {
+			case "range":
+			case 'user':
+			case "selected":
+			    $price = $this->params['wgc-receiver-price'];
+			    break;
+			case 'fixed':
+			default:
+			    $price = $product->get_price();
+		    }
 
-		$html = wc_price(wc_get_price_to_display($product, array('price' => $price))) . $product->get_price_suffix($price);
+		    $html = wc_price(wc_get_price_to_display($product, array('price' => $price))) . $product->get_price_suffix($price);
+		}
 		break;
 	    case "disclaimer":
 		$html = esc_html__(get_option('wgc-message-disclaimer', ''));
 		break;
 	    case "event":
-		$html = $this->params['wgc-event'] ?: apply_filters('the_title', $template->post_title);
+		$html = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : apply_filters('the_title', $template->post_title);
 		break;
 	    case "expiry-date":
 		$html = 'todo calculate date';
@@ -220,7 +297,9 @@ class Woo_gift_card_Rest {
 	    case "order-id":
 		break;
 	    case "product-name":
-		$html = $product->get_name();
+		if ($product && is_object($product)) {
+		    $html = $product->get_name();
+		}
 		break;
 	    case "to":
 		$html = $this->params['wgc-receiver-email'];

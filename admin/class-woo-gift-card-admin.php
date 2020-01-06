@@ -20,6 +20,8 @@
  * @subpackage Woo_gift_card/admin
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
+use Dompdf\Dompdf;
+
 class Woo_gift_card_Admin {
 
     /**
@@ -658,7 +660,55 @@ class Woo_gift_card_Admin {
 		update_post_meta($post_id, $field, $value);
 	    }
 
-	    //todo save screen shot
+	    //save screen shot
+	    $curl_options = array(
+		CURLOPT_URL => get_rest_url(null, "woo-gift-card/v1/template"),
+		CURLOPT_POST => true,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_POSTFIELDS => array(
+		    'wgc-receiver-template' => $post_id
+		)
+	    );
+
+	    $ch = curl_init();
+	    curl_setopt_array($ch, $curl_options);
+
+	    $result = curl_exec($ch);
+	    curl_close($ch);
+
+	    //convert to json
+	    $json = json_decode($result, true);
+
+	    if (isset($json["template"])) {
+		//all is well
+		$options = array(
+		    'isHtml5ParserEnabled' => true,
+		    "tempDir" => get_temp_dir()
+		);
+
+		$dompdf = new Dompdf($options);
+
+		$dompdf->loadHtml($json["template"]);
+
+		//paper size and orientation
+		$dimension = WooGiftCardsUtils::getTemplateDimension(get_post_meta($post_id, "wgc-template-dimension", true));
+
+		$dompdf->setPaper($dimension->getSizeInPoints(), get_post_meta($post_id, "wgc-template-orientation", true));
+
+		$dompdf->render();
+
+// Output the generated PDF to Browser
+		//$dompdf->stream();
+
+		$im = new Imagick("*");
+		$im->setResolution($dimension->get_value1(), $dimension->get_value2());     //set the resolution of the resulting jpg
+		$im->readimageblob($dompdf->output());
+//$im->readImage('file.pdf[0]');    //[0] for the first page
+		$im->setImageFormat('jpg');
+		header('Content-Type: image/jpeg');
+		echo $im;
+		//die($dompdf->outputHtml());
+	    }
 	}
     }
 

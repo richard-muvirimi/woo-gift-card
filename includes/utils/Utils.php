@@ -25,8 +25,24 @@ if (!defined('ABSPATH')) {
 class WooGiftCardsUtils {
 
     /**
+     * Get a particular dimension
+     * @param string $id
+     * @return Dimension
+     */
+    public static function getTemplateDimension($id) {
+	$dimensions = WooGiftCardsUtils::getTemplateSizes();
+	foreach ($dimensions as $dimension) {
+	    if ($dimension->get_id() === strtolower($id)) {
+		return $dimension;
+	    }
+	}
+	//default to a4 if not found
+	return WooGiftCardsUtils::getTemplateDimension("a4");
+    }
+
+    /**
      * Get an array list of all available dimensions
-     * @return array|dimension
+     * @return array|Dimension
      */
     public static function getTemplateSizes() {
 	$dimensions = array();
@@ -34,7 +50,7 @@ class WooGiftCardsUtils {
 	$dimensions[] = new Dimension("us_letter", "US Letter", 8.5, 11, "in");
 	$dimensions[] = new Dimension("us_legal", "US Legal", 8.5, 14, "in");
 	$dimensions[] = new Dimension("us_executive", "US Executive", 7.2, 10.5, "in");
-	$dimensions[] = new Dimension("cse", "CSE", round(462 / 2.835), round(649 / 2.835), "mm"); //pt => mm
+	$dimensions[] = new Dimension("cse", "CSE", 462, 649, "pt");
 	$dimensions[] = new Dimension("us_#10_envelope", "US #10 Envelope", 4.1, 9.5, "in");
 	$dimensions[] = new Dimension("dl_envelope", "DL Envelope", 110, 220, "mm");
 	$dimensions[] = new Dimension("ledger/tabloid", "Ledger/Tabloid", 11, 17, "in");
