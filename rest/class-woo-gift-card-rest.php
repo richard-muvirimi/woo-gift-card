@@ -161,30 +161,33 @@ class Woo_gift_card_Rest {
 	$path = $request->get_param('file');
 
 	//search for correct content type mime
-	$this->ext = pathinfo(basename($path), PATHINFO_EXTENSION);
-	$mimes = array_filter(wp_get_mime_types(), function($mime) {
-	    return in_array($this->ext, explode("|", $mime));
-	}, ARRAY_FILTER_USE_KEY);
+	$mime = $this->get_mime_type_for_file($path);
 
 	ob_start();
 	//set relevant content type for document
-	if (empty($mimes)) {
-	    header('Content-Type: text/plain');
-	} else {
-	    foreach ($mimes as $mime) {
-		header('Content-Type: ' . $mime);
-	    }
-	}
+	header('Content-Type: ' . $mime);
 
 	include_once plugin_dir_path(__DIR__) . 'includes/libs/pdfjs-2.2/web/' . $path;
 
 	/**
 	 * Before outputting the requested file
 	 */
-	echo apply_filters("wgc_ajax_template_file", ob_get_clean(), basename($path), $mimes);
+	echo apply_filters("wgc_ajax_template_file", ob_get_clean(), basename($path), $mime);
 
 	//wp set content type to json so, we have to exit here to prevent that
 	exit();
+    }
+
+    private function get_mime_type_for_file($file) {
+	$ext = pathinfo(basename($file), PATHINFO_EXTENSION);
+
+	foreach (wp_get_mime_types() as $key => $value) {
+	    if (in_array($ext, explode("|", $key))) {
+		return $value;
+	    }
+	}
+
+	return $this->get_mime_type_for_file("file.txt");
     }
 
     /**
@@ -255,7 +258,7 @@ class Woo_gift_card_Rest {
 	$html .= '<meta name = "viewport" content = "width=device-width, initial-scale=1.0" >';
 	$html .= '<style>' . get_post_meta($template->ID, 'wgc-template-css', true) . '</style>';
 	$html .= '</head>';
-	$html .= '<body class = "wgc-preview-body" style = "' . $this->getBackGroundImageStyle() . '">';
+	$html .= '<body class = "wgc-preview-body" style="' . $this->getBackGroundImageStyle() . '">';
 	$html .= apply_filters('the_content', do_shortcode($template->post_content));
 	$html .= '</body></html>';
 
@@ -270,13 +273,15 @@ class Woo_gift_card_Rest {
 	if (has_post_thumbnail($template)) {
 	    $thumb_id = get_post_thumbnail_id($template);
 
-	    //$style .= "background-repeat: no-repeat;";
-	    //$style .= "background-attachment: local;";
-	    // $style .= "background-size: 100% 100%;";
-	    // $style .= "width: 100%;";
-	    //$style .= "height: 100%;";
-	    $style .= "background-image: url('" . esc_attr(wp_get_attachment_image_url($thumb_id, "full")) . "');";
+	    $path = wp_get_attachment_image_url($thumb_id, "full");
+	    $data = file_get_contents($path);
+
+	    $mime = $this->get_mime_type_for_file($path);
+	    $base64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+
+	    $style .= "background-image: url('" . $base64 . "');";
 	}
+
 	return $style;
     }
 
