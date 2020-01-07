@@ -270,6 +270,9 @@ class Woo_gift_card {
 	foreach ($shortCodes as $shortCode) {
 	    $this->loader->add_shortcode('wgc-' . $shortCode, $plugin_rest, "template_shortcode");
 	}
+
+	//filter requested file content
+	$this->loader->add_filter("wgc_ajax_template_file", $plugin_rest, "wgc_ajax_template_file", 10, 3);
     }
 
     /**

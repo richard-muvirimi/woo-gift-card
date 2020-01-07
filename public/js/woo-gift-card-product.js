@@ -39,18 +39,27 @@
 	    }
 
 	});
+
 	$("#wgc-preview").click((e) => {
 	    e.preventDefault();
-	    let data = getFormData();
 
-	    //clear iframe
-	    $("form.cart .wgc-preview-content:visible").html("");
+	    let form = $("form.cart:first")[0];
+	    form.action = window.wgc_product.pdf_template_url;
+	    form.target = "wgc-preview-frame";
+
+	    //product id
+	    let product_input = document.createElement("input");
+	    product_input.type = "hidden";
+	    product_input.name = "wgc-product";
+	    product_input.value = $("#wgc-preview").val();
+	    form.appendChild(product_input);
+
+	    form.submit();
 
 	    $("form.cart .wgc-preview-modal").show();
-	    getTemplate(window.wgc_product.template_url, data, function (response) {
-		$("form.cart .wgc-preview-content:visible").html(response);
-	    });
+
 	});
+
 	function getTemplate(url, data, success) {
 
 	    $.ajax({
@@ -82,5 +91,7 @@
 
 	    return data;
 	}
-    });
-})(jQuery);
+    }
+    );
+}
+)(jQuery);

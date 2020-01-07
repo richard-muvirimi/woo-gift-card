@@ -67,7 +67,7 @@ class Woo_gift_card_Rest {
      * On initialize the rest api
      */
     public function register_routes() {
-	register_rest_route('woo-gift-card/v1', '/template/preview', array(
+	register_rest_route('woo-gift-card/v1', '/template', array(
 	    'methods' => WP_REST_Server::CREATABLE,
 	    'callback' => array($this, 'ajax_template_iframe'),
 	    'args' => array(
@@ -129,66 +129,99 @@ class Woo_gift_card_Rest {
 	    }
 	));
 
-	register_rest_route('woo-gift-card/v1', '/pdf', array(
+	/**
+	 * Below routes hide the actual file paths. will return the content instead
+	 */
+	$regex = "(?P<file>(\\\\?([^\\/]*[\\/])*)([^\\/]+)$)";
+
+	register_rest_route('woo-gift-card/v1', '/template/' . $regex, array(
 	    'methods' => WP_REST_Server::READABLE,
-	    'callback' => array($this, 'ajax_pdf'),
+	    'callback' => array($this, 'ajax_get_file'),
 	    'args' => array(
 		'required' => true,
-		'wgc-file' => array(
-		    'validate_callback' => function($param, $request, $key) {
-			if ($param) {
-			    //if set validate
+	    ),
+	));
 
-			    return true;
-			    //return $param && is_numeric($param) && is_object(get_post($param));
-			}
-			return false;
+	register_rest_route('woo-gift-card/v1', '/' . $regex, array(
+	    'methods' => WP_REST_Server::READABLE,
+	    'callback' => array($this, 'ajax_get_file'),
+	    'args' => array(
+		'required' => true,
+		'file' => array(
+		    'sanitize_callback' => function($param, $request, $key) {
+			return "../" . $param;
 		    }
 		)
 	    ),
-	    'permission_callback' => function () {
-		return true; // wp_verify_nonce($_POST['wgc-preview-nonce'], 'wgc-preview');
-	    }
 	));
     }
 
-    public function ajax_pdf(WP_REST_Request $request) {
+    public function ajax_get_file(WP_REST_Request $request) {
 
-	$this->params = get_transient($request->get_param("wgc-file"));
+	$path = $request->get_param('file');
 
-	$template = get_post($this->params['wgc-receiver-template']);
+	//search for correct content type mime
+	$this->ext = pathinfo(basename($path), PATHINFO_EXTENSION);
+	$mimes = array_filter(wp_get_mime_types(), function($mime) {
+	    return in_array($this->ext, explode("|", $mime));
+	}, ARRAY_FILTER_USE_KEY);
 
-	$html = $this->get_pdf($template);
+	ob_start();
+	//set relevant content type for document
+	if (empty($mimes)) {
+	    header('Content-Type: text/plain');
+	} else {
+	    foreach ($mimes as $mime) {
+		header('Content-Type: ' . $mime);
+	    }
+	}
 
-	$header = array(
-	    "Attachment" => 0
-		// "Content-type" => 'text/plain', //"application/pdf",
-		//"Content-Length" => strlen($html->output())
-	);
-	ob_clean();
-	$html->stream("document.pdf", $header);
-	return;
-	//return new WP_REST_Response(trim($html->output(array('compress' => 0)), '"'), 200, $header);
+	include_once plugin_dir_path(__DIR__) . 'includes/libs/pdfjs-2.2/web/' . $path;
+
+	/**
+	 * Before outputting the requested file
+	 */
+	echo apply_filters("wgc_ajax_template_file", ob_get_clean(), basename($path), $mimes);
+
+	//wp set content type to json so, we have to exit here to prevent that
+	exit();
+    }
+
+    /**
+     * Filter the content of a file before it's output
+     *
+     * @param string $content
+     * @param string $path
+     * @param array $mimes
+     */
+    public function wgc_ajax_template_file($content, $path, $mimes) {
+	if (basename($path) == "viewer.html") {
+
+	    $template = get_post($this->params['wgc-receiver-template']);
+
+	    $pdf = $this->get_pdf($template);
+	    //Get an instance of WP_Scripts or create new;
+	    $wp_scripts = wp_scripts();
+
+	    //Get the script by registered handler name
+	    $jquery = $wp_scripts->registered["jquery-core"];
+
+	    $script = "";
+	    $script .= '<script> window.wgc_pdf_base64 = "' . esc_js(base64_encode($pdf->output())) . '";</script>';
+	    $script .= '<script src="' . get_site_url(null, $jquery->src) . '"></script>';
+	    $script .= '<script src="' . plugin_dir_url(__DIR__) . 'public/js/woo-gift-card-template.js' . '"></script></head>';
+
+	    $content = str_replace("</head>", $script, $content);
+	}
+	return $content;
     }
 
     public function ajax_template_iframe(WP_REST_Request $request) {
 
-	//generate a pdf and save to a transient to retrive later
-	$rand_name = "";
-	do {
-	    $rand_name = sanitize_file_name(wp_generate_password(12, false)) . ".pdf";
-	} while (get_transient($rand_name));
+	$request->set_param("file", "viewer.html");
+	$this->params = $request->get_params();
 
-	set_transient($rand_name, $request->get_params(), 3600);
-
-	$src = add_query_arg(array(
-	    "file" => urlencode(get_rest_url(null, 'woo-gift-card/v1/pdf?wgc-file=') . $rand_name)
-		), plugin_dir_url(__DIR__) . 'includes/libs/pdfjs-2.2/web/viewer.html'
-	);
-
-	$html = '<iframe name="wgc-preview-frame" class="wgc-preview-frame" src="' . $src . '"></iframe>';
-
-	return new WP_REST_Response($html);
+	$this->ajax_get_file($request);
     }
 
     private function get_pdf($template) {
@@ -201,7 +234,7 @@ class Woo_gift_card_Rest {
 	$dompdf = new Dompdf($options);
 
 	$dompdf->loadHtml($this->get_html($template));
-
+	//$dompdf->loadHtml("test"); //$this->get_html($template));
 	//paper size and orientation
 	$dimension = WooGiftCardsUtils::getTemplateDimension(get_post_meta($template->ID, "wgc-template-dimension", true));
 
@@ -216,13 +249,13 @@ class Woo_gift_card_Rest {
     private function get_html($template) {
 
 	$html = '<!DOCTYPE html>';
-	$html .= '<html class="no-js" ' . language_attributes() . '>';
+	$html .= '<html class = "no-js" ' . get_language_attributes() . '>';
 	$html .= '<head>';
-	$html .= '<meta charset="' . bloginfo('charset') . '">';
-	$html .= '<meta name="viewport" content="width=device-width, initial-scale=1.0" >';
+	$html .= '<meta charset = "' . get_bloginfo('charset') . '">';
+	$html .= '<meta name = "viewport" content = "width=device-width, initial-scale=1.0" >';
 	$html .= '<style>' . get_post_meta($template->ID, 'wgc-template-css', true) . '</style>';
 	$html .= '</head>';
-	$html .= '<body class="wgc-preview-body" style="' . $this->getBackGroundImageStyle() . '">';
+	$html .= '<body class = "wgc-preview-body" style = "' . $this->getBackGroundImageStyle() . '">';
 	$html .= apply_filters('the_content', do_shortcode($template->post_content));
 	$html .= '</body></html>';
 
@@ -320,11 +353,12 @@ class Woo_gift_card_Rest {
     }
 
     private function implodeAttr($attribute, $value) {
-	return $attribute . '="' . $value . '"';
+	return $attribute . ' = "' . $value . '"';
     }
 
     private function implodeStyle($attribute, $value) {
-	return $attribute . ':' . $value . ';';
+	return $attribute . ':' . $value . ';
+	';
     }
 
 }
