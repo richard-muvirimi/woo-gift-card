@@ -268,19 +268,26 @@ class Woo_gift_card_Rest {
     private function getBackGroundImageStyle() {
 	$template = get_post($this->params['wgc-receiver-template']);
 	$style = "";
+	$path = "";
 
 	//if we have a background image we want to show it
-	if (has_post_thumbnail($template)) {
+	if ($_FILES['wgc-receiver-image']) {
+	    $file = $_FILES['wgc-receiver-image'];
+	    $path = $file['tmp_name'];
+	} elseif (has_post_thumbnail($template)) {
 	    $thumb_id = get_post_thumbnail_id($template);
 
 	    $path = wp_get_attachment_image_url($thumb_id, "full");
-	    $data = file_get_contents($path);
-
-	    $mime = $this->get_mime_type_for_file($path);
-	    $base64 = 'data:' . $mime . ';base64,' . base64_encode($data);
-
-	    $style .= "background-image: url('" . $base64 . "');";
+	} else {
+	    return $style;
 	}
+
+	$data = file_get_contents($path);
+
+	$mime = $this->get_mime_type_for_file($path);
+	$base64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+
+	$style .= "background-image: url('" . $base64 . "');";
 
 	return $style;
     }
