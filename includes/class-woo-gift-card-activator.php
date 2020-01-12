@@ -47,6 +47,10 @@ class Woo_gift_card_Activator {
 	if (empty($templates)) {
 	    //we do not have any templates and this is probably the first install so import them
 	}
+
+	//template dimensions
+	require_once plugin_dir_path(__DIR__) . 'includes/install/Dimensions.php';
+	DimensionsInstaller::Install();
     }
 
 }

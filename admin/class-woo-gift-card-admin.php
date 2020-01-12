@@ -170,6 +170,7 @@ class Woo_gift_card_Admin {
 	    'show_in_menu' => current_user_can('manage_woocommerce') ? 'wgc-template' : true,
 	    'exclude_from_search' => true,
 	    'hierarchical' => false,
+	    "description" => __("Woo Gift Card Template post type", 'woo-gift-card'),
 	    'label' => __('Voucher Templates', 'woo-gift-card'),
 	    'labels' => array(
 		'name' => __('Gift Voucher Templates', 'woo-gift-card'),
@@ -200,6 +201,45 @@ class Woo_gift_card_Admin {
 	    'description' => __('Templates for gift cards that will be sent to customers', 'woo-gift-card'),
 	    'register_meta_box_cb' => array($this, 'register_template_meta_box')
 	));
+
+	register_taxonomy("wgc-template-dimension", "wgc-template", array(
+	    'labels' => array(
+		'name' => _x('Template Sizes', 'woo-gift-card'),
+		'singular_name' => _x('Template Size', 'woo-gift-card'),
+		'search_items' => __('Search Template Sizes', 'woo-gift-card'),
+		'popular_items' => __('Popular Template Sizes', 'woo-gift-card'),
+		'all_items' => __('All Template Sizes', 'woo-gift-card'),
+		'parent_item' => null,
+		'parent_item_colon' => null,
+		'edit_item' => __('Edit Template Size', 'woo-gift-card'),
+		'view_item' => __('View Template Size', 'woo-gift-card'),
+		'update_item' => __('Update Template Size', 'woo-gift-card'),
+		'add_new_item' => __('Add New Template Size', 'woo-gift-card'),
+		'new_item_name' => __('New Template Size Name', 'woo-gift-card'),
+		'separate_items_with_commas' => null,
+		'add_or_remove_items' => __('Add or remove template sizes', 'woo-gift-card'),
+		'choose_from_most_used' => null,
+		'not_found' => __('No Template Sizes found.', 'woo-gift-card'),
+		'no_terms' => __('No Template Sizes', 'woo-gift-card'),
+		'items_list_navigation' => __('Template Sizes list navigation', 'woo-gift-card'),
+		'items_list' => __('Template Sizes list', 'woo-gift-card'),
+		/* translators: Tab heading when selecting from the most used terms. */
+		'most_used' => _x('Most Used', 'woo-gift-card'),
+		'back_to_items' => __('&larr; Back to Template Sizes', 'woo-gift-card')
+	    ),
+	    "description" => __("Woo Gift Card Template sizes", 'woo-gift-card'),
+	    "public" => false,
+	    "show_admin_column" => true,
+	));
+
+	$sizes = get_terms(array(
+	    "taxonomy" => "wgc-template-dimension"
+	));
+
+	if (empty($sizes)) {
+	    require_once plugin_dir_path(__DIR__) . 'includes/install/Dimensions.php';
+	    DimensionsInstaller::Install();
+	}
     }
 
     /**
@@ -402,7 +442,7 @@ class Woo_gift_card_Admin {
      * @return void
      */
     public function woocommerce_loaded() {
-	require_once plugin_dir_path(__DIR__) . "/includes/product/type/gift-card.php";
+	require_once plugin_dir_path(__DIR__) . "/includes/model/product/gift-card.php";
     }
 
     /**
@@ -653,62 +693,15 @@ class Woo_gift_card_Admin {
 
 	if (current_user_can('manage_woocommerce')) {
 
-	    $fields = array("wgc-template-css", "wgc-template-dimension", "wgc-template-orientation");
+	    $fields = array("wgc-template-css", "wgc-template-orientation");
 
 	    foreach ($fields as $field) {
 		$value = isset($_POST[$field]) ? wc_clean(wp_unslash($_POST[$field])) : "";
 		update_post_meta($post_id, $field, $value);
 	    }
 
-	    //save screen shot
-	    $curl_options = array(
-		CURLOPT_URL => get_rest_url(null, "woo-gift-card/v1/template"),
-		CURLOPT_POST => true,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_POSTFIELDS => array(
-		    'wgc-receiver-template' => $post_id
-		)
-	    );
-
-	    $ch = curl_init();
-	    curl_setopt_array($ch, $curl_options);
-
-	    $result = curl_exec($ch);
-	    curl_close($ch);
-
-	    //convert to json
-	    $json = json_decode($result, true);
-
-	    if (isset($json["template"])) {
-		//all is well
-		$options = array(
-		    'isHtml5ParserEnabled' => true,
-		    "tempDir" => get_temp_dir()
-		);
-
-		$dompdf = new Dompdf($options);
-
-		$dompdf->loadHtml($json["template"]);
-
-		//paper size and orientation
-		$dimension = WooGiftCardsUtils::getTemplateDimension(get_post_meta($post_id, "wgc-template-dimension", true));
-
-		$dompdf->setPaper($dimension->getSizeInPoints(), get_post_meta($post_id, "wgc-template-orientation", true));
-
-		$dompdf->render();
-
-// Output the generated PDF to Browser
-		//$dompdf->stream();
-
-		$im = new Imagick("*");
-		$im->setResolution($dimension->get_value1(), $dimension->get_value2());     //set the resolution of the resulting jpg
-		$im->readimageblob($dompdf->output());
-//$im->readImage('file.pdf[0]');    //[0] for the first page
-		$im->setImageFormat('jpg');
-		header('Content-Type: image/jpeg');
-		echo $im;
-		//die($dompdf->outputHtml());
-	    }
+	    $size = isset($_POST[$field]) ? wc_clean(wp_unslash($_POST["wgc-template-dimension"])) : "a4";
+	    wp_set_post_terms($post_id, compact("size"), "wgc-template-dimension");
 	}
     }
 
@@ -803,12 +796,41 @@ class Woo_gift_card_Admin {
 
 	    //template sizes
 	    $content .= "<p>";
-	    $content .= '<Label for="wgc-template-dimension">' . __("Template Size", "woo-gift-card") . '</label>';
+	    $content .= '<label for="wgc-template-dimension">' . __("Template Size", "woo-gift-card") . '</label>';
 	    $content .= '<select size="5" name="wgc-template-dimension" id="wgc-template-dimension">';
 
-	    $dimensions = WooGiftCardsUtils::getTemplateSizes();
+	    //get all terms for templates
+	    $dimensions = get_terms(array(
+		"taxonomy" => "wgc-template-dimension",
+		"hide_empty" => false,
+		"orderby" => "term_id"
+	    ));
+
+	    //get selected term for post
+	    $post_dimension = wp_get_post_terms($post_id, "wgc-template-dimension");
+
+	    $orientation = get_post_meta($post_id, "wgc-template-orientation", true);
+
 	    foreach ($dimensions as $dimension) {
-		$content .= '<option value="' . esc_attr($dimension->get_id()) . '" ' . selected($dimension->get_id(), get_post_meta($post_id, "wgc-template-dimension", true) ?: "a4", false) . '>' . esc_html($dimension->get_fullname()) . '</option>';
+		$title = $dimension->name . " (";
+		$meta = get_term_meta($dimension->term_id);
+
+		$val1 = $meta["wgc-dimension-value1"][0];
+		$val2 = $meta["wgc-dimension-value2"][0];
+
+		if ($val1 && $val2) {
+		    if ($orientation === "landscape") {
+			$title .= max(array($val1, $val2)) . " * " . min(array($val1, $val2));
+		    } else {
+			$title .= min(array($val1, $val2)) . " * " . max(array($val1, $val2));
+		    }
+		    $title .= " " . $meta["wgc-dimension-unit"][0];
+		} else {
+		    $title .= __("From Image", "woo-gift-card");
+		}
+		$title .= ")";
+
+		$content .= '<option value="' . esc_attr($dimension->slug) . '" ' . selected($dimension->slug, $post_dimension[0]->slug ?: "a4", false) . '>' . esc_html($title) . '</option>';
 	    }
 	    $content .= '</select></p>';
 

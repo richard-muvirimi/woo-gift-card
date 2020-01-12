@@ -136,27 +136,33 @@ class Woo_gift_card {
 	/**
 	 * The bar code generating classes
 	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGenerator.php';
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorPNG.php';
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorSVG.php';
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorJPG.php';
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorHTML.php';
+	if (!class_exists("Picqer\Barcode\BarcodeGenerator")) {
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGenerator.php';
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorPNG.php';
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorSVG.php';
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorJPG.php';
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorHTML.php';
+	}
 
 	/**
 	 * Qrcode generating classes
 	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/phpqrcode/phpqrcode.php';
+	if (!class_exists("QRtools")) {
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/phpqrcode/phpqrcode.php';
+	}
 
 	/**
 	 * Template dimensions
 	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/template/dimension.php';
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/model/dimension.php';
 
 	/**
 	 * Pdf libraries
 	 * @filesource https://github.com/dompdf/dompdf/releases
 	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/dompdf/autoload.inc.php';
+	if (!class_exists("Dompdf")) {
+	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/dompdf/autoload.inc.php';
+	}
 
 	$this->loader = new Woo_gift_card_Loader();
     }

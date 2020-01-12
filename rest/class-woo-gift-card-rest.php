@@ -271,7 +271,7 @@ class Woo_gift_card_Rest {
 	$path = "";
 
 	//if we have a background image we want to show it
-	if ($_FILES['wgc-receiver-image']) {
+	if ($_FILES['wgc-receiver-image']['size']) {
 	    $file = $_FILES['wgc-receiver-image'];
 	    $path = $file['tmp_name'];
 	} elseif (has_post_thumbnail($template)) {

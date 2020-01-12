@@ -100,7 +100,7 @@ $pricing = $product->get_meta("wgc-pricing");
 		    <div class="wgc-flex-container">
 			<?php foreach ($templates as $template) : ?>
 	    		<div>
-	    		    <input type="radio" class="woocommerce-Input woocommerce-Input--text input-radio" name="wgc-receiver-template" id="wgc-template-<?php esc_attr_e($template) ?>" value="<?php esc_attr_e($template); ?>" required <?php checked($templates[0], $template); ?>/>
+	    		    <input type="radio" class="woocommerce-Input woocommerce-Input--text input-radio" name="wgc-receiver-template" id="wgc-template-<?php esc_attr_e($template) ?>" value="<?php esc_attr_e($template); ?>" required <?php checked($templates[1], $template); ?>/>
 	    		    <label for="wgc-template-<?php esc_attr_e($template) ?>">
 	    			<span>
 					<?php esc_html_e(get_post_field('post_title', $template)) ?>
@@ -110,9 +110,35 @@ $pricing = $product->get_meta("wgc-pricing");
 					$thumbnail_id = get_post_thumbnail_id($template);
 					echo wp_get_attachment_image($thumbnail_id);
 				    } else {
-					echo $product->get_image("thumbnail");
+					echo $product->get_image("thumbnail", "thumbnail");
 				    }
 				    ?>
+	    			<sub>
+					<?php
+					$orientation = get_post_meta($template, "wgc-template-orientation", true);
+					$dimension = wp_get_post_terms($template, "wgc-template-dimension")[0];
+
+					$title = $dimension->name . " (";
+					$meta = get_term_meta($dimension->term_id);
+
+					$val1 = $meta["wgc-dimension-value1"][0];
+					$val2 = $meta["wgc-dimension-value2"][0];
+
+					if ($val1 && $val2) {
+					    if ($orientation === "landscape") {
+						$title .= max(array($val1, $val2)) . " * " . min(array($val1, $val2));
+					    } else {
+						$title .= min(array($val1, $val2)) . " * " . max(array($val1, $val2));
+					    }
+					    $title .= " " . $meta["wgc-dimension-unit"][0];
+					} else {
+					    $title .= __("From Image", "woo-gift-card");
+					}
+					$title .= ")";
+
+					esc_html_e($title);
+					?>
+	    			</sub>
 	    		    </label>
 	    		</div>
 			<?php endforeach; ?>

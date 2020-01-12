@@ -39,7 +39,10 @@ class Dimension {
 	$min = min($this->get_value1(), $this->get_value2());
 	$max = max($this->get_value1(), $this->get_value2());
 
-	return $this->name . " (" . $min . " * " . $max . " " . $this->get_unit() . ")";
+	if ($min > 0 || $max > 0) {
+	    return $this->name . " (" . $min . " * " . $max . " " . $this->get_unit() . ")";
+	}
+	return $this->name . " (" . __("From Image", "woo-gift-card") . ")";
     }
 
     public function get_value1() {
