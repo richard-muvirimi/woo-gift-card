@@ -7,7 +7,7 @@ form.cart #wgc-preview {
 }
 
 form.cart .wgc-flex-container{
-    display: flex;
+    display: grid;
     flex-wrap: wrap;
 }
 

@@ -265,6 +265,47 @@ class Woo_gift_card_Rest {
 	return $html;
     }
 
+    /**
+     * If this request is a get pdf request
+     * @return boolean
+     */
+    private function is_pdf_request() {
+	return isset($this->params);
+    }
+
+    /**
+     * Filter the post content images and set to base 64
+     *
+     * @param string $content
+     * @return string
+     */
+    public function the_content($content) {
+	if ($this->is_pdf_request()) {
+
+	    //match all image paths to replace
+	    $paths = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $content, $matches) ? $matches[1] : array();
+
+	    foreach ($paths as $path) {
+		$content = str_replace($path, $this->pathToBase64($path), $content);
+	    }
+	}
+
+	return $content;
+    }
+
+    /**
+     * Convert a file to a base 64 string
+     *
+     * @param string $path
+     * @return string
+     */
+    private function pathToBase64($path) {
+	$data = file_get_contents($path);
+
+	$mime = $this->get_mime_type_for_file($path);
+	return 'data:' . $mime . ';base64,' . base64_encode($data);
+    }
+
     private function getBackGroundImageStyle() {
 	$template = get_post($this->params['wgc-receiver-template']);
 	$style = "";
@@ -282,12 +323,7 @@ class Woo_gift_card_Rest {
 	    return $style;
 	}
 
-	$data = file_get_contents($path);
-
-	$mime = $this->get_mime_type_for_file($path);
-	$base64 = 'data:' . $mime . ';base64,' . base64_encode($data);
-
-	$style .= "background-image: url('" . $base64 . "');";
+	$style .= "background-image: url('" . $this->pathToBase64($path) . "');";
 
 	return $style;
     }
