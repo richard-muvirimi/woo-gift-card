@@ -811,6 +811,15 @@ class Woo_gift_card_Admin {
 
 	    $orientation = get_post_meta($post_id, "wgc-template-orientation", true);
 
+	    //get most popular term to set as default
+	    $terms = get_terms(array(
+		"taxonomy" => "wgc-template-dimension",
+		"orderby" => "count",
+		"include" => get_term_by("slug", "a4", "wgc-template-dimension")->term_id,
+		"number" => 1,
+		"hide_empty" => false
+	    ));
+
 	    foreach ($dimensions as $dimension) {
 		$title = $dimension->name . " (";
 		$meta = get_term_meta($dimension->term_id);
@@ -830,7 +839,7 @@ class Woo_gift_card_Admin {
 		}
 		$title .= ")";
 
-		$content .= '<option value="' . esc_attr($dimension->slug) . '" ' . selected($dimension->slug, $post_dimension[0]->slug ?: "a4", false) . '>' . esc_html($title) . '</option>';
+		$content .= '<option value="' . esc_attr($dimension->slug) . '" ' . selected($dimension->slug, $post_dimension[0]->slug ?: $terms[0]->slug, false) . '>' . esc_html($title) . '</option>';
 	    }
 	    $content .= '</select></p>';
 

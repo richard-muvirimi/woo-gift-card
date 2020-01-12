@@ -24,99 +24,13 @@ if (!defined('ABSPATH')) {
  */
 class WooGiftCardsUtils {
 
-    /**
-     * Get a particular dimension
-     * @param string $id
-     * @return Dimension
-     */
-    public static function getTemplateDimension($id) {
-	$dimensions = WooGiftCardsUtils::getTemplateSizes();
-	foreach ($dimensions as $dimension) {
-	    if ($dimension->get_id() === strtolower($id)) {
-		return $dimension;
-	    }
-	}
-	//default to a4 if not found
-	return WooGiftCardsUtils::getTemplateDimension("a4");
-    }
-
-    /**
-     * Get an array list of all available dimensions
-     * @return array|Dimension
-     */
-    public static function getTemplateSizes() {
-	$dimensions = array();
-
-	$dimensions[] = new Dimension("us_letter", "US Letter", 8.5, 11, "in");
-	$dimensions[] = new Dimension("us_legal", "US Legal", 8.5, 14, "in");
-	$dimensions[] = new Dimension("us_executive", "US Executive", 7.2, 10.5, "in");
-	$dimensions[] = new Dimension("cse", "CSE", 462, 649, "pt");
-	$dimensions[] = new Dimension("us_#10_envelope", "US #10 Envelope", 4.1, 9.5, "in");
-	$dimensions[] = new Dimension("dl_envelope", "DL Envelope", 110, 220, "mm");
-	$dimensions[] = new Dimension("ledger/tabloid", "Ledger/Tabloid", 11, 17, "in");
-	$dimensions[] = new Dimension("banner", "Banner", 60, 468, "px");
-
-	$dimensions[] = new Dimension("icon16*16", "Icon 16 * 16", 16, 16, "px");
-	$dimensions[] = new Dimension("icon32*32", "Icon 32 * 32", 32, 32, "px");
-	$dimensions[] = new Dimension("icon48*48", "Icon 48 * 48", 48, 48, "px");
-
-	$dimensions[] = new Dimension("businesscard(iso7810)", "Business Card (ISO 7810)", 54, 85.6, "mm");
-	$dimensions[] = new Dimension("businesscard(us)", "Business Card (US)", 2, 305, "in");
-	$dimensions[] = new Dimension("businesscard(europe)", "Business Card (Europe)", 55, 85, "mm");
-	$dimensions[] = new Dimension("businesscard(auz/nz)", "Business Card (Aus/NZ)", 54, 90, "mm");
-
-	$dimensions[] = new Dimension("arch_a", "Arch A", 9, 12, "in");
-	$dimensions[] = new Dimension("arch_b", "Arch B", 12, 18, "in");
-	$dimensions[] = new Dimension("arch_c", "Arch C", 18, 24, "in");
-	$dimensions[] = new Dimension("arch_d", "Arch D", 24, 36, "in");
-	$dimensions[] = new Dimension("arch_e", "Arch E", 36, 48, "in");
-	$dimensions[] = new Dimension("arch_e1", "Arch E1", 30, 42, "in");
-
-	//series based
-	$a_series = WooGiftCardsUtils::getSeries("a", 841, 1189, 0, 10);
-	$b_series = WooGiftCardsUtils::getSeries("b", 1000, 1414, 0, 10);
-	$c_series = WooGiftCardsUtils::getSeries("c", 917, 1297, 0, 10);
-	$d_series = WooGiftCardsUtils::getSeries("d", 545, 771, 1, 7);
-	$e_series = WooGiftCardsUtils::getSeries("e", 400, 560, 3, 6);
-
-	/**
-	 * Filters the template dimension list.
-	 *
-	 * @since 1.0
-	 *
-	 * @param array   $dimensions     The dimension list
-	 */
-	return apply_filters("wgc_template_dimensions", array_merge($dimensions, $a_series, $b_series, $c_series, $d_series, $e_series));
-    }
-
-    private static function getSeries($series, $value1, $value2, $min = 0, $max = 1) {
-	$dimensions = array();
-
-	//offset by doubling
-	$value1 *= 2;
-
-	//loop through adding values
-	for ($index = $min; $index <= $max; $index++) {
-	    $id = $series . $index;
-
-	    //bisect value one and set valuetwo
-	    $dimension = new Dimension($id, strtoupper($id), intval(floor($value1 / 2)), $value2);
-	    $dimensions[] = $dimension;
-
-	    $value2 = $dimension->get_value1();
-	    $value1 = $dimension->get_value2();
-	}
-
-	return $dimensions;
-    }
-
     public static function getSupportedShortCodes() {
 	return array(
 	    "amount" => __("The monetary value of the gift voucher.", 'woo-gift-card'),
 	    "code" => __("The code to uniquely identify the gift voucher.", 'woo-gift-card'),
 	    "disclaimer" => __("Disclaimer message to show to the receipent of the gift voucher.", 'woo-gift-card'),
 	    "event" => __("What event is this gift voucher for.", 'woo-gift-card'),
-	    "expiry-date" => __("The expiry date of the gift voucher", 'woo-gift-card'),
+	    "expiry-days" => __("The expiry days of the gift voucher", 'woo-gift-card'),
 	    "from" => __("The sender of the gift voucher", 'woo-gift-card'),
 	    "logo" => __("This companies logo", 'woo-gift-card'),
 	    "message" => __("A message sent by customer to the recipient of the gift voucher", 'woo-gift-card'),

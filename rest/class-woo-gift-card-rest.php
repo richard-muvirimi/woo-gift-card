@@ -237,16 +237,95 @@ class Woo_gift_card_Rest {
 	$dompdf = new Dompdf($options);
 
 	$dompdf->loadHtml($this->get_html($template));
-	//$dompdf->loadHtml("test"); //$this->get_html($template));
-	//paper size and orientation
-	$dimension = WooGiftCardsUtils::getTemplateDimension(get_post_meta($template->ID, "wgc-template-dimension", true));
 
-	$dompdf->setPaper($dimension->getSizeInPoints(), get_post_meta($template->ID, "wgc-template-orientation", true));
+	//paper size and orientation
+	$orientation = get_post_meta($template, "wgc-template-orientation", true);
+
+	$dompdf->setPaper($this->getTemplateSizeInPoints($template, $orientation), $orientation);
 
 	$dompdf->render();
 
 	// return the generated PDF
 	return $dompdf;
+    }
+
+    private function getTemplateSizeInPoints($template, $orientation = "landscape") {
+	$dimension = wp_get_post_terms($template->ID, "wgc-template-dimension")[0];
+
+	$meta = get_term_meta($dimension->term_id);
+
+	$value1 = $meta["wgc-dimension-value1"][0];
+	$value2 = $meta["wgc-dimension-value2"][0];
+
+	if ($value1 && $value2) {
+
+	    //to pt
+	    switch ($meta["wgc-dimension-unit"][0]) {
+		case "mm":
+		    $value1 *= 2.835;
+		    $value2 *= 2.835;
+		    break;
+		case "in":
+		    $value1 *= 75;
+		    $value2 *= 75;
+		    break;
+		case "pt":
+		default :
+	    }
+
+	    if ($orientation === "landscape") {
+		$value1 = max(array($value1, $value2));
+		$value2 = min(array($value1, $value2));
+	    } else {
+		$value1 = min(array($value1, $value2));
+		$value2 = max(array($value1, $value2));
+	    }
+	} else {
+
+	    $width = 0;
+	    $height = 0;
+
+	    //if we have a background image we want to show it
+	    if ($_FILES['wgc-receiver-image']['size']) {
+		$path = $_FILES['wgc-receiver-image']['tmp_name'];
+
+		require_once ABSPATH . "wp-admin/includes/image.php";
+
+		if (file_is_valid_image($path)) {
+		    list($width, $height) = @getimagesize($path);
+		}
+	    } elseif (has_post_thumbnail($template)) {
+		$thumb_id = get_post_thumbnail_id($template);
+
+		list(, $width, $height) = wp_get_attachment_image_src($thumb_id, "full");
+	    } else {
+		//get most popular term
+		$terms = get_terms(array(
+		    "taxonomy" => "wgc-template-dimension",
+		    "orderby" => "count",
+		    "include" => get_term_by("slug", "a4", "wgc-template-dimension")->term_id,
+		    "number" => 1,
+		    "hide_empty" => false
+		));
+
+		$meta = get_term_meta($terms[0]->term_id);
+
+		//convert to pixels
+		//1mm = 25.4 px
+		//1px = 1/25.4 mm = 25.4 px
+		$width = $meta["wgc-dimension-value1"][0] * 96 / 25.4;
+		$height = $meta["wgc-dimension-value2"][0] * 96 / 25.4;
+	    }
+
+	    /**
+	     * 72 pt = 96 px = 1 in
+	     */
+	    //convert px to pt
+	    $value1 = $width * 72 / 96;
+	    $value2 = $height * 72 / 96;
+	}
+
+	return array(0, 0, $value1, $value2);
     }
 
     private function get_html($template) {
@@ -359,18 +438,40 @@ class Woo_gift_card_Rest {
 		}
 		break;
 	    case "disclaimer":
-		$html = esc_html__(get_option('wgc-message-disclaimer', ''));
+		/**
+		 * Gift voucher disclaimer text
+		 */
+		$html = esc_html__(get_option('wgc-message-disclaimer') ?: '&nbsp;');
 		break;
 	    case "event":
-		$html = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : apply_filters('the_title', $template->post_title);
+		/**
+		 * The title of the gift voucher
+		 */
+		$html = $this->params['wgc-event'] ?: apply_filters('the_title', $template->post_title);
 		break;
-	    case "expiry-date":
-		$html = 'todo calculate date';
+	    case "expiry-days":
+		/**
+		 * The number of days gift voucher will expire in
+		 */
+		if ($product && is_object($product)) {
+		    $html = $product->get_meta("wgc-expiry-days") ?: __("Never", "woo-gift-card");
+		}
 		break;
 	    case "from":
+		/**
+		 * The name of the sender of gift voucher
+		 */
 		$html = get_user_option("display_name");
 		break;
 	    case "logo":
+		/**
+		 * Site logo
+		 */
+		if (has_custom_logo()) {
+		    $html = get_custom_logo();
+		} else {
+		    $html = get_bloginfo("name");
+		}
 		break;
 	    case "message":
 		$html = $this->params['wgc-receiver-message'];
@@ -383,7 +484,7 @@ class Woo_gift_card_Rest {
 		}
 		break;
 	    case "to":
-		$html = $this->params['wgc-receiver-email'];
+		$html = $this->params['wgc-receiver-email'] ?: get_user_option("email");
 		break;
 	    case "code":
 		break;
