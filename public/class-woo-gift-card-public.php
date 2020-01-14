@@ -80,7 +80,8 @@ class Woo_gift_card_Public {
 	    $product = wc_get_product($post);
 
 	    if ($product->is_type('woo-gift-card')) {
-		wp_enqueue_style($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'css/wgc-product-preview.css', array(), $this->version);
+		wp_enqueue_style($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'css/wgc-product.css', array(), $this->version);
+		wp_enqueue_style($this->plugin_name . "-preview", plugin_dir_url(__FILE__) . 'css/wgc-pdf-preview.css', array(), $this->version);
 	    }
 	}
     }
@@ -112,7 +113,7 @@ class Woo_gift_card_Public {
 	    $product = wc_get_product($post);
 
 	    if ($product->is_type('woo-gift-card')) {
-		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/woo-gift-card-product.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/wgc-product.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array(
 		    "maxlength" => get_option('wgc-message-length'),
 		    "pdf_template_url" => get_rest_url(null, "woo-gift-card/v1/template/")));
@@ -229,6 +230,7 @@ class Woo_gift_card_Public {
 	global $product;
 
 	if ($product->is_type('woo-gift-card')) {
+	    include_once plugin_dir_path(__DIR__) . "/public/partials/preview/preview-woo-gift-card-html.php";
 	    include_once plugin_dir_path(__DIR__) . "/public/partials/preview-woo-gift-card-button.php";
 	}
     }

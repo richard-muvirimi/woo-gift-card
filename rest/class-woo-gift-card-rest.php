@@ -78,7 +78,7 @@ class Woo_gift_card_Rest {
 			    $product = wc_get_product($param);
 			    return !is_null($product) && $product->is_type('woo-gift-card');
 			}
-			return false;
+			return true;
 		    }
 		),
 		'wgc-receiver-template' => array(
@@ -100,32 +100,58 @@ class Woo_gift_card_Rest {
 		),
 		'wgc-receiver-name' => array(
 		    'validate_callback' => function($param, $request, $key) {
+			if ($param) {
+			    $count = count(get_users(array(
+				"search_columns" => array("display_name"),
+				"search" => $param
+			    )));
+
+			    return $count > 0;
+			}
 			return true;
 		    }
 		),
 		'wgc-receiver-email' => array(
 		    'validate_callback' => function($param, $request, $key) {
-			return $param && is_email($param);
+			if ($param) {
+			    return is_email($param);
+			}
+			return TRUE;
 		    },
 		),
 		'wgc-receiver-message' => array(
 		    'validate_callback' => function($param, $request, $key) {
+			if ($param) {
+			    $length = strlen($param);
+			    $max = get_option('wgc-message-length');
+
+			    // if length is greater than zero and below max if set
+			    return $length > 0 && (is_numeric($max) && $length <= get_option('wgc-message-length') || true);
+			}
 			return true;
 		    }
 		),
 		'wgc-receiver-image' => array(
 		    'validate_callback' => function($param, $request, $key) {
+			if ($param) {
+
+			    //if image was sent with request
+			    return file_is_valid_image($_FILES["wgc-receiver-image"]["tmp_name"]);
+			}
 			return true;
 		    }
 		),
 		'wgc-event' => array(
 		    'validate_callback' => function($param, $request, $key) {
+			if ($param) {
+			    return strlen($param) > 0;
+			}
 			return true;
 		    }
 		)
 	    ),
 	    'permission_callback' => function () {
-		return true; // wp_verify_nonce($_POST['wgc-preview-nonce'], 'wgc-preview');
+		return true || is_user_logged_in();
 	    }
 	));
 
@@ -286,7 +312,7 @@ class Woo_gift_card_Rest {
 	    $height = 0;
 
 	    //if we have a background image we want to show it
-	    if ($_FILES['wgc-receiver-image']['size']) {
+	    if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
 		$path = $_FILES['wgc-receiver-image']['tmp_name'];
 
 		require_once ABSPATH . "wp-admin/includes/image.php";
@@ -391,7 +417,7 @@ class Woo_gift_card_Rest {
 	$path = "";
 
 	//if we have a background image we want to show it
-	if ($_FILES['wgc-receiver-image']['size']) {
+	if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
 	    $file = $_FILES['wgc-receiver-image'];
 	    $path = $file['tmp_name'];
 	} elseif (has_post_thumbnail($template)) {
@@ -441,13 +467,18 @@ class Woo_gift_card_Rest {
 		/**
 		 * Gift voucher disclaimer text
 		 */
-		$html = esc_html__(get_option('wgc-message-disclaimer') ?: '&nbsp;');
+		$html = esc_html__(get_option('wgc-message-disclaimer') ?: '');
 		break;
 	    case "event":
 		/**
 		 * The title of the gift voucher
 		 */
-		$html = $this->params['wgc-event'] ?: apply_filters('the_title', $template->post_title);
+		if (version_compare(phpversion(), "7", ">=")) {
+		    $html = $this->params['wgc-event'] ?? apply_filters('the_title', $template->post_title);
+		} else {
+		    $event = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : "";
+		    $html = $event ?: apply_filters('the_title', $template->post_title);
+		}
 		break;
 	    case "expiry-days":
 		/**
@@ -474,7 +505,7 @@ class Woo_gift_card_Rest {
 		}
 		break;
 	    case "message":
-		$html = $this->params['wgc-receiver-message'];
+		$html = isset($this->params['wgc-receiver-message']) ? $this->params['wgc-receiver-message'] : "";
 		break;
 	    case "order-id":
 		break;
@@ -484,7 +515,15 @@ class Woo_gift_card_Rest {
 		}
 		break;
 	    case "to":
-		$html = $this->params['wgc-receiver-email'] ?: get_user_option("email");
+		/**
+		 * The recipient of the gift voucher
+		 */
+		if (version_compare(phpversion(), "7", ">=")) {
+		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email");
+		} else {
+		    $email = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : "";
+		    $html = $email ?: get_user_option("email");
+		}
 		break;
 	    case "code":
 		break;
@@ -495,19 +534,6 @@ class Woo_gift_card_Rest {
 	}
 
 	return $html;
-    }
-
-    public function uniqueFileName($dir, $name, $ext) {
-	return wp_generate_password(12, false) . $ext;
-    }
-
-    private function implodeAttr($attribute, $value) {
-	return $attribute . ' = "' . $value . '"';
-    }
-
-    private function implodeStyle($attribute, $value) {
-	return $attribute . ':' . $value . ';
-	';
     }
 
 }

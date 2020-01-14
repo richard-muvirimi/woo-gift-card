@@ -152,11 +152,6 @@ class Woo_gift_card {
 	}
 
 	/**
-	 * Template dimensions
-	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/model/dimension.php';
-
-	/**
 	 * Pdf libraries
 	 * @filesource https://github.com/dompdf/dompdf/releases
 	 */

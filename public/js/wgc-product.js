@@ -30,6 +30,9 @@
 
     $(document).ready(function () {
 
+	//prepare woocommerce add to cart form
+	$("[name='add-to-cart']").parent().addClass("wgc-preview-form");
+
 	$('textarea#wgc-receiver-message').on("keydown keyup", () => {
 	    let text = $('textarea#wgc-receiver-message').val();
 	    if (text.length === 0) {
@@ -43,7 +46,9 @@
 	$("#wgc-preview").click((e) => {
 	    e.preventDefault();
 
-	    let form = $("form.cart:first")[0];
+	    console.log(window.wgc_product.pdf_template_url);
+
+	    let form = $("form.wgc-preview-form:first").get(0);
 	    form.action = window.wgc_product.pdf_template_url;
 	    form.target = "wgc-preview-frame";
 
@@ -59,38 +64,6 @@
 	    $("form.cart .wgc-preview-modal").show();
 
 	});
-
-	function getTemplate(url, data, success) {
-
-	    $.ajax({
-		url: url,
-		dataType: "json",
-		cache: false,
-		contentType: false,
-		processData: false,
-		data: data,
-		type: "POST",
-		success: function (response) {
-		    success(response);
-		}
-	    });
-	}
-
-	function getFormData() {
-	    let data = new FormData();
-	    let form = $("form.cart .wgc-options textarea,form.cart .wgc-options input:not(:file)");
-	    for (let i = 0; i < form.length; i++) {
-		let input = form.eq(i);
-		data.append(input.attr("name"), input.val());
-	    }
-
-	    data.append("wgc-product", $("#wgc-preview").val());
-	    if ($("#wgc-receiver-image")[0].files.length > 0) {
-		data.append("wgc-receiver-image", $("#wgc-receiver-image")[0].files[0]);
-	    }
-
-	    return data;
-	}
     }
     );
 }

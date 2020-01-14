@@ -1,0 +1,16 @@
+/**
+ * Single product page css
+ */
+
+form.wgc-preview-form .wgc-flex-container{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+form.wgc-preview-form .wgc-flex-container div{
+    margin: 5px;
+}
+
+form.wgc-preview-form .wgc-flex-container div label{
+    display: inline;
+}

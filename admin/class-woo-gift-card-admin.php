@@ -80,6 +80,11 @@ class Woo_gift_card_Admin {
 	    default:
 		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-gift-card-admin.css', array(), $this->version, 'all');
 	}
+
+	//if list wgc-templates screen
+	if (get_current_screen()->id == "edit-wgc-template") {
+	    wp_enqueue_style($this->plugin_name . "-template-preview", plugin_dir_url(__DIR__) . 'public/css/wgc-pdf-preview.css', array(), $this->version);
+	}
     }
 
     /**
@@ -106,6 +111,14 @@ class Woo_gift_card_Admin {
 		break;
 	    default:
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/woo-gift-card-admin.js', array('jquery'), $this->version, false);
+	}
+
+	//if list wgc-templates screen
+	if (get_current_screen()->id == "edit-wgc-template") {
+	    wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
+	    wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
+		"pdf_template_url" => get_rest_url(null, "woo-gift-card/v1/template/")
+	    ));
 	}
     }
 
@@ -339,6 +352,7 @@ class Woo_gift_card_Admin {
     }
 
     /**
+     * Filter the post row actions and add our own
      *
      * @param type $actions
      * @param \WP_Post $post
@@ -347,7 +361,7 @@ class Woo_gift_card_Admin {
     public function post_row_actions($actions, $post) {
 	if ($post->post_type == 'wgc-template') {
 
-// $actions["view"] = '<a href="#" class="template-preview">' . __("Preview") . "</a>";
+	    $actions["wgc-preview"] = '<a href="JavaScript:void()" class="wgc-template-preview" data-template="' . esc_attr($post->ID) . '">' . __("Preview", "woo-gift-card") . "</a>";
 	}
 
 	return $actions;
@@ -375,6 +389,16 @@ class Woo_gift_card_Admin {
      * @return void
      */
     public function show_admin_notice() {
+
+	//if page is list wgc-templates page
+	if (get_current_screen()->id == "edit-wgc-template") {
+
+	    echo '<form class="wgc-preview-form" method="post">';
+
+	    include_once plugin_dir_path(__DIR__) . "/public/partials/preview/preview-woo-gift-card-html.php";
+
+	    echo '</form>';
+	}
 
 	if (get_transient('wgc-notice')) {
 	    include_once plugin_dir_path(__DIR__) . "/admin/partials/woo-gift-card-admin-notice.php";

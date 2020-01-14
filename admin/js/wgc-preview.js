@@ -30,42 +30,26 @@
 
     $(document).ready(function () {
 
-	setUpPdf();
-	setUpCloseBtn();
-
-    });
-
-    function setUpCloseBtn() {
-	let closeBtn = $("#documentPropertiesClose").clone();
-	closeBtn.attr("id", "previewTemplateClose");
-	closeBtn.click(e => {
+	$(".wgc-template-preview").click((e) => {
 	    e.preventDefault();
-	    window.parent.jQuery("form.wgc-preview-form .wgc-preview-modal:visible").hide();
 
-	    //set to browsers default blank page
-	    window.parent.jQuery("form.wgc-preview-form .wgc-preview-frame").attr("src", "about:blank");
+	    let form = $("form.wgc-preview-form").get(0);
+	    form.action = window.wgc_product.pdf_template_url;
+	    form.target = "wgc-preview-frame";
+
+	    //template id
+	    let template_input = document.createElement("input");
+	    template_input.type = "hidden";
+	    template_input.name = "wgc-receiver-template";
+	    template_input.value = $(e.target).data("template");
+	    form.appendChild(template_input);
+
+	    form.submit();
+
+	    $(".wgc-preview-modal:first").show();
+
 	});
-
-	$("#secondaryToolbarToggle").before(closeBtn);
     }
-
-    function setUpPdf() {
-
-	let pdf = base64ToBinary(window.wgc_pdf_base64);
-	window.PDFViewerApplicationOptions.set("defaultUrl", pdf);
-    }
-
-    function base64ToBinary(base64) {
-	let raw = window.atob(base64);
-	let rawLength = raw.length;
-	let array = new Uint8Array(new ArrayBuffer(rawLength));
-
-	for (let i = 0; i < rawLength; i++) {
-	    array[i] = raw.charCodeAt(i);
-	}
-	return array;
-    }
+    );
 }
 )(jQuery);
-
-

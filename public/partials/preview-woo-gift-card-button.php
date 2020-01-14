@@ -12,11 +12,4 @@
  */
 //wp_nonce_field('wgc-preview', 'wgc-preview-nonce');
 ?>
-
-<div class="wgc-preview-modal">
-    <div class="wgc-preview-content">
-	<iframe name="wgc-preview-frame" class="wgc-preview-frame"></iframe>
-    </div>
-</div>
-
 <button type="submit" id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>
