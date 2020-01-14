@@ -238,6 +238,7 @@ class Woo_gift_card {
 
 	//template help
 	$this->loader->add_action('load-post.php', $plugin_admin, "add_template_help");
+	$this->loader->add_action('load-post-new.php', $plugin_admin, "add_template_help");
 
 	//on save gift card template
 	$this->loader->add_action('save_post_wgc-template', $plugin_admin, 'save_wgc_template');
@@ -250,6 +251,9 @@ class Woo_gift_card {
 
 	//filter template background image properties
 	$this->loader->add_filter('admin_post_thumbnail_html', $plugin_admin, 'admin_post_thumbnail_html', 10, 2);
+
+	//on preview post
+	$this->loader->add_filter('init', $plugin_admin, 'preview_post');
     }
 
     /**

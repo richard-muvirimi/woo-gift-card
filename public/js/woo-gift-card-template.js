@@ -36,17 +36,20 @@
     });
 
     function setUpCloseBtn() {
-	let closeBtn = $("#documentPropertiesClose").clone();
-	closeBtn.attr("id", "previewTemplateClose");
-	closeBtn.click(e => {
-	    e.preventDefault();
-	    window.parent.jQuery("form.wgc-preview-form .wgc-preview-modal:visible").hide();
 
-	    //set to browsers default blank page
-	    window.parent.jQuery("form.wgc-preview-form .wgc-preview-frame").attr("src", "about:blank");
-	});
+	if (window.parent.jQuery != undefined) {
+	    let closeBtn = $("#documentPropertiesClose").clone();
+	    closeBtn.attr("id", "previewTemplateClose");
+	    closeBtn.click(e => {
+		e.preventDefault();
+		window.parent.jQuery("form.wgc-preview-form .wgc-preview-modal:visible").hide();
 
-	$("#secondaryToolbarToggle").before(closeBtn);
+		//set to browsers default blank page
+		window.parent.jQuery("form.wgc-preview-form .wgc-preview-frame").attr("src", "about:blank");
+	    });
+
+	    $("#secondaryToolbarToggle").before(closeBtn);
+	}
     }
 
     function setUpPdf() {

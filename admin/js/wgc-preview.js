@@ -30,7 +30,7 @@
 
     $(document).ready(function () {
 
-	$(".wgc-template-preview").click((e) => {
+	$(".wgc-template-preview, a#post-preview").click((e) => {
 	    e.preventDefault();
 
 	    let form = $("form.wgc-preview-form").get(0);

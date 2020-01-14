@@ -82,7 +82,7 @@ class Woo_gift_card_Admin {
 	}
 
 	//if list wgc-templates screen
-	if (get_current_screen()->id == "edit-wgc-template") {
+	if (strpos(get_current_screen()->id, "wgc-template") != false) {
 	    wp_enqueue_style($this->plugin_name . "-template-preview", plugin_dir_url(__DIR__) . 'public/css/wgc-pdf-preview.css', array(), $this->version);
 	}
     }
@@ -114,7 +114,7 @@ class Woo_gift_card_Admin {
 	}
 
 	//if list wgc-templates screen
-	if (get_current_screen()->id == "edit-wgc-template") {
+	if (strpos(get_current_screen()->id, "wgc-template") != false) {
 	    wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
 	    wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
 		"pdf_template_url" => get_rest_url(null, "woo-gift-card/v1/template/")
@@ -211,6 +211,7 @@ class Woo_gift_card_Admin {
 	    'rewrite' => array('slug' => 'wgc-template', 'gift-card-template'),
 	    'supports' => array('title', 'author', 'editor', 'revisions', 'thumbnail'),
 	    'delete_with_user' => false,
+	    'publicly_queryable' => true,
 	    'description' => __('Templates for gift cards that will be sent to customers', 'woo-gift-card'),
 	    'register_meta_box_cb' => array($this, 'register_template_meta_box')
 	));
@@ -391,9 +392,9 @@ class Woo_gift_card_Admin {
     public function show_admin_notice() {
 
 	//if page is list wgc-templates page
-	if (get_current_screen()->id == "edit-wgc-template") {
+	if (strpos(get_current_screen()->id, "wgc-template") != false) {
 
-	    echo '<form class="wgc-preview-form" method="post">';
+	    echo '<form id="wgc-preview-form" class="wgc-preview-form" method="post">';
 
 	    include_once plugin_dir_path(__DIR__) . "/public/partials/preview/preview-woo-gift-card-html.php";
 
@@ -405,6 +406,22 @@ class Woo_gift_card_Admin {
 
 	    delete_transient('wgc-notice');
 	    delete_transient('wgc-notice-class');
+	}
+    }
+
+    /**
+     * display the template post preview
+     */
+    public function preview_post() {
+
+	if (isset($_GET["preview"]) && isset($_GET["preview_id"])) {
+
+	    if (get_post_type($_GET["preview_id"]) == "wgc-template") {
+
+		include_once plugin_dir_path(__DIR__) . "/public/partials/preview/preview-woo-gift-card-admin-html.php";
+
+		exit();
+	    }
 	}
     }
 
