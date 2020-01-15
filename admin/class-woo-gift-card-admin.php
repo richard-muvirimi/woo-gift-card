@@ -742,6 +742,7 @@ class Woo_gift_card_Admin {
 		    update_post_meta($post_id, "wgc-coupon-barcode-image-type", $this->get_post_var('wgc-coupon-barcode-image-type'));
 		    update_post_meta($post_id, "wgc-coupon-barcode-width", $this->get_post_var('wgc-coupon-barcode-width'));
 		    update_post_meta($post_id, "wgc-coupon-barcode-height", $this->get_post_var('wgc-coupon-barcode-height'));
+		    update_post_meta($post_id, "wgc-coupon-barcode-color", $this->get_post_var('wgc-coupon-barcode-color'));
 		    break;
 		default :
 		    $this->deleteTemplateBarCodeMeta($post_id);
@@ -773,6 +774,7 @@ class Woo_gift_card_Admin {
 	delete_post_meta($post_id, 'wgc-coupon-barcode-image-type');
 	delete_post_meta($post_id, 'wgc-coupon-barcode-width');
 	delete_post_meta($post_id, 'wgc-coupon-barcode-height');
+	delete_post_meta($post_id, 'wgc-coupon-barcode-color');
     }
 
     /**

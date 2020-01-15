@@ -361,7 +361,7 @@ class Woo_gift_card_Rest {
 	$html .= '<head>';
 	$html .= '<meta charset = "' . get_bloginfo('charset') . '">';
 	$html .= '<meta name = "viewport" content = "width=device-width, initial-scale=1.0" >';
-	$html .= '<style>' . get_post_meta($template->ID, 'wgc-template-css', true) . '</style>';
+	$html .= '<style type="text/css">' . get_post_meta($template->ID, 'wgc-template-css', true) . '</style>';
 	$html .= '</head>';
 	$html .= '<body class = "wgc-preview-body" style="' . $this->getBackGroundImageStyle() . '">';
 	$html .= apply_filters('the_content', do_shortcode($template->post_content));
@@ -408,7 +408,19 @@ class Woo_gift_card_Rest {
 	$data = file_get_contents($path);
 
 	$mime = $this->get_mime_type_for_file($path);
-	return 'data:' . $mime . ';base64,' . base64_encode($data);
+
+	return $this->contentToBase64($data, $mime);
+    }
+
+    /**
+     * Convert data to base64
+     *
+     * @param string $content
+     * @param string $mime
+     * @return string
+     */
+    private function contentToBase64($content, $mime) {
+	return 'data:' . $mime . ';base64,' . base64_encode($content);
     }
 
     private function getBackGroundImageStyle() {
@@ -439,7 +451,7 @@ class Woo_gift_card_Rest {
      * @return void
      */
     public function template_shortcode($atts, $content = "", $sCode) {
-	$shortcode = ltrim($sCode, WooGiftCardsUtils::getShortCodePrefix());
+	$shortcode = str_replace(WooGiftCardsUtils::getShortCodePrefix(), "", $sCode);
 	$html = "";
 
 	$template = get_post($this->params['wgc-receiver-template']);
@@ -526,6 +538,76 @@ class Woo_gift_card_Rest {
 		}
 		break;
 	    case "code":
+
+		$meta = get_post_meta($template->ID);
+
+		$prefix = get_option("wgc-code-prefix");
+		$code = str_repeat("8", get_option("wgc-code-length"));
+		$suffix = get_option("wgc-code-suffix");
+
+		switch (get_post_meta($template->ID, "wgc-coupon-type", true)) {
+		    case 'qrcode':
+
+			$qrcode = $prefix . $code . $suffix;
+
+			$file = get_temp_dir() . $qrcode . ".png";
+
+			QRcode::png($qrcode, $file, $meta["wgc-coupon-qrcode-ecc"][0], $meta["wgc-coupon-qrcode-size"][0], $meta["wgc-coupon-qrcode-margin"][0]);
+
+			$image = file_get_contents($file);
+
+			$html = '<div class="barcode-container">';
+			$html .= '<div class="barcode-img"><img alt="' . $qrcode . '" ';
+			$html .= 'src="' . $this->contentToBase64($image, $this->get_mime_type_for_file($file)) . '"';
+			$html .= "></div>";
+
+			if ($meta["wgc-coupon-qrcode-code"][0] == "yes") {
+			    $html .= '<div class="barcode">' . $qrcode . '</div>';
+			}
+
+			$html .= "</div>";
+
+			break;
+		    case 'barcode':
+
+			$generator = false;
+			$barcode = $prefix . $code . $suffix;
+			$html = '<div class="barcode-container">';
+
+			switch ($meta["wgc-coupon-barcode-image-type"][0]) {
+			    case "html";
+				$generator = new Picqer\Barcode\BarcodeGeneratorHTML();
+
+				$html .= $generator->getBarcode($code, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $meta["wgc-coupon-barcode-color"][0]);
+
+				break;
+			    case "svg";
+				$generator = new Picqer\Barcode\BarcodeGeneratorSVG();
+				$color = $meta["wgc-coupon-barcode-color"][0];
+			    case "png";
+				$generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorPNG();
+			    case "jpg";
+				$generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorJPG();
+
+				$color ?: $this->hexColorToArray($meta["wgc-coupon-barcode-color"][0]);
+
+				$image = $generator->getBarcode($code, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $color);
+
+				$html .= '<div class="barcode-img"><img alt="' . $barcode . '" ';
+				$html .= 'src="' . $this->contentToBase64($image, $this->get_mime_type_for_file("image." . $meta["wgc-coupon-barcode-image-type"][0])) . '"';
+				$html .= "></div>";
+
+				break;
+			}
+
+			$html .= '<div class="barcode" style="color: ' . esc_attr($meta["wgc-coupon-barcode-color"][0]) . ';">' . $barcode . '</div>';
+			$html .= "</div>";
+
+			break;
+		    default:
+			$html = $prefix . $code . $suffix;
+		}
+
 		break;
 	}
 
@@ -534,6 +616,20 @@ class Woo_gift_card_Rest {
 	}
 
 	return $html;
+    }
+
+    /**
+     * Convert a hex color to dec
+     * @param string $color
+     * @return array
+     */
+    private function hexColorToArray($color) {
+
+	$color = trim($color, "#");
+
+	$chunks = array_slice(explode(".", chunk_split($color, 2, ".")), 0, 3);
+
+	return array_map("hexdec", $chunks);
     }
 
 }

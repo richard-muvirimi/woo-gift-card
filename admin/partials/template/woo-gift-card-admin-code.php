@@ -126,16 +126,21 @@ $meta = get_post_meta($post_id);
 		'desc_tip' => true
 	    ));
 
+	    $generators = array(
+		"svg" => __("Svg", 'woo-gift-card'),
+		"html" => __("Html", 'woo-gift-card')
+	    );
+
+	    if (function_exists('imagecreate') || extension_loaded('imagick')) {
+		$generators["png"] = __("Png", 'woo-gift-card');
+		$generators["jpg"] = __("Jpg", 'woo-gift-card');
+	    }
+
 	    woocommerce_wp_select(array(
 		'id' => 'wgc-coupon-barcode-image-type',
 		'label' => __('Image Type', 'woo-gift-card'),
 		'description' => __('The BarCode Type', 'woo-gift-card'),
-		'options' => array(
-		    "svg" => __("Svg", 'woo-gift-card'),
-		    "png" => __("Png", 'woo-gift-card'),
-		    "jpg" => __("Jpg", 'woo-gift-card'),
-		    "html" => __("Html", 'woo-gift-card'),
-		),
+		'options' => $generators,
 		'value' => isset($meta['wgc-coupon-barcode-image-type']) ? $meta['wgc-coupon-barcode-image-type'][0] : "html",
 		'desc_tip' => true
 	    ));
@@ -162,6 +167,13 @@ $meta = get_post_meta($post_id);
 		),
 		'type' => "number",
 		'desc_tip' => true
+	    ));
+
+	    woocommerce_wp_text_input(array(
+		'id' => 'wgc-coupon-barcode-color',
+		'value' => isset($meta['wgc-coupon-barcode-color']) ? $meta['wgc-coupon-barcode-color'][0] : "#000000",
+		'label' => __('Code Color', 'woo-gift-card'),
+		'type' => "color"
 	    ));
 	    ?>
 	</div>
