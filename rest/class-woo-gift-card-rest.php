@@ -542,7 +542,7 @@ class Woo_gift_card_Rest {
 		$meta = get_post_meta($template->ID);
 
 		$prefix = get_option("wgc-code-prefix");
-		$code = str_repeat("8", get_option("wgc-code-length"));
+		$code = str_repeat("X", get_option("wgc-code-length"));
 		$suffix = get_option("wgc-code-suffix");
 
 		switch (get_post_meta($template->ID, "wgc-coupon-type", true)) {

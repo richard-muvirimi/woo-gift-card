@@ -103,23 +103,6 @@ class Woo_gift_card_Options {
 	echo "<p>" . __('Email Templating Options.', 'woo-gift-card') . "</p>";
     }
 
-    public function output_tax_field() {
-
-	$setting = get_option('wgc-tax-calculation');
-
-	$attr = array(
-	    'type' => "checkbox",
-	    'class' => "checkbox",
-	    'checked' => $setting == "on" ? 'checked' : "",
-	    'name' => "wgc-tax-calculation",
-	    'id' => "wgc-tax-calculation"
-	);
-
-	$this->outputfield($attr);
-
-	echo '<p class="description">' . __("Calculate tax on gift voucher products.", "woo-gift-card") . '</p>';
-    }
-
     public function output_thank_you_vouchers_field() {
 
 	$setting = get_option('wgc-thank-you');
