@@ -363,7 +363,7 @@ class Woo_gift_card_Rest {
 	$html .= '<meta name = "viewport" content = "width=device-width, initial-scale=1.0" >';
 	$html .= '<style type="text/css">' . get_post_meta($template->ID, 'wgc-template-css', true) . '</style>';
 	$html .= '</head>';
-	$html .= '<body class = "wgc-preview-body" style="' . $this->getBackGroundImageStyle() . '">';
+	$html .= '<body class = "preview-body" style="' . $this->getBackGroundImageStyle() . '">';
 	$html .= apply_filters('the_content', do_shortcode($template->post_content));
 	$html .= '</body></html>';
 
@@ -567,13 +567,13 @@ class Woo_gift_card_Rest {
 
 			$image = file_get_contents($file);
 
-			$html = '<div class="barcode-container">';
-			$html .= '<div class="barcode-img"><img alt="' . $qrcode . '" ';
+			$html = '<div class="qrcode-container">';
+			$html .= '<div class="qrcode-img"><img alt="' . $qrcode . '" ';
 			$html .= 'src="' . $this->contentToBase64($image, $this->get_mime_type_for_file($file)) . '"';
 			$html .= "></div>";
 
 			if ($meta["wgc-coupon-qrcode-code"][0] == "yes") {
-			    $html .= '<div class="barcode">' . $qrcode . '</div>';
+			    $html .= '<div class="qrcode">' . $qrcode . '</div>';
 			}
 
 			$html .= "</div>";
