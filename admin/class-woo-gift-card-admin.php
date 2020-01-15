@@ -751,7 +751,14 @@ class Woo_gift_card_Admin {
     }
 
     private function get_post_var($name) {
-	return wc_clean(wp_unslash(filter_input(INPUT_POST, $name)));
+
+	$filtered = "";
+	if (is_array($_POST[$name])) {
+	    $filtered = $_POST[$name];
+	} else {
+	    $filtered = filter_input(INPUT_POST, $name);
+	}
+	return wc_clean(wp_unslash($filtered));
     }
 
     private function deleteTemplateQrCodeMeta($post_id) {
