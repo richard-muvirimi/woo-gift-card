@@ -26,17 +26,18 @@ class WooGiftCardsUtils {
 
     public static function getSupportedShortCodes() {
 	return array(
-	    "amount" => __("The monetary value of the gift voucher.", 'woo-gift-card'),
+	    "amount" => __("The monetary value of the gift voucher.*", 'woo-gift-card'),
 	    "code" => __("The code to uniquely identify the gift voucher.", 'woo-gift-card'),
 	    "disclaimer" => __("Disclaimer message to show to the receipent of the gift voucher.", 'woo-gift-card'),
-	    "event" => __("What event is this gift voucher for.", 'woo-gift-card'),
+	    "event" => __("What event is this gift voucher for.*", 'woo-gift-card'),
 	    "expiry-days" => __("The expiry days of the gift voucher", 'woo-gift-card'),
 	    "from" => __("The sender of the gift voucher", 'woo-gift-card'),
-	    "logo" => __("This companies logo", 'woo-gift-card'),
+	    "logo" => __("This websites logo or name of site", 'woo-gift-card'),
 	    "message" => __("A message sent by customer to the recipient of the gift voucher", 'woo-gift-card'),
 	    "order-id" => __("The order id to use as reference of the gift voucher", 'woo-gift-card'),
 	    "product-name" => __("The product name of this gift voucher", 'woo-gift-card'),
-	    "to" => __("The recipient of the gift voucher", 'woo-gift-card')
+	    "to-name" => __("The name of the recipient of the gift voucher*", 'woo-gift-card'),
+	    "to-email" => __("The email of the recipient of the gift voucher*", 'woo-gift-card'),
 	);
     }
 

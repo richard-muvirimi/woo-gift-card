@@ -526,9 +526,20 @@ class Woo_gift_card_Rest {
 		    $html = $product->get_name();
 		}
 		break;
-	    case "to":
+	    case "to-name":
 		/**
-		 * The recipient of the gift voucher
+		 * The recipient name of the gift voucher
+		 */
+		if (version_compare(phpversion(), "7", ">=")) {
+		    $html = $this->params['wgc-receiver-name'] ?? get_user_option("display_name");
+		} else {
+		    $name = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : "";
+		    $html = $name ?: get_user_option("display_name");
+		}
+		break;
+	    case "to-email":
+		/**
+		 * The recipient email of the gift voucher
 		 */
 		if (version_compare(phpversion(), "7", ">=")) {
 		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email");
