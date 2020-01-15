@@ -253,7 +253,7 @@ class Woo_gift_card {
 	$this->loader->add_filter('admin_post_thumbnail_html', $plugin_admin, 'admin_post_thumbnail_html', 10, 2);
 
 	//on preview post
-	$this->loader->add_filter('init', $plugin_admin, 'preview_post');
+	$this->loader->add_filter('the_preview', $plugin_admin, 'preview_post', 10, 2);
     }
 
     /**

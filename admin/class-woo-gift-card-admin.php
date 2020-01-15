@@ -362,7 +362,7 @@ class Woo_gift_card_Admin {
     public function post_row_actions($actions, $post) {
 	if ($post->post_type == 'wgc-template') {
 
-	    $actions["wgc-preview"] = '<a href="JavaScript:void()" class="wgc-template-preview" data-template="' . esc_attr($post->ID) . '">' . __("Preview", "woo-gift-card") . "</a>";
+	    $actions["view"] = '<a href="JavaScript:void()" class="wgc-template-preview" data-template="' . esc_attr($post->ID) . '">' . __("View", "woo-gift-card") . "</a>";
 	}
 
 	return $actions;
@@ -410,16 +410,21 @@ class Woo_gift_card_Admin {
     }
 
     /**
-     * display the template post preview
+     *
+     * @param \WP_Post $post
+     * @param \WP_Query $query
      */
-    public function preview_post() {
+    public function preview_post($post, $query) {
 
-	if (isset($_GET["preview"]) && isset($_GET["preview_id"])) {
+	if ($query->is_preview) {
+	    if (get_post_type($post) == "wgc-template") {
 
-	    if (get_post_type($_GET["preview_id"]) == "wgc-template") {
+		$query->is_singular = false;
+		ob_start();
 
 		include_once plugin_dir_path(__DIR__) . "/public/partials/preview/preview-woo-gift-card-admin-html.php";
 
+		ob_flush();
 		exit();
 	    }
 	}
