@@ -32,15 +32,6 @@
 	    $('div.wgc-discount').children(selector).show();
 	}).change();
 
-	//handle coupon qrcode changes
-	$('#wgc-coupon-type').change(() => {
-
-	    let selectClass = 'wgc-coupon-' + $('#wgc-coupon-type').val() + '-options';
-	    let selector = "[class~='" + selectClass + "']";
-	    $('div.wgc-coupon-options').children(":not(" + selector + ")").hide();
-	    $('div.wgc-coupon-options').children(selector).show();
-	}).change();
-
 	//on product type change trigger panel changes
 	$(document.body).on('woocommerce-product-type-change', () => {
 
