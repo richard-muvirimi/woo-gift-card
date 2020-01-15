@@ -158,6 +158,10 @@ $pricing = $product->get_meta("wgc-pricing");
 	    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		<label for="wgc-receiver-schedule"><?php esc_html_e('Date to send Gift Voucher', 'woo-gift-card'); ?></label>
 		<input type="date" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-schedule" id="wgc-receiver-schedule" value="<?php esc_attr_e(date('Y-m-d')) ?>"  min="<?php esc_attr_e(date('Y-m-d')) ?>"/>
+
+		<?php if ($product->get_meta('wgc-expiry-days')): ?>
+	    	<span><em><?php printf(esc_html('Will expire in %s days after purchase or scheduled send.', 'woo-gift-card'), $product->get_meta('wgc-expiry-days')) ?></em></span>
+		<?php endif; ?>
 	    </p>
 	<?php endif; ?>
 
