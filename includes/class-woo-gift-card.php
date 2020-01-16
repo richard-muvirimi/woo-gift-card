@@ -323,10 +323,13 @@ class Woo_gift_card {
 	$this->loader->add_filter('woocommerce_product_is_visible', $plugin_public, 'woocommerce_product_is_visible', 10, 2);
 
 	//add customise gift card form
-	$this->loader->add_action('woocommerce_' . $this->get_plugin_name() . '_add_to_cart', $plugin_public, 'woocommerce_add_to_cart');
+	$this->loader->add_action('woocommerce_' . $this->get_plugin_name() . '_add_to_cart', $plugin_public, 'woocommerce_add_to_cart_html');
 
 	//on calculate cart totals
 	$this->loader->add_action('woocommerce_before_calculate_totals', $plugin_public, 'woocommerce_before_calculate_totals');
+
+	//add cart meta data
+	$this->loader->add_filter('woocommerce_add_cart_item_data', $plugin_public, 'woocommerce_add_cart_item_data', 10, 4);
     }
 
     /**

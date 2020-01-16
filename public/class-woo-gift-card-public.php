@@ -236,11 +236,15 @@ class Woo_gift_card_Public {
     }
 
     /**
+     * Set totals as appropriate
      *
      * @param \WC_Cart $cart
      */
     public function woocommerce_before_calculate_totals($cart) {
 
+	foreach ($cart->cart_contents as $cart_item) {
+	    $cart_item["data"]->set_price($cart_item['wgc-receiver-price']);
+	}
     }
 
     /**
@@ -253,7 +257,8 @@ class Woo_gift_card_Public {
 
 	if ($product->is_type('woo-gift-card')) {
 
-	    if (is_product()) {
+	    //if we are not on the shop page to allow customisation first
+	    if (!is_shop()) {
 		$purchasable = true;
 	    }
 	}
@@ -318,8 +323,100 @@ class Woo_gift_card_Public {
 	return $visible;
     }
 
-    public function woocommerce_add_to_cart() {
+    public function woocommerce_add_to_cart_html() {
 	wc_get_template('single-product/add-to-cart/simple.php');
+    }
+
+    private function get_post_var($name) {
+
+	if (isset($_POST[$name])) {
+	    $filtered = "";
+	    if (is_array($_POST[$name])) {
+		$filtered = $_POST[$name];
+	    } else {
+		$filtered = filter_input(INPUT_POST, $name);
+	    }
+	    return wc_clean(wp_unslash(trim($filtered)));
+	}
+	return false;
+    }
+
+    public function woocommerce_add_cart_item_data($cart_item_data, $product_id, $variation_id, $quantity) {
+
+	$product = wc_get_product($product_id);
+	if ($product->is_type('woo-gift-card')) {
+
+	    //pricing
+	    $price = $this->get_post_var('wgc-receiver-price');
+
+	    switch ($product->get_meta("wgc-pricing")) {
+		case "range":
+		    //normalise price into range
+		    $price = min(array($product->get_meta('wgc-price-range-to'), $price));
+		    $price = max(array($product->get_meta('wgc-price-range-from'), $price));
+		    break;
+		case "selected":
+		    //use price from customer
+		    if (!in_array($price, $product->get_meta('wgc-price-selected'))) {
+			//get nearest price from prices array
+
+			$prices = array_merge($product->get_meta('wgc-price-selected'), array($price));
+
+			sort($prices, SORT_NUMERIC);
+
+			$prices = array_slice($prices, array_search($price, $prices), 3);
+
+			$max = max(array($prices, $price));
+			$min = min(array($prices, $price));
+
+			$price = $max != $price && $max - $price <= $price - $min ? $max : $min;
+		    }
+		    break;
+		case 'user':
+		    $price = $price ?: $product->get_meta('wgc-price-user');
+		    break;
+		case 'fixed':
+		default:
+		//use price from admin
+	    }
+
+	    $cart_item_data['wgc-receiver-price'] = $price;
+
+	    //receiver name
+	    $cart_item_data['wgc-receiver-name'] = $this->get_post_var('wgc-receiver-name') ?: "";
+
+	    //receiver email
+	    $email = $this->get_post_var('wgc-receiver-email');
+	    if ($email && $email !== false && is_email($email)) {
+		$cart_item_data['wgc-receiver-email'] = $email;
+	    } else {
+		throw new Exception(__("Please enter a valid recipient email to proceed."));
+	    }
+
+	    //message
+	    $cart_item_data['wgc-receiver-message'] = substr($this->get_post_var('wgc-receiver-message'), 0, get_option("wgc-message-length")) ?: "";
+
+	    //template
+	    $template = get_post($this->get_post_var('wgc-receiver-template'));
+	    if (is_object($template)) {
+		$cart_item_data['wgc-receiver-template'] = $template->ID;
+	    } else {
+		throw new Exception(__("Please enter valid details to proceed."));
+	    }
+
+	    //event
+	    $cart_item_data['wgc-event'] = $this->get_post_var("wgc-event") ?: $template->post_title;
+
+	    //schedule
+	    $schedule = $this->get_post_var('wgc-receiver-schedule');
+	    if ($schedule) {
+		$cart_item_data['wgc-receiver-schedule'] = $schedule;
+	    } else {
+		throw new Exception(__("Please enter valid details to proceed."));
+	    }
+	}
+
+	return $cart_item_data;
     }
 
 }
