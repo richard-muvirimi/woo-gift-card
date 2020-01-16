@@ -236,6 +236,7 @@ class Woo_gift_card_Rest {
 	    $jquery = $wp_scripts->registered["jquery-core"];
 
 	    $script = "";
+	    $script .= '<meta http-equiv="Cache-control" content="public">';
 	    $script .= '<script> window.wgc_pdf_base64 = "' . esc_js(base64_encode($pdf->output())) . '";</script>';
 	    $script .= '<script src="' . get_site_url(null, $jquery->src) . '"></script>';
 	    $script .= '<script src="' . plugin_dir_url(__DIR__) . 'public/js/woo-gift-card-template.js' . '"></script></head>';
