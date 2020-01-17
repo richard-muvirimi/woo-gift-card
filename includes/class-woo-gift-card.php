@@ -330,6 +330,9 @@ class Woo_gift_card {
 
 	//add cart meta data
 	$this->loader->add_filter('woocommerce_add_cart_item_data', $plugin_public, 'woocommerce_add_cart_item_data', 10, 4);
+
+	//cart item thumbnail
+	$this->loader->add_filter('woocommerce_cart_item_thumbnail', $plugin_public, 'woocommerce_cart_item_thumbnail', 10, 3);
     }
 
     /**

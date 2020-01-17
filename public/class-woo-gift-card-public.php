@@ -419,4 +419,24 @@ class Woo_gift_card_Public {
 	return $cart_item_data;
     }
 
+    /**
+     * Set cart item image to template image if available
+     *
+     * @param string $image
+     * @param \WC_Cart $cart_item
+     * @param string $cart_item_key
+     * @return string
+     */
+    public function woocommerce_cart_item_thumbnail($image, $cart_item, $cart_item_key) {
+
+	if ($cart_item["data"]->is_type('woo-gift-card')) {
+	    if (has_post_thumbnail($cart_item["wgc-receiver-template"])) {
+		$thumbnail_id = get_post_thumbnail_id($cart_item["wgc-receiver-template"]);
+		return wp_get_attachment_image($thumbnail_id);
+	    }
+	}
+
+	return $image;
+    }
+
 }
