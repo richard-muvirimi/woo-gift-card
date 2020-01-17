@@ -129,9 +129,9 @@ class Woo_gift_card {
 	require_once plugin_dir_path(dirname(__FILE__)) . 'rest/class-woo-gift-card-rest.php';
 
 	/**
-	 * The class responsible for all plugin utility methods.
+	 * The file responsible for all plugin utility functions.
 	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/Utils.php';
+	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/functions.php';
 
 	/**
 	 * The bar code generating classes
@@ -271,7 +271,7 @@ class Woo_gift_card {
 	$this->loader->add_action('rest_api_init', $plugin_rest, 'register_routes');
 
 	//short codes
-	$shortCodes = array_keys(WooGiftCardsUtils::getSupportedShortCodes());
+	$shortCodes = array_keys(wgc_supported_shortcodes());
 	foreach ($shortCodes as $shortCode) {
 	    $this->loader->add_shortcode('wgc-' . $shortCode, $plugin_rest, "template_shortcode");
 	}
@@ -333,6 +333,12 @@ class Woo_gift_card {
 
 	//cart item thumbnail
 	$this->loader->add_filter('woocommerce_cart_item_thumbnail', $plugin_public, 'woocommerce_cart_item_thumbnail', 10, 3);
+
+	//cart item name
+	$this->loader->add_filter('woocommerce_cart_item_name', $plugin_public, 'woocommerce_cart_item_name', 10, 3);
+
+	//cart item data
+	$this->loader->add_filter('woocommerce_get_item_data', $plugin_public, 'woocommerce_get_item_data', 10, 2);
     }
 
     /**

@@ -18,11 +18,11 @@ class WC_Woo_Gift_Card_Gateway extends WC_Payment_Gateway {
 
     /**
      *
-     * Initialis our custom payment gateway
+     * Initialize our custom payment gateway
      *
      * @param int $id
      */
-    public function __construct($id) {
+    public function __construct() {
 
 	$this->id = 'woo-gift-card-gateway';
 	$this->icon = apply_filters('woo-gift-card-icon', $this->plugin_dir_url("public/img/wallet-giftcard.svg"));

@@ -187,7 +187,7 @@ class Woo_gift_card_Rest {
 	$path = $request->get_param('file');
 
 	//search for correct content type mime
-	$mime = $this->get_mime_type_for_file($path);
+	$mime = wgc_get_mime_type_for_file($path);
 
 	ob_start();
 	//set relevant content type for document
@@ -202,18 +202,6 @@ class Woo_gift_card_Rest {
 
 	//wp set content type to json so, we have to exit here to prevent that
 	exit();
-    }
-
-    private function get_mime_type_for_file($file) {
-	$ext = pathinfo(basename($file), PATHINFO_EXTENSION);
-
-	foreach (wp_get_mime_types() as $key => $value) {
-	    if (in_array($ext, explode("|", $key))) {
-		return $value;
-	    }
-	}
-
-	return $this->get_mime_type_for_file("file.txt");
     }
 
     /**
@@ -392,36 +380,11 @@ class Woo_gift_card_Rest {
 	    $paths = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $content, $matches) ? $matches[1] : array();
 
 	    foreach ($paths as $path) {
-		$content = str_replace($path, $this->pathToBase64($path), $content);
+		$content = str_replace($path, wgc_path_to_base64($path), $content);
 	    }
 	}
 
 	return $content;
-    }
-
-    /**
-     * Convert a file to a base 64 string
-     *
-     * @param string $path
-     * @return string
-     */
-    private function pathToBase64($path) {
-	$data = file_get_contents($path);
-
-	$mime = $this->get_mime_type_for_file($path);
-
-	return $this->contentToBase64($data, $mime);
-    }
-
-    /**
-     * Convert data to base64
-     *
-     * @param string $content
-     * @param string $mime
-     * @return string
-     */
-    private function contentToBase64($content, $mime) {
-	return 'data:' . $mime . ';base64,' . base64_encode($content);
     }
 
     private function getBackGroundImageStyle() {
@@ -441,7 +404,7 @@ class Woo_gift_card_Rest {
 	    return $style;
 	}
 
-	$style .= "background-image: url('" . $this->pathToBase64($path) . "');";
+	$style .= "background-image: url('" . wgc_path_to_base64($path) . "');";
 
 	return $style;
     }
@@ -452,7 +415,7 @@ class Woo_gift_card_Rest {
      * @return void
      */
     public function template_shortcode($atts, $content = "", $sCode) {
-	$shortcode = str_replace(WooGiftCardsUtils::getShortCodePrefix(), "", $sCode);
+	$shortcode = str_replace("wgc-", "", $sCode);
 	$html = "";
 
 	$template = get_post($this->params['wgc-receiver-template']);
@@ -570,7 +533,7 @@ class Woo_gift_card_Rest {
 
 			$html = '<div class="qrcode-container">';
 			$html .= '<div class="qrcode-img"><img alt="' . $qrcode . '" ';
-			$html .= 'src="' . $this->contentToBase64($image, $this->get_mime_type_for_file($file)) . '"';
+			$html .= 'src="' . wgc_content_to_base64($image, wgc_get_mime_type_for_file($file)) . '"';
 			$html .= "></div>";
 
 			if ($meta["wgc-coupon-qrcode-code"][0] == "yes") {
@@ -606,7 +569,7 @@ class Woo_gift_card_Rest {
 				$image = $generator->getBarcode($code, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $color);
 
 				$html .= '<div class="barcode-img"><img alt="' . $barcode . '" ';
-				$html .= 'src="' . $this->contentToBase64($image, $this->get_mime_type_for_file("image." . $meta["wgc-coupon-barcode-image-type"][0])) . '"';
+				$html .= 'src="' . wgc_content_to_base64($image, wgc_get_mime_type_for_file("image." . $meta["wgc-coupon-barcode-image-type"][0])) . '"';
 				$html .= "></div>";
 
 				break;

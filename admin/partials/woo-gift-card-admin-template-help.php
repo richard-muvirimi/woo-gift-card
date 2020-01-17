@@ -30,10 +30,10 @@ defined('ABSPATH') || exit;
     </thead>
     <tbody>
 
-	<?php foreach (WooGiftCardsUtils::getSupportedShortCodes() as $key => $value) : ?>
+	<?php foreach (wgc_supported_shortcodes() as $key => $value) : ?>
     	<tr>
     	    <td>&diamondsuit;</td>
-    	    <td><code><?php esc_html_e(WooGiftCardsUtils::getShortCodePrefix() . $key) ?></code></td>
+    	    <td><code><?php esc_html_e("wgc-" . $key) ?></code></td>
     	    <td><?php esc_html_e($value) ?></td>
     	</tr>
 	<?php endforeach; ?>
