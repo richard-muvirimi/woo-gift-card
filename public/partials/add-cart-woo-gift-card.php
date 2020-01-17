@@ -98,12 +98,12 @@ $pricing = $product->get_meta("wgc-pricing");
 		<div class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		    <span><?php esc_html_e('Gift Voucher Template', 'woo-gift-card'); ?></span>
 		    <div class="wgc-flex-container">
-			<?php foreach ($templates as $template) : ?>
+	<?php foreach ($templates as $template) : ?>
 	    		<div>
 	    		    <input type="radio" class="woocommerce-Input woocommerce-Input--text input-radio" name="wgc-receiver-template" id="wgc-template-<?php esc_attr_e($template) ?>" value="<?php esc_attr_e($template); ?>" required <?php checked($templates[1], $template); ?>/>
 	    		    <label for="wgc-template-<?php esc_attr_e($template) ?>">
 	    			<span>
-					<?php esc_html_e(get_post_field('post_title', $template)) ?>
+				    <?php esc_html_e(get_post_field('post_title', $template)) ?>
 	    			</span>
 				    <?php
 				    if (has_post_thumbnail($template)) {
@@ -141,7 +141,7 @@ $pricing = $product->get_meta("wgc-pricing");
 	    			</sub>
 	    		    </label>
 	    		</div>
-			<?php endforeach; ?>
+	<?php endforeach; ?>
 		    </div>
 		</div>
 
@@ -149,42 +149,20 @@ $pricing = $product->get_meta("wgc-pricing");
 		    <label for="wgc-receiver-image"><?php esc_html_e('Gift Voucher background image', 'woo-gift-card'); ?></label>
 		    <input type="file" accept="image/*" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-image" id="wgc-receiver-image"/>
 		</p>
-	    <?php endif; ?>
+    <?php endif; ?>
 
         </fieldset>
 
         <!-- if can be scheduled-->
-	<?php if (!empty($product->get_meta('wgc-schedule'))): ?>
+    <?php if (!empty($product->get_meta('wgc-schedule'))): ?>
 	    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		<label for="wgc-receiver-schedule"><?php esc_html_e('Date to send Gift Voucher', 'woo-gift-card'); ?></label>
 		<input type="date" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-schedule" id="wgc-receiver-schedule" value="<?php esc_attr_e(date('Y-m-d')) ?>"  min="<?php esc_attr_e(date('Y-m-d')) ?>"/>
 
 		<?php if ($product->get_meta('wgc-expiry-days')): ?>
 	    	<span><em><?php printf(esc_html('Will expire in %s days after purchase or scheduled send.', 'woo-gift-card'), $product->get_meta('wgc-expiry-days')) ?></em></span>
-		<?php endif; ?>
+	    <?php endif; ?>
 	    </p>
 	<?php endif; ?>
-
-	<?php
-//send to different account
-//receiver name
-//receiver email
-// receiver message
-//gift card image
-//
-//schedule
-    endif;
-
-    /**
-     *
-     * send gift card
-     * emails, from name, gift message
-     *
-     * schedule gift card
-     * image for gift card
-     *
-     * pricing
-     * range, selected, user
-     */
-    ?>
+<?php endif; ?>
 </div>

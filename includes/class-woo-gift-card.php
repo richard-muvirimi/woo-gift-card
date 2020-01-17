@@ -303,9 +303,6 @@ class Woo_gift_card {
 	//my account page items
 	$this->loader->add_filter('woocommerce_account_menu_items', $plugin_public, 'filter_account_menu_items');
 
-	//on init
-	$this->loader->add_action('init', $plugin_public, 'onInitialise');
-
 	//display gift cards
 	$this->loader->add_action('woocommerce_account_woo-gift-card_endpoint', $plugin_public, 'show_gift_cards');
 

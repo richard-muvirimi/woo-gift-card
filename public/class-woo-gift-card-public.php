@@ -142,16 +142,6 @@ class Woo_gift_card_Public {
     }
 
     /**
-     * On initialise
-     *
-     * @return void
-     */
-    public function onInitialise() {
-
-	add_rewrite_endpoint('woo-gift-card', EP_PAGES);
-    }
-
-    /**
      * Display user gift cards on the front end
      *
      * @return void
@@ -368,55 +358,61 @@ class Woo_gift_card_Public {
 
 	    $cart_item_data['wgc-receiver-price'] = $price;
 
-	    //receiver name
-	    $cart_item_data['wgc-receiver-name'] = wgc_get_post_var('wgc-receiver-name') ?: "";
+	    if ($product->is_virtual()) {
+		//receiver name
+		$cart_item_data['wgc-receiver-name'] = wgc_get_post_var('wgc-receiver-name') ?: "";
 
-	    //receiver email
-	    $email = wgc_get_post_var('wgc-receiver-email');
-	    if ($email && $email !== false) {
-		if (is_email($email)) {
-		    $cart_item_data['wgc-receiver-email'] = $email;
+		//receiver email
+		$email = wgc_get_post_var('wgc-receiver-email');
+		if ($email && $email !== false) {
+		    if (is_email($email)) {
+			$cart_item_data['wgc-receiver-email'] = $email;
+		    } else {
+			throw new Exception(__("Please enter a valid recipient email to proceed."));
+		    }
 		} else {
-		    throw new Exception(__("Please enter a valid recipient email to proceed."));
+		    $cart_item_data['wgc-receiver-email'] = get_user_option("user_email");
 		}
-	    } else {
-		$cart_item_data['wgc-receiver-email'] = get_user_option("user_email");
-	    }
 
-	    //message
-	    $cart_item_data['wgc-receiver-message'] = substr(wgc_get_post_var('wgc-receiver-message'), 0, get_option("wgc-message-length")) ?: "";
+		//message
+		$cart_item_data['wgc-receiver-message'] = substr(wgc_get_post_var('wgc-receiver-message'), 0, get_option("wgc-message-length")) ?: "";
 
-	    //template
-	    $template = get_post(wgc_get_post_var('wgc-receiver-template'));
-	    if (is_object($template)) {
-		$cart_item_data['wgc-receiver-template'] = $template->ID;
-	    } else {
-		throw new Exception(__("Please enter valid details to proceed."));
-	    }
+		if (count($product->get_meta('wgc-template')) > 0) {
+		    //template
+		    $template = get_post(wgc_get_post_var('wgc-receiver-template'));
+		    if (is_object($template)) {
+			$cart_item_data['wgc-receiver-template'] = $template->ID;
+		    } else {
+			throw new Exception(__("Please enter valid details to proceed."));
+		    }
 
-	    //event
-	    $cart_item_data['wgc-event'] = wgc_get_post_var("wgc-event") ?: $template->post_title;
+		    //image
+		    if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
+			$file = $_FILES['wgc-receiver-image'];
+			$path = $file['tmp_name'];
 
-	    //schedule
-	    $schedule = wgc_get_post_var('wgc-receiver-schedule');
-	    if ($schedule) {
-		$cart_item_data['wgc-receiver-schedule'] = $schedule;
-	    } else {
-		throw new Exception(__("Please enter valid details to proceed."));
-	    }
+			$cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($path);
+		    } else {
+			if (has_post_thumbnail($template)) {
+			    $thumbnail_id = get_post_thumbnail_id($template);
+			    $url = wp_get_attachment_image_url($thumbnail_id);
 
-	    //image
-	    if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
-		$file = $_FILES['wgc-receiver-image'];
-		$path = $file['tmp_name'];
+			    $cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($url);
+			}
+		    }
 
-		$cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($path);
-	    } else {
-		if (has_post_thumbnail($template)) {
-		    $thumbnail_id = get_post_thumbnail_id($template);
-		    $url = wp_get_attachment_image_url($thumbnail_id);
+		    //event
+		    $cart_item_data['wgc-event'] = wgc_get_post_var("wgc-event") ?: $template->post_title;
+		}
 
-		    $cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($url);
+		//schedule
+		if (!empty($product->get_meta('wgc-schedule'))) {
+		    $schedule = wgc_get_post_var('wgc-receiver-schedule');
+		    if ($schedule) {
+			$cart_item_data['wgc-receiver-schedule'] = $schedule;
+		    } else {
+			throw new Exception(__("Please enter valid details to proceed."));
+		    }
 		}
 	    }
 	}

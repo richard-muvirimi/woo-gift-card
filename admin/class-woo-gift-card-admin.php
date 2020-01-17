@@ -256,6 +256,9 @@ class Woo_gift_card_Admin {
 	if (empty($sizes)) {
 	    require_once plugin_dir_path(__DIR__) . 'includes/install/Dimensions.php';
 	    DimensionsInstaller::Install();
+
+	    //first time run so rewrite endpoint rules
+	    add_rewrite_endpoint('woo-gift-card', EP_PAGES);
 	}
     }
 
