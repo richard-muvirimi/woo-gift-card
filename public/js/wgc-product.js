@@ -31,7 +31,7 @@
     $(document).ready(function () {
 
 	//prepare woocommerce add to cart form
-	$("[name='add-to-cart']").parent().addClass("wgc-preview-form");
+	$("form:has([name='add-to-cart'])").addClass("wgc-preview-form");
 
 	$('textarea#wgc-receiver-message').on("keydown keyup", () => {
 	    let text = $('textarea#wgc-receiver-message').val();
@@ -43,25 +43,10 @@
 
 	});
 
-	$("#wgc-preview").click((e) => {
-	    e.preventDefault();
+	$("#wgc-product").click((e) => {
 
-	    console.log(window.wgc_product.pdf_template_url);
-
-	    let form = $("form.wgc-preview-form:first").get(0);
-	    form.action = window.wgc_product.pdf_template_url;
-	    form.target = "wgc-preview-frame";
-
-	    //product id
-	    let product_input = document.createElement("input");
-	    product_input.type = "hidden";
-	    product_input.name = "wgc-product";
-	    product_input.value = $("#wgc-preview").val();
-	    form.appendChild(product_input);
-
-	    form.submit();
-
-	    $("form.cart .wgc-preview-modal").show();
+	    $(e.target).attr("formaction", window.wgc_product.pdf_template_url);
+	    $(e.target).siblings("div.wgc-preview-modal").show();
 
 	});
     }

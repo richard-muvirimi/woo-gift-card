@@ -12,4 +12,4 @@
  */
 defined('ABSPATH') || exit;
 ?>
-<button id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>
+<button type="submit" formtarget="wgc-preview-frame" id="wgc-product" name="wgc-product" value="<?php esc_attr_e($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>

@@ -14,3 +14,7 @@ form.wgc-preview-form .wgc-flex-container div{
 form.wgc-preview-form .wgc-flex-container div label{
     display: inline;
 }
+
+form.wgc-preview-form .button.alt {
+    margin-bottom: 5px;
+}
