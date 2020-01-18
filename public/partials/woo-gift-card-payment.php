@@ -10,6 +10,7 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/public/partials
  */
+defined('ABSPATH') || exit;
 ?>
 
 <p class="form-row form-row-wide validate-required validate-email" id="woo-gift-card-email-field">

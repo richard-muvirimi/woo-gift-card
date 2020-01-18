@@ -8,7 +8,7 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/public/partials/preview
  */
-//wp_nonce_field('wgc-preview', 'wgc-preview-nonce');
+defined('ABSPATH') || exit;
 ?>
 
 <div class="wgc-preview-modal">

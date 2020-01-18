@@ -20,8 +20,6 @@
  * @subpackage Woo_gift_card/admin
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-use Dompdf\Dompdf;
-
 class Woo_gift_card_Admin {
 
     /**
@@ -240,7 +238,6 @@ class Woo_gift_card_Admin {
 		'no_terms' => __('No Template Sizes', 'woo-gift-card'),
 		'items_list_navigation' => __('Template Sizes list navigation', 'woo-gift-card'),
 		'items_list' => __('Template Sizes list', 'woo-gift-card'),
-		/* translators: Tab heading when selecting from the most used terms. */
 		'most_used' => _x('Most Used', 'woo-gift-card'),
 		'back_to_items' => __('&larr; Back to Template Sizes', 'woo-gift-card')
 	    ),

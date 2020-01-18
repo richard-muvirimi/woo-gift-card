@@ -1,8 +1,6 @@
 <?php
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+defined('ABSPATH') || exit;
 
 /**
  * Convert a file to a base 64 string
@@ -73,9 +71,9 @@ function wgc_get_post_var($name) {
 	if (is_array($_POST[$name])) {
 	    $filtered = $_POST[$name];
 	} else {
-	    $filtered = filter_input(INPUT_POST, $name);
+	    $filtered = trim(filter_input(INPUT_POST, $name));
 	}
-	return wc_clean(wp_unslash(trim($filtered)));
+	return wc_clean(wp_unslash($filtered));
     }
     return false;
 }
@@ -85,7 +83,7 @@ function wgc_get_post_var($name) {
  * @param type $param
  * @return string
  */
-function wgc_unique_key($param) {
+function wgc_unique_key($email) {
     $key = strtoupper(wp_generate_password());
 
     $giftCards = get_posts(array(
@@ -100,7 +98,7 @@ function wgc_unique_key($param) {
     //if exists then redo
     if (count($giftCards)) {
 
-	return WooGiftCardsUtils::get_unique_key($email);
+	return wgc_unique_key($email);
     }
 
     return $key;

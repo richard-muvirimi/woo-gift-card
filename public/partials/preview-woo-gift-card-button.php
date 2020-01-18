@@ -10,6 +10,6 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/public/partials
  */
-//wp_nonce_field('wgc-preview', 'wgc-preview-nonce');
+defined('ABSPATH') || exit;
 ?>
-<button type="submit" id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>
+<button id="wgc-preview" name="wgc-preview" value="<?php echo esc_attr($product->get_id()); ?>" class="button alt"><?php _e("Preview Template", 'woo-gift-card'); ?></button>

@@ -8,6 +8,7 @@
  * @package    Woo_gift_card
  * @subpackage Woo_gift_card/public/partials
  */
+defined('ABSPATH') || exit;
 ?>
 
 <p><?php echo sprintf(__('Gift vouchers attached to %s', 'woo-gift-card'), get_userdata(get_current_user_id())->user_email); ?>
