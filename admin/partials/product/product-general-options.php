@@ -14,7 +14,7 @@ defined('ABSPATH') || exit;
     woocommerce_wp_select(array(
 	'id' => 'wgc-pricing',
 	//'wrapper_class' => 'show_if_' . 'woo-gift-card',
-	'label' => __('Gift Voucher Pricing', 'woo-gift-card'),
+	'label' => __('Pricing', 'woo-gift-card'),
 	'description' => __('The pricing system for gift voucher', 'woo-gift-card'),
 	'options' => array(
 	    "fixed" => __("Fixed Price", 'woo-gift-card'),
@@ -66,8 +66,8 @@ defined('ABSPATH') || exit;
 	    woocommerce_wp_text_input(array(
 		'id' => 'wgc-price-selected',
 		'value' => $product_object->get_meta('wgc-price-selected'),
-		'label' => __('Gift Voucher Values', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ')',
-		'description' => __('The monetary values of the gift voucher separated by |', 'woo-gift-card'),
+		'label' => __('Prices', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ')',
+		'description' => __('The selectable prices of the gift voucher separated by |', 'woo-gift-card'),
 		'placeholder' => __("10|20|30", "woo-gift-card"),
 		'desc_tip' => true
 	    ));
@@ -81,8 +81,8 @@ defined('ABSPATH') || exit;
 		'id' => 'wgc-price-range-from',
 		'value' => $product_object->get_meta('wgc-price-range-from'),
 		'data_type' => 'price',
-		'label' => __('From Price', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ')',
-		'description' => __('The minimum monetary value of the gift voucher', 'woo-gift-card'),
+		'label' => __('Price From', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ')',
+		'description' => __('The minimum pricing of the gift voucher', 'woo-gift-card'),
 		'desc_tip' => true
 	    ));
 
@@ -90,8 +90,8 @@ defined('ABSPATH') || exit;
 		'id' => 'wgc-price-range-to',
 		'value' => $product_object->get_meta('wgc-price-range-to'),
 		'data_type' => 'price',
-		'label' => __('To Price', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
-		'description' => __('The maximum monetary value of the gift voucher', 'woo-gift-card '),
+		'label' => __('Price To', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
+		'description' => __('The maximum pricing of the gift voucher', 'woo-gift-card '),
 		'desc_tip' => true
 	    ));
 	    ?>
@@ -103,7 +103,7 @@ defined('ABSPATH') || exit;
 		'id' => 'wgc-price-user',
 		'value' => $product_object->get_meta('wgc-price-user'),
 		'data_type' => 'price',
-		'label' => __('Default user price', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
+		'label' => __('Default price', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
 		'description' => __('The initial price of the gift voucher', 'woo-gift-card '),
 		'desc_tip' => true
 	    ));
@@ -117,12 +117,9 @@ defined('ABSPATH') || exit;
     <?php
     woocommerce_wp_select(array(
 	'id' => 'wgc-discount',
-	'label' => __('Gift Voucher Discount System', 'woo-gift-card'),
+	'label' => __('Discount Type', 'woo-gift-card'),
 	'description' => __('The discounting system for gift voucher', 'woo-gift-card'),
-	'options' => array(
-	    "fixed" => __("Fixed Discount", 'woo-gift-card'),
-	    "percentage" => __("Percentage Discount", 'woo-gift-card')
-	),
+	'options' => wc_get_coupon_types(),
 	'value' => $product_object->get_meta('wgc-discount'),
 	'desc_tip' => true
     ));
@@ -133,47 +130,50 @@ defined('ABSPATH') || exit;
 	woocommerce_wp_text_input(array(
 	    'wrapper_class' => 'wgc-discount-fixed',
 	    'id' => 'wgc-discount-fixed',
-	    'value' => $product_object->get_meta('wgc-discount-fixed'),
+	    'value' => $product_object->get_meta('wgc-discount-fixed') ?: 0,
 	    'data_type' => 'price',
 	    'label' => __('Discount Amount', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
-	    'description' => __('The monetary value to discount on customer cart', 'woo-gift-card'),
+	    'description' => __('The monetary value to discount. Leave blank to default to this product\'s price.', 'woo-gift-card'),
 	    'desc_tip' => true
 	));
 
 	woocommerce_wp_text_input(array(
 	    'wrapper_class' => 'wgc-discount-percentage',
 	    'id' => 'wgc-discount-percentage',
-	    'value' => $product_object->get_meta('wgc-discount-percentage'),
+	    'value' => $product_object->get_meta('wgc-discount-percentage') ?: 0,
 	    'label' => __('Discount Percentage', 'woo-gift-card'),
 	    'custom_attributes' => array(
 		"min" => 1,
 		"max" => 100
 	    ),
 	    'type' => "number",
-	    'description' => __('The percentage value to discount on customer cart', 'woo-gift-card'),
+	    'description' => __('The percentage value to discount.', 'woo-gift-card'),
 	    'desc_tip' => true
 	));
 	?>
     </div>
+</div>
+<div class="options_group show_if_woo-gift-card">
+    <p class="form-field show_if_virtual">
+	<label for="wgc-template"><?php _e('Templates', 'woo-gift-card'); ?></label>
+	<select id="wgc-template" name="wgc-template[]" style="width: 50%;"  class="wc-enhanced-select" multiple="multiple" data-placeholder="<?php esc_attr_e('No templates', 'woo-gift-card'); ?>">
+	    <?php
+	    $template_ids = $product_object->get_meta('wgc-template');
+	    $templates = get_posts(array(
+		'numberposts' => -1,
+		'post_type' => 'wgc-template',
+		'post_status' => 'publish',
+		'fields' => array('ids'),
+		'orderby' => "name"
+	    ));
 
-    <?php
-    woocommerce_wp_text_input(array(
-	'id' => 'wgc-cart-min',
-	'value' => $product_object->get_meta('wgc-cart-min'),
-	'data_type' => 'price',
-	'label' => __('Cart Total Minimum', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
-	'description' => __('The minimum monetary value of customer\'s cart before gift voucher can be applied', 'woo-gift-card'),
-	'desc_tip' => true
-    ));
-
-    woocommerce_wp_text_input(array(
-	'id' => 'wgc-cart-max',
-	'value' => $product_object->get_meta('wgc-cart-max'),
-	'data_type' => 'price',
-	'label' => __('Cart Total Maximum', 'woo-gift-card') . ' (' . get_woocommerce_currency_symbol() . ') ',
-	'description' => __('The maximum monetary value of customer\'s cart the gift voucher can be applied to', 'woo-gift-card'),
-	'desc_tip' => true
-    ));
-    ?>
+	    if ($templates) {
+		foreach ($templates as $template) {
+		    echo '<option value="' . esc_attr($template->ID) . '"' . wc_selected($template->ID, $template_ids) . '>' . esc_html($template->post_title) . '</option>';
+		}
+	    }
+	    ?>
+	</select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                                                 ?>
+    </p>
 </div>
 

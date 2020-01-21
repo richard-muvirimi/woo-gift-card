@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
  * @since      1.0.0
  *
  * @package    Woo_gift_card
- * @subpackage Woo_gift_card/includes/product/type
+ * @subpackage Woo_gift_card/includes/modal/product
  */
 
 /**
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
  *
  * @since      1.0.0
  * @package    Woo_gift_card
- * @subpackage Woo_gift_card/includes/product/type
+ * @subpackage Woo_gift_card/includes/modal/product
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
 class WC_Product_Woo_Gift_Card extends WC_Product_Simple {

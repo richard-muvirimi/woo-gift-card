@@ -160,6 +160,8 @@ class Woo_gift_card_Public {
     public function payment_complete($order_id) {
 	$order = wc_get_order($order_id);
 
+
+
 //if already processed skip
 	$posts = get_posts(array(
 	    'posts_per_page' => 1,
@@ -477,6 +479,16 @@ class Woo_gift_card_Public {
 	}
 
 	return $item_data;
+    }
+
+    /**
+     *
+     */
+    public function woocommerce_after_cart_contents() {
+
+	if (!get_posts(array("post_type" => "wgc-voucher", "post_status" => "published"))) {
+	    include_once plugin_dir_path(__DIR__) . "/public/partials/cart/wgc-cart-voucher.php";
+	}
     }
 
 }

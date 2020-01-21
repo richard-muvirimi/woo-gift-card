@@ -336,6 +336,9 @@ class Woo_gift_card {
 
 	//cart item data
 	$this->loader->add_filter('woocommerce_get_item_data', $plugin_public, 'woocommerce_get_item_data', 10, 2);
+
+	//allow gift voucher application
+	$this->loader->add_action('woocommerce_after_cart_contents', $plugin_public, 'woocommerce_after_cart_contents');
     }
 
     /**

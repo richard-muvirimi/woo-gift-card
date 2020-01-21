@@ -148,62 +148,31 @@ class Woo_gift_card_Admin {
      */
     public function onInitialise() {
 
-	register_post_type('wgc-product', array(
-	    'show_ui' => true,
-	    'show_in_menu' => current_user_can('manage_woocommerce') ? 'woocommerce' : true,
-	    'exclude_from_search' => true,
-	    'hierarchical' => false,
-	    'labels' => array(
-		'name' => __('Gift Voucher Products', 'woo-gift-card'),
-		'singular_name' => __('Gift Voucher Product', 'woo-gift-card'),
-		'add_new' => __('Add New', 'woo-gift-card'),
-		'add_new_item' => __('Add New Gift Voucher Product', 'woo-gift-card'),
-		'edit_item' => __('Edit Gift Voucher Product', 'woo-gift-card'),
-		'new_item' => __('New Gift Voucher Product', 'woo-gift-card'),
-		'view_item' => __('View Gift Voucher Product', 'woo-gift-card'),
-		'search_items' => __('Search Gift Voucher Products', 'woo-gift-card'),
-		'not_found' => __('No Gift Voucher Products Found', 'woo-gift-card'),
-		'not_found_in_trash' => __('No Gift Voucher Products found in trash', 'woo-gift-card'),
-		'parent_item_colon' => __('Parent Gift Voucher Product:', 'woo-gift-card'),
-		'all_items' => __('Gift Voucher Products', 'woo-gift-card'),
-		'archives' => __('Gift Voucher Product archives', 'woo-gift-card'),
-		'insert_into_item' => __('Insert into Gift Voucher Product profile', 'woo-gift-card'),
-		'uploaded_to_this_item' => __('Uploaded to Gift Voucher Product profile', 'woo-gift-card'),
-		'menu_name' => __('Gift Voucher Products', 'woo-gift-card'),
-		'name_admin_bar' => __('Gift Voucher Products', 'woo-gift-card')
-	    ),
-	    'rewrite' => array('slug' => 'woo-gift-card', 'gift-card'),
-	    'supports' => array('title', 'author'),
-	    'delete_with_user' => false,
-	    'register_meta_box_cb' => array($this, 'register_gift_card_meta_box'),
-	    'description' => __('Gift card product type that can be bought by customers.', 'woo-gift-card'),
-	));
-
 	register_post_type('wgc-template', array(
 	    'show_ui' => true,
 	    'show_in_menu' => current_user_can('manage_woocommerce') ? 'wgc-template' : true,
 	    'exclude_from_search' => true,
 	    'hierarchical' => false,
 	    "description" => __("Woo Gift Card Template post type", 'woo-gift-card'),
-	    'label' => __('Voucher Templates', 'woo-gift-card'),
+	    'label' => __('Templates', 'woo-gift-card'),
 	    'labels' => array(
-		'name' => __('Gift Voucher Templates', 'woo-gift-card'),
-		'singular_name' => __('Gift Voucher Template', 'woo-gift-card'),
+		'name' => __('Templates', 'woo-gift-card'),
+		'singular_name' => __('Template', 'woo-gift-card'),
 		'add_new' => __('Add New', 'woo-gift-card'),
-		'add_new_item' => __('Add New Gift Voucher Template', 'woo-gift-card'),
-		'edit_item' => __('Edit Gift Voucher Template', 'woo-gift-card'),
-		'new_item' => __('New Gift Voucher Template', 'woo-gift-card'),
-		'view_item' => __('View Gift Voucher Template', 'woo-gift-card'),
-		'search_items' => __('Search Gift Voucher Templates', 'woo-gift-card'),
-		'not_found' => __('No Gift Voucher Templates Found', 'woo-gift-card'),
-		'not_found_in_trash' => __('No Gift Voucher Templates found in trash', 'woo-gift-card'),
-		'parent_item_colon' => __('Parent Gift Voucher Template:', 'woo-gift-card'),
-		'all_items' => __('Gift Voucher Templates', 'woo-gift-card'),
-		'archives' => __('Gift Voucher Template archives', 'woo-gift-card'),
-		'insert_into_item' => __('Insert into Gift Voucher Template profile', 'woo-gift-card'),
-		'uploaded_to_this_item' => __('Uploaded to Gift Voucher Template profile', 'woo-gift-card'),
-		'menu_name' => __('Gift Voucher Templates', 'woo-gift-card'),
-		'name_admin_bar' => __('Gift Voucher Templates', 'woo-gift-card'),
+		'add_new_item' => __('Add New Template', 'woo-gift-card'),
+		'edit_item' => __('Edit Template', 'woo-gift-card'),
+		'new_item' => __('New Template', 'woo-gift-card'),
+		'view_item' => __('View Template', 'woo-gift-card'),
+		'search_items' => __('Search Templates', 'woo-gift-card'),
+		'not_found' => __('No Templates Found', 'woo-gift-card'),
+		'not_found_in_trash' => __('No Templates found in trash', 'woo-gift-card'),
+		'parent_item_colon' => __('Parent Template:', 'woo-gift-card'),
+		'all_items' => __('Templates', 'woo-gift-card'),
+		'archives' => __('Template archives', 'woo-gift-card'),
+		'insert_into_item' => __('Insert into Template profile', 'woo-gift-card'),
+		'uploaded_to_this_item' => __('Uploaded to Template profile', 'woo-gift-card'),
+		'menu_name' => __('Templates', 'woo-gift-card'),
+		'name_admin_bar' => __('Templates', 'woo-gift-card'),
 		'featured_image' => __('Template Background Image', 'woo-gift-card'),
 		'set_featured_image' => __('Set template background image', 'woo-gift-card'),
 		'remove_featured_image' => __('Remove template background image', 'woo-gift-card'),
@@ -220,7 +189,7 @@ class Woo_gift_card_Admin {
 	register_taxonomy("wgc-template-dimension", "wgc-template", array(
 	    'labels' => array(
 		'name' => _x('Template Sizes', 'woo-gift-card'),
-		'singular_name' => _x('Template Size', 'woo-gift-card'),
+		'singular_name' => __('Template Size', 'woo-gift-card'),
 		'search_items' => __('Search Template Sizes', 'woo-gift-card'),
 		'popular_items' => __('Popular Template Sizes', 'woo-gift-card'),
 		'all_items' => __('All Template Sizes', 'woo-gift-card'),
@@ -238,7 +207,7 @@ class Woo_gift_card_Admin {
 		'no_terms' => __('No Template Sizes', 'woo-gift-card'),
 		'items_list_navigation' => __('Template Sizes list navigation', 'woo-gift-card'),
 		'items_list' => __('Template Sizes list', 'woo-gift-card'),
-		'most_used' => _x('Most Used', 'woo-gift-card'),
+		'most_used' => __('Most Used', 'woo-gift-card'),
 		'back_to_items' => __('&larr; Back to Template Sizes', 'woo-gift-card')
 	    ),
 	    "description" => __("Woo Gift Card Template sizes", 'woo-gift-card'),
@@ -539,7 +508,7 @@ class Woo_gift_card_Admin {
     public function woocommerce_product_data_panels() {
 	global $product_object;
 
-	include_once plugin_dir_path(__DIR__) . "/admin/partials/product/product-data-gift-card-html.php";
+	include_once plugin_dir_path(__DIR__) . "/admin/partials/product/product-gift-card-options.php";
     }
 
     /**
@@ -554,13 +523,13 @@ class Woo_gift_card_Admin {
 	    include_once plugin_dir_path(__DIR__) . "/admin/partials/product/thank-you-gift-card-html.php";
 	}
 
-	include_once plugin_dir_path(__DIR__) . "/admin/partials/product/product-gift-card-html.php";
+	include_once plugin_dir_path(__DIR__) . "/admin/partials/product/product-general-options.php";
     }
 
     public function woocommerce_product_options_related() {
 	global $product_object;
 
-	include_once plugin_dir_path(__DIR__) . "/admin/partials/product/product-link-gift-card-html.php";
+	include_once plugin_dir_path(__DIR__) . "/admin/partials/product/product-linked-options.php";
     }
 
     /**
@@ -569,23 +538,51 @@ class Woo_gift_card_Admin {
      */
     public function save_product_object($product) {
 
-	if ($product->is_type('woo-gift-card')) {
-	    $product->delete_meta_data("wgc-discount");
+	if (!$product->is_type('woo-gift-card')) {
+	    //pricing
+	    $product->delete_meta_data("wgc-pricing");
+	    $product->delete_meta_data("wgc-price-selected");
+	    $product->delete_meta_data("wgc-price-range-from");
+	    $product->delete_meta_data("wgc-price-range-to");
+	    $product->delete_meta_data("wgc-price-user");
 
+	    //discount
+	    $product->delete_meta_data("wgc-discount");
+	    $product->delete_meta_data("wgc-discount-fixed");
+	    $product->delete_meta_data("wgc-discount-percentage");
+
+	    //templates
 	    $product->delete_meta_data("wgc-template");
-	    $product->delete_meta_data("wgc-sale");
-	    $product->delete_meta_data("wgc-multiple");
-	    $product->delete_meta_data("wgc-expiry-days");
+
+	    //restrictions
 	    $product->delete_meta_data("wgc-cart-min");
 	    $product->delete_meta_data("wgc-cart-max");
-	    $product->delete_meta_data("wgc-individual");
-	    $product->delete_meta_data("wgc-schedule");
+	    $product->delete_meta_data("wgc-emails");
 
+	    //options
+	    $product->delete_meta_data("wgc-individual");
+	    $product->delete_meta_data("wgc-sale");
+
+	    //limits
+	    $product->delete_meta_data("wgc-usability");
+	    $product->delete_meta_data("wgc-multiple");
+
+	    //misc
+	    $product->delete_meta_data("wgc-schedule");
+	    $product->delete_meta_data("wgc-expiry-days");
+
+	    //linked products
+	    $product->delete_meta_data("wgc-product-ids");
 	    $product->delete_meta_data("wgc-excluded-product-ids");
+	    $product->delete_meta_data("wgc-product-categories");
 	    $product->delete_meta_data("wgc-excluded-product-categories");
 
-//thank you
+	    //thank you
 	    $product->delete_meta_data("_thankyouvoucher");
+	    $product->delete_meta_data("wgc-thankyou-order-status");
+	    $product->delete_meta_data("wgc-thankyou-orders");
+	    $product->delete_meta_data("wgc-thankyou-min-cart");
+	    $product->delete_meta_data("wgc-thankyou-max-cart");
 	}
     }
 
@@ -599,67 +596,30 @@ class Woo_gift_card_Admin {
 
 	$product = new WC_Product_Woo_Gift_Card($post_id);
 
-//discount
-	$product->update_meta_data("wgc-discount", wgc_get_post_var('wgc-discount'));
-
-	switch ($product->get_meta('wgc-discount')) {
-	    case 'fixed':
-		$product->update_meta_data("wgc-discount-fixed", wgc_get_post_var('wgc-discount-fixed'));
-		$product->delete_meta_data('wgc-discount-percentage');
-		break;
-	    case 'percentage':
-		$product->update_meta_data("wgc-discount-percentage", wgc_get_post_var('wgc-discount-percentage'));
-		$product->delete_meta_data('wgc-discount-fixed');
-		break;
-	    default :
-		$product->delete_meta_data('wgc-discount-percentage');
-		$product->delete_meta_data('wgc-discount-fixed');
-	}
-
-//custom options
-	$product->update_meta_data("wgc-template", wgc_get_post_var('wgc-template'));
-	$product->update_meta_data("wgc-sale", wgc_get_post_var('wgc-sale'));
-	$product->update_meta_data("wgc-multiple", wgc_get_post_var('wgc-multiple'));
-	$product->update_meta_data("wgc-expiry-days", wgc_get_post_var('wgc-expiry-days'));
-	$product->update_meta_data("wgc-cart-min", wgc_get_post_var('wgc-cart-min'));
-	$product->update_meta_data("wgc-cart-max", wgc_get_post_var('wgc-cart-max'));
-	$product->update_meta_data("wgc-individual", wgc_get_post_var('wgc-individual'));
-	$product->update_meta_data("wgc-schedule", wgc_get_post_var('wgc-schedule'));
-
-//linked products
-	$product->update_meta_data("wgc-excluded-product-ids", wgc_get_post_var('wgc-excluded-product-ids'));
-	$product->update_meta_data("wgc-excluded-product-categories", wgc_get_post_var('wgc-excluded-product-categories'));
-
-//thank you
+	//thank you
 	$product->update_meta_data("_thankyouvoucher", wgc_get_post_var('_thankyouvoucher'));
 
-//clear prices before setting
+	//clear prices before setting
 	$product->set_date_on_sale_from(null);
 	$product->set_date_on_sale_to(null);
 	$product->set_regular_price(null);
 	$product->set_sale_price(null);
 
-	$product->delete_meta_data('wgc-price-range-from');
-	$product->delete_meta_data('wgc-price-range-to');
-	$product->delete_meta_data('wgc-price-selected');
-	$product->delete_meta_data('wgc-price-user');
+	$delete_meta = array();
 
 	if ($product->is_thankyouvoucher()) {
 
-//thank you validation order status
+	    //thank you validation order status
 	    $product->update_meta_data("wgc-thankyou-order-status", wgc_get_post_var('wgc-thankyou-order-status'));
 	    $product->update_meta_data("wgc-thankyou-orders", wgc_get_post_var('wgc-thankyou-orders'));
 	    $product->update_meta_data("wgc-thankyou-min-cart", wgc_get_post_var('wgc-thankyou-min-cart'));
 	    $product->update_meta_data("wgc-thankyou-max-cart", wgc_get_post_var('wgc-thankyou-max-cart'));
 
-	    $product->delete_meta_data('wgc-pricing');
+	    $delete_meta = array("wgc-pricing", 'wgc-price-range-from', 'wgc-price-range-to', 'wgc-price-selected', 'wgc-price-user');
 	} else {
-	    $product->delete_meta_data('wgc-thankyou-order-status');
-	    $product->delete_meta_data('wgc-thankyou-orders');
-	    $product->delete_meta_data('wgc-thankyou-min-cart');
-	    $product->delete_meta_data('wgc-thankyou-max-cart');
+	    $delete_meta = array('wgc-thankyou-order-status', 'wgc-thankyou-orders', 'wgc-thankyou-min-cart', 'wgc-thankyou-max-cart');
 
-//pricing
+	    //pricing
 	    $product->update_meta_data("wgc-pricing", wgc_get_post_var('wgc-pricing'));
 
 	    switch ($product->get_meta("wgc-pricing")) {
@@ -677,12 +637,12 @@ class Woo_gift_card_Admin {
 		    $date_on_sale_from = wgc_get_post_var('wgc-sale-price-dates-from');
 		    $date_on_sale_to = wgc_get_post_var('wgc-sale-price-dates-to');
 
-// Force date from to beginning of day.
+		    // Force date from to beginning of day.
 		    if ($date_on_sale_from) {
 			$product->set_date_on_sale_from(date('Y-m-d 00:00:00', strtotime($date_on_sale_from)));
 		    }
 
-// Force date to to the end of the day.
+		    // Force date to to the end of the day.
 		    if ($date_on_sale_to) {
 			$product->set_date_on_sale_to(date('Y-m-d 23:59:59', strtotime($date_on_sale_to)));
 		    }
@@ -696,6 +656,46 @@ class Woo_gift_card_Admin {
 		default:
 	    }
 	}
+
+	//delete unnecessary meta data
+	array_walk($delete_meta, array($product, "delete_meta_data"));
+
+	//discount
+	$product->update_meta_data("wgc-discount", wgc_get_post_var('wgc-discount'));
+
+	if (strpos($product->get_meta('wgc-discount'), "fixed") !== false) {
+	    $product->update_meta_data("wgc-discount-fixed", wgc_get_post_var('wgc-discount-fixed'));
+	    $product->delete_meta_data('wgc-discount-percentage');
+	} else {
+	    $product->update_meta_data("wgc-discount-percentage", wgc_get_post_var('wgc-discount-percentage'));
+	    $product->delete_meta_data('wgc-discount-fixed');
+	}
+
+	//templates
+	$product->update_meta_data("wgc-template", wgc_get_post_var('wgc-template'));
+
+	//restrictions
+	$product->update_meta_data("wgc-cart-min", wgc_get_post_var('wgc-cart-min'));
+	$product->update_meta_data("wgc-cart-max", wgc_get_post_var('wgc-cart-max'));
+	$product->update_meta_data("wgc-emails", wgc_get_post_var('wgc-emails'));
+
+	//options
+	$product->update_meta_data("wgc-individual", wgc_get_post_var('wgc-individual'));
+	$product->update_meta_data("wgc-sale", wgc_get_post_var('wgc-sale'));
+
+	//limits
+	$product->update_meta_data("wgc-usability", wgc_get_post_var('wgc-usability'));
+	$product->update_meta_data("wgc-multiple", wgc_get_post_var('wgc-multiple'));
+
+	//misc
+	$product->update_meta_data("wgc-schedule", wgc_get_post_var('wgc-schedule'));
+	$product->update_meta_data("wgc-expiry-days", wgc_get_post_var('wgc-expiry-days'));
+
+	//linked products
+	$product->update_meta_data("wgc-products", wgc_get_post_var('wgc-products'));
+	$product->update_meta_data("wgc-excluded-products", wgc_get_post_var('wgc-excluded-products'));
+	$product->update_meta_data("wgc-product-categories", wgc_get_post_var('wgc-product-categories'));
+	$product->update_meta_data("wgc-excluded-product-categories", wgc_get_post_var('wgc-excluded-product-categories'));
 
 	$product->save();
 	$product->save_meta_data();
@@ -789,7 +789,7 @@ class Woo_gift_card_Admin {
 	$product_types['downloadable']['wrapper_class'] .= " show_if_" . $this->plugin_name;
 
 	if (get_option('wgc-thank-you', false)) {
-//add custom product option
+	    //add custom product option
 	    $product_types['thankyouvoucher'] = array(
 		'id' => '_thankyouvoucher',
 		'wrapper_class' => "show_if_" . $this->plugin_name,

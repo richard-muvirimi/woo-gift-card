@@ -24,10 +24,14 @@
 	}).change();
 
 	//handle discount type changes
-	$('#wgc-discount').change(() => {
+	$('#wgc-discount').change((e) => {
 
-	    let selectClass = 'wgc-discount-' + $('#wgc-discount').val();
-	    let selector = "[class~='" + selectClass + "']";
+	    let discount = "fixed";
+	    if ($('#wgc-discount').val().indexOf(discount) === -1) {
+		discount = "percentage";
+	    }
+
+	    let selector = "[class~='wgc-discount-" + discount + "']";
 	    $('div.wgc-discount').children(":not(" + selector + ")").hide();
 	    $('div.wgc-discount').children(selector).show();
 	}).change();
