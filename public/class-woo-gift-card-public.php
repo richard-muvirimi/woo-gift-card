@@ -160,42 +160,66 @@ class Woo_gift_card_Public {
     public function payment_complete($order_id) {
 	$order = wc_get_order($order_id);
 
-
-
-//if already processed skip
-	$posts = get_posts(array(
-	    'posts_per_page' => 1,
-	    'post_type' => 'woo-gift-card',
-	    'meta_key' => 'woo-gift-card-order',
-	    'meta_value' => $order->id,
-	    'fields' => 'ids'
+	$coupons = get_posts(array(
+	    "post_type" => "shop_coupon",
+	    "meta_key" => "wgc-order",
+	    "meta_value" => $order_id
 	));
 
-	if (empty($posts)) {
+	if (empty($coupons)) {
+	    //order has not yet been processed
 
 	    foreach ($order->get_items() as $item) {
 
 		$product = $item->get_product();
-		if ($product->get_type() == 'woo-gift-card') {
+		if ($product->is_type('woo-gift-card')) {
 
-//if gift card create for tracking
+		    //if gift card create for tracking
 		    for ($i = 0; $i < $item->get_quantity(); $i++) {
-			$value = get_post_meta($product->id, '_gift_card_value', true);
+			//save template, create coupon
+			//do a post request to retrieve  template
 
-			$gift_card_value = $value ? $value : $product->get_regular_price();
+			$prefix = get_option("wgc-code-prefix");
+			$code = "";
+			$suffix = get_option("wgc-code-suffix");
+
+			do {
+			    $code = wp_generate_password(get_option("wgc-code-length"), get_option("wgc-code-special") == "on", get_option("wgc-code-special") == "on");
+			} while (post_exists($prefix . $code . $suffix, "", "", "shop_coupon") != 0);
+
+			//coupon expiry dates
+			$date = date('Y-m-d 00:00:00', $product->get_meta("wgc-schedule") ?: "time()");
+			$expiry_days = $product->get_meta("wgc-expiry-days") ? date_add($date, date_interval_create_from_date_string($product->get_meta("wgc-expiry-days") . " days")) : "";
 
 			wp_insert_post(array(
-			    'post_type' => 'woo-gift-card',
-			    'post_title' => $product->get_name(),
+			    'post_type' => 'shop_coupon',
+			    'post_title' => $prefix . $code . $suffix,
 			    'post_status' => 'publish',
+			    'post_content' => '',
+			    'post_excerpt' => get_plugin_data(plugin_dir_path(__DIR__) . DIRECTORY_SEPARATOR . $this->plugin_name . ".php")["Name"],
 			    'meta_input' => array(
-				'woo-gift-card-order' => $order->id,
-				'woo-gift-card-product' => $product->id,
-				'woo-gift-card-balance' => $gift_card_value,
-				'woo-gift-card-value' => $gift_card_value,
-				'woo-gift-card-key' => WooGiftCardsUtils::get_unique_key($order->get_user())
+				'discount_type' => $product->get_meta("wgc-discount"),
+				'coupon_amount' => strpos($product->get_meta("wgc-discount"), "fixed") !== false ? $product->get_meta("wgc-discount-fixed") : $product->get_meta("wgc-discount-percentage"),
+				'minimum_amount' => $product->get_meta("wgc-cart-min"),
+				'maximum_amount' => $product->get_meta("wgc-cart-max"),
+				'individual_use' => $product->get_meta("wgc-individual"),
+				'exclude_sale_items' => $product->get_meta("wgc-sale"),
+				'product_ids' => implode(",", $product->get_meta("wgc-products")),
+				'exclude_product_ids' => implode(",", $product->get_meta("wgc-excluded-products")),
+				'product_categories' => implode(",", $product->get_meta("wgc-product-categories")),
+				'exclude_product_categories' => implode(",", $product->get_meta("wgc-excluded-product-categories")),
+				'customer_email' => $product->get_meta("wgc-emails"),
+				'usage_limit' => $product->get_meta("wgc-multiple"),
+				'limit_usage_to_x_items' => $product->get_meta("wgc-usability"),
+				'expiry_date' => date_format($expiry_days, "Y-m-d") ?: "",
+				'apply_before_tax' => "no",
+				'free_shipping' => "no",
+				'exclude_product_ids' => $product->get_meta("wgc-excluded-products"),
+				'wgc-order' => $order_id
 			    )
 			));
+
+			//send mail to customer
 		    }
 		}
 	    }
@@ -238,7 +262,10 @@ class Woo_gift_card_Public {
     public function woocommerce_before_calculate_totals($cart) {
 
 	foreach ($cart->cart_contents as $cart_item) {
-	    $cart_item["data"]->set_price($cart_item['wgc-receiver-price']);
+	    $product = $cart_item["data"];
+	    if ($product->is_type('woo-gift-card') && isset($cart_item['wgc-receiver-price'])) {
+		$product->set_price($cart_item['wgc-receiver-price']);
+	    }
 	}
     }
 
@@ -479,16 +506,6 @@ class Woo_gift_card_Public {
 	}
 
 	return $item_data;
-    }
-
-    /**
-     *
-     */
-    public function woocommerce_after_cart_contents() {
-
-	if (!get_posts(array("post_type" => "wgc-voucher", "post_status" => "published"))) {
-	    include_once plugin_dir_path(__DIR__) . "/public/partials/cart/wgc-cart-voucher.php";
-	}
     }
 
 }
