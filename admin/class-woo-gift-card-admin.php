@@ -115,30 +115,12 @@ class Woo_gift_card_Admin {
 	}
 
 	//if list wgc-templates screen
-	if (strpos(get_current_screen()->id, "wgc-template") != false) {
+	if (strpos(get_current_screen()->id, "wgc-template") !== false) {
 	    wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
 	    wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
 		"pdf_template_url" => get_rest_url(null, "woo-gift-card/v1/template/")
 	    ));
 	}
-    }
-
-    /**
-     * Register our gate way to allow customers to purchase with their gift cards
-     *
-     * @param array $gateways
-     * @return void
-     */
-    public function add_gateway($gateways) {
-
-	/**
-	 * The blueprint class of a woo gift card gateway
-	 */
-	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/payment/model/woo-gift-card-gateway-blueprint.php';
-
-	$gateways[] = new WC_Woo_Gift_Card_Gateway();
-
-	return $gateways;
     }
 
     /**
