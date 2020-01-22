@@ -209,10 +209,7 @@ class Woo_gift_card {
 	$this->loader->add_filter('woocommerce_process_product_meta_' . $this->plugin_name, $plugin_admin, 'save_woo_gift_card_product');
 
 	//on init
-	$this->loader->add_action('init', $plugin_admin, 'onInitialise');
-
-	//add payment gateways
-	$this->loader->add_filter('woocommerce_payment_gateways', $plugin_admin, 'add_gateway');
+	$this->loader->add_action('init', $plugin_admin, 'init');
 
 	//on save post
 	$this->loader->add_action('save_post_woo-gift-card', $plugin_admin, 'save_post');
@@ -297,6 +294,9 @@ class Woo_gift_card {
 	$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
 	$this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
 
+	//on init
+	$this->loader->add_action('init', $plugin_public, 'init');
+
 	//on order completed
 	$this->loader->add_action('woocommerce_order_status_completed', $plugin_public, 'payment_complete');
 
@@ -304,7 +304,7 @@ class Woo_gift_card {
 	$this->loader->add_filter('woocommerce_account_menu_items', $plugin_public, 'filter_account_menu_items');
 
 	//display gift cards
-	$this->loader->add_action('woocommerce_account_woo-gift-card_endpoint', $plugin_public, 'show_gift_cards');
+	$this->loader->add_action('woocommerce_account_wgc-vouchers_endpoint', $plugin_public, 'woocommerce_account_endpoint');
 
 	//display before the add to cart button
 	$this->loader->add_action('woocommerce_before_add_to_cart_button', $plugin_public, 'woocommerce_before_add_to_cart_button');

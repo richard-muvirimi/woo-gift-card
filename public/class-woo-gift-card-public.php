@@ -122,6 +122,16 @@ class Woo_gift_card_Public {
     }
 
     /**
+     * On initialise register our custom post type woo-gift-card
+     *
+     * @return void
+     */
+    public function init() {
+
+	add_rewrite_endpoint('wgc-vouchers', EP_PAGES);
+    }
+
+    /**
      * Add gift card link to my account items
      *
      * @param array $items
@@ -134,7 +144,8 @@ class Woo_gift_card_Public {
 	    $links[$key] = $item;
 
 	    if ($key === 'downloads') {
-		$links['woo-gift-card'] = __('Gift Cards', 'woo-gift-card');
+
+		$links['wgc-vouchers'] = __('Gift Vouchers', 'woo-gift-card');
 	    }
 	}
 
@@ -146,9 +157,9 @@ class Woo_gift_card_Public {
      *
      * @return void
      */
-    public function show_gift_cards() {
+    public function woocommerce_account_endpoint() {
 
-	include_once plugin_dir_path(dirname(__FILE__)) . "public/partials/woo-gift-card-public-display.php";
+	wc_get_template("wgc-my-account.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/");
     }
 
     /**
@@ -176,7 +187,7 @@ class Woo_gift_card_Public {
 
 		    //if gift card create for tracking
 		    for ($i = 0; $i < $item->get_quantity(); $i++) {
-			//save template, create coupon
+			//save template in case it is deleted, create coupon
 			//do a post request to retrieve  template
 
 			$prefix = get_option("wgc-code-prefix");
@@ -234,7 +245,7 @@ class Woo_gift_card_Public {
 	global $product;
 
 	if ($product->is_type('woo-gift-card')) {
-	    include_once plugin_dir_path(__DIR__) . "/public/partials/add-cart-woo-gift-card.php";
+	    wc_get_template("wgc-add-to-cart.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/");
 	}
     }
 
@@ -248,8 +259,8 @@ class Woo_gift_card_Public {
 	if ($product->is_type('woo-gift-card')) {
 
 	    if ($product->get_meta("wgc-pricing") != 'fixed' && $product->is_virtual() && !empty($product->get_meta('wgc-template'))) {
-		include_once plugin_dir_path(__DIR__) . "/public/partials/preview/preview-woo-gift-card-html.php";
-		include_once plugin_dir_path(__DIR__) . "/public/partials/preview-woo-gift-card-button.php";
+		wc_get_template("wgc-preview-html.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/preview/");
+		wc_get_template("wgc-preview-button.php", compact("product"), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/preview/");
 	    }
 	}
     }

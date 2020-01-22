@@ -35,7 +35,6 @@ class Woo_gift_card_Activator {
 	    wp_insert_term('woo-gift-card', 'product_type');
 	}
 
-	add_rewrite_endpoint('woo-gift-card', EP_PAGES);
 	flush_rewrite_rules();
 
 	//install templates
