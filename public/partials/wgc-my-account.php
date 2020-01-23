@@ -9,58 +9,69 @@
  * @subpackage Woo_gift_card/public/partials
  */
 defined('ABSPATH') || exit;
-?>
 
-<p><?php echo sprintf(__('Gift vouchers attached to %s', 'woo-gift-card'), get_userdata(get_current_user_id())->user_email); ?>
-</p>
-
-<?php
-$gift_card_columns = array(
-    'woo-gift-card-key' => esc_html__('Gift Voucher', 'woo-gift-card'),
-    'woo-gift-card-date' => esc_html__('Date Created', 'woo-gift-card'),
-    'woo-gift-card-value' => esc_html__('Initial Balance', 'woo-gift-card'),
-    'woo-gift-card-balance' => esc_html__('Balance', 'woo-gift-card')
-);
-
-$gift_cards = get_posts(
+$coupons = get_posts(
 	array(
-	    'post_type' => 'woo-gift-card',
+	    "numberposts" => -1,
+	    'post_type' => 'shop_coupon',
 	    'author' => get_current_user_id(),
-	    'post_status' => 'publish'
+	    'post_status' => 'publish',
+	    "meta_key" => "wgc-order"
 	)
 );
 
-if ($gift_cards) :
+if ($coupons) :
     ?>
 
     <table class="shop_table shop_table_responsive my_account_woo-gift-card">
-
+        <caption><?php printf(__('Gift vouchers you own (%s).', 'woo-gift-card'), get_user_option("user_email")); ?></caption>
         <thead>
     	<tr>
-		<?php foreach ($gift_card_columns as $column_id => $column_name) : ?>
-		    <th class="<?php echo esc_attr($column_id); ?>"><span
-			    class="nobr"><?php echo esc_html($column_name); ?></span></th>
-		    <?php endforeach; ?>
+		<?php
+		$gift_card_columns = array(
+		    'wgc-code' => esc_html__('Gift Voucher', 'woo-gift-card'),
+		    'wgc-type' => esc_html__('Type', 'woo-gift-card'),
+		    'wgc-amount' => esc_html__('Amount', 'woo-gift-card'),
+		    'wgc-description' => esc_html__('Description', 'woo-gift-card'),
+		    'wgc-expiry' => esc_html__('Expiry Date', 'woo-gift-card'));
+
+		foreach ($gift_card_columns as $column_id => $column_name) :
+		    ?>
+		    <th class="<?php esc_attr_e($column_id); ?>">
+			<span class="nobr">
+			    <?php esc_html_e($column_name); ?>
+			</span>
+		    </th>
+		<?php endforeach; ?>
     	</tr>
         </thead>
 
         <tbody>
 	    <?php
-	    foreach ($gift_cards as $gift_card) :
-		$gift_card_data = get_post_meta($gift_card->ID);
+	    foreach ($coupons as $coupon) :
+		$coupon_meta = get_post_meta($coupon->ID);
 		?>
 		<tr class="woo-gift-card">
 		    <td>
-			<?php echo esc_html($gift_card_data['woo-gift-card-key'][0]); ?>
+			<?php esc_html_e(wc_format_coupon_code($coupon->post_title)); ?>
 		    </td>
 		    <td>
-			<?php echo esc_html($gift_card->post_date); ?>
+			<?php esc_html_e(wc_get_coupon_types()[$coupon_meta['discount_type'][0]]); ?>
 		    </td>
-		    <td class="">
-			<?php echo esc_html(get_woocommerce_currency_symbol() . $gift_card_data['woo-gift-card-value'][0]); ?>
+		    <td>
+			<?php
+			if (strpos($coupon_meta['discount_type'][0], "fixed") !== false) {
+			    esc_html_e(get_woocommerce_currency_symbol() . $coupon_meta['coupon_amount'][0]);
+			} else {
+			    esc_html_e($coupon_meta['coupon_amount'][0] . "%");
+			}
+			?>
 		    </td>
-		    <td class="">
-			<?php echo esc_html(get_woocommerce_currency_symbol() . $gift_card_data['woo-gift-card-balance'][0]); ?>
+		    <td>
+			<?php esc_html_e($coupon->post_excerpt); ?>
+		    </td>
+		    <td>
+			<?php esc_html_e(wc_format_datetime($coupon_meta['expiry_date'][0])); ?>
 		    </td>
 		</tr>
 	    <?php endforeach; ?>
