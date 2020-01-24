@@ -339,6 +339,11 @@ class Woo_gift_card {
 
 	//save cart item data to order
 	$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'woocommerce_checkout_create_order_line_item', 10, 4);
+
+	//customise order meta data
+	$this->loader->add_filter('woocommerce_order_item_display_meta_key', $plugin_public, 'woocommerce_order_item_display_meta_key', 10, 3);
+	$this->loader->add_filter('woocommerce_order_item_display_meta_value', $plugin_public, 'woocommerce_order_item_display_meta_value', 10, 3);
+	$this->loader->add_filter('woocommerce_order_item_get_formatted_meta_data', $plugin_public, 'woocommerce_order_item_get_formatted_meta_data', 10, 2);
     }
 
     /**

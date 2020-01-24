@@ -16,13 +16,7 @@ defined('ABSPATH') || exit;
 	//'wrapper_class' => 'show_if_' . 'woo-gift-card',
 	'label' => __('Pricing', 'woo-gift-card'),
 	'description' => __('The pricing system for gift voucher', 'woo-gift-card'),
-	'options' => array(
-	    "fixed" => __("Fixed Price", 'woo-gift-card'),
-	    "selected" => __("Selected Price", 'woo-gift-card'),
-	    "range" => __("Range Price", 'woo-gift-card'),
-	    "user" => __("User Price", 'woo-gift-card'),
-	// "variable" => __("Variable Price", 'woo-gift-card')
-	),
+	'options' => wgc_get_pricing_types(),
 	'value' => $product_object->get_meta('wgc-pricing'),
 	'desc_tip' => true
     ));
@@ -173,7 +167,7 @@ defined('ABSPATH') || exit;
 		}
 	    }
 	    ?>
-	</select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                                                 ?>
+	</select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                                                  ?>
     </p>
 </div>
 

@@ -105,3 +105,13 @@ function wgc_format_coupon_value($coupon_id) {
 	esc_html_e(get_post_meta($coupon_id, 'coupon_amount', true) . "%");
     }
 }
+
+function wgc_get_pricing_types() {
+    return array(
+	"fixed" => __("Fixed Price", 'woo-gift-card'),
+	"selected" => __("Selected Price", 'woo-gift-card'),
+	"range" => __("Range Price", 'woo-gift-card'),
+	"user" => __("User Price", 'woo-gift-card'),
+	    // "variable" => __("Variable Price", 'woo-gift-card')
+    );
+}

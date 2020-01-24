@@ -504,7 +504,7 @@ class Woo_gift_card_Public {
     }
 
     /**
-     * Set cart item image to template image if available
+     * Set cart item name to template name if available
      *
      * @param string $name
      * @param \WC_Cart $cart_item
@@ -538,6 +538,110 @@ class Woo_gift_card_Public {
 	}
 
 	return $item_data;
+    }
+
+    /**
+     * Filter order meta titles
+     *
+     * @param string $display_key
+     * @param \WC_Order_Item_Meta $meta
+     * @param \WC_Order_Item $order_item
+     * @return string
+     */
+    public function woocommerce_order_item_display_meta_key($display_key, $meta, $order_item) {
+
+	$product = $order_item->get_product();
+	if ($product->is_type('woo-gift-card')) {
+
+	    switch ($meta->key) {
+		case "wgc-receiver-price":
+		    $display_key = __("Pricing", "woo-gift-card");
+		    break;
+		case "wgc-receiver-name":
+		    $display_key = __("Receiver Name", "woo-gift-card");
+		    break;
+		case "wgc-receiver-email":
+		    $display_key = __("Receiver Email", "woo-gift-card");
+		    break;
+		case "wgc-event":
+		    $display_key = __("Event", "woo-gift-card");
+		    break;
+		case "wgc-receiver-schedule":
+		    $display_key = __("Scheduled", "woo-gift-card");
+		    break;
+	    }
+	}
+
+	return $display_key;
+    }
+
+    /**
+     * Filter order meta values
+     *
+     * @param string $display_value
+     * @param \WC_Order_Item_Meta $meta
+     * @param \WC_Order_Item $order_item
+     * @return string
+     */
+    public function woocommerce_order_item_display_meta_value($display_value, $meta, $order_item) {
+
+	$product = $order_item->get_product();
+	if ($product->is_type('woo-gift-card')) {
+
+	    switch ($meta->key) {
+		case "wgc-receiver-price":
+		    $display_value = wgc_get_pricing_types()[$product->get_meta('wgc-pricing')];
+		    break;
+		case "wgc-receiver-schedule":
+		    $date = new WC_DateTime();
+		    $date->setTimestamp(strtotime($display_value));
+
+		    $display_value = wc_format_datetime($date);
+		    break;
+	    }
+	}
+
+	return $display_value;
+    }
+
+    /**
+     * Filter the items displayed as order meta data
+     *
+     * @param array|\WC_Order_Item_Meta $formatted_meta
+     * @param \WC_Order_Item $order_item
+     * @return array
+     */
+    public function woocommerce_order_item_get_formatted_meta_data($formatted_meta, $order_item) {
+
+	$product = $order_item->get_product();
+	if ($product->is_type('woo-gift-card')) {
+
+	    $formatted_meta = array_filter($formatted_meta, function ($meta) {
+		switch ($meta->key) {
+		    case 'wgc-receiver-template':
+		    case 'wgc-receiver-image':
+			return false;
+		    case 'wgc-receiver-name':
+			//hide if same with logged in user
+			if ($meta->value == get_user_option("display_name")) {
+			    return false;
+			}
+			break;
+		    case 'wgc-receiver-email':
+			//hide if same with logged in user
+			if ($meta->value == get_user_option("user_email")) {
+			    return false;
+			}
+			break;
+		    case "wgc-receiver-schedule":
+			//if less than a day do not show scheduled
+			return abs(strtotime($meta->value) - time()) > 60 * 60 * 24;
+		}
+		return true;
+	    });
+	}
+
+	return $formatted_meta;
     }
 
 }
