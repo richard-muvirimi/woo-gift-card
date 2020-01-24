@@ -159,7 +159,7 @@ class Woo_gift_card_Public {
      */
     public function woocommerce_account_endpoint() {
 
-	wc_get_template("wgc-my-account.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/");
+	wc_get_template("wgc-my-account.php", array("plugin_name" => $this->plugin_name), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/");
     }
 
     /**
