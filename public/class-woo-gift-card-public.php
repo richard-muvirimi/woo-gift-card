@@ -116,7 +116,7 @@ class Woo_gift_card_Public {
 		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/wgc-product.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array(
 		    "maxlength" => get_option('wgc-message-length'),
-		    "pdf_template_url" => get_rest_url(null, "woo-gift-card/v1/template/")));
+		    "pdf_template_url" => get_rest_url(null, $this->plugin_name . "/v1/template/preview/")));
 	    }
 	}
     }
@@ -175,17 +175,11 @@ class Woo_gift_card_Public {
 
 	if ($product->is_type("woo-gift-card")) {
 
-	    $cart_item = WC()->cart->get_cart_item($cart_item_key);
-
-	    //add all our meta data from cart
-	    foreach ($cart_item as $key => $value) {
+	    foreach ($values as $key => $value) {
 		if (strpos($key, "wgc-") !== false) {
-		    //add_post_meta($order->get_id(), $key, $value);
-		    $order->add_meta_data($key, $value);
+		    $item->add_meta_data($key, $value);
 		}
 	    }
-
-	    $order->save_meta_data();
 	}
     }
 
@@ -196,16 +190,27 @@ class Woo_gift_card_Public {
      * @return void
      */
     public function payment_complete($order_id) {
-	$order = wc_get_order($order_id);
 
 	$coupons = get_posts(array(
 	    "post_type" => "shop_coupon",
-	    "meta_key" => "wgc-order",
-	    "meta_value" => $order_id
+	    'meta_query' => array(
+		array(
+		    'key' => 'wgc-order',
+		    'value' => $order_id,
+		),
+		array(
+		    'key' => 'wgc-order-item'
+		),
+		array(
+		    'key' => 'wgc-order-item-index'
+		),
+	    )
 	));
 
 	if (empty($coupons)) {
 	    //order has not yet been processed
+
+	    $order = wc_get_order($order_id);
 
 	    foreach ($order->get_items() as $item) {
 
@@ -219,7 +224,7 @@ class Woo_gift_card_Public {
 			//coupon expiry dates
 			$expiry_days = $product->get_meta("wgc-expiry-days") ? "+" . $product->get_meta("wgc-expiry-days") . " days" : "";
 
-			$coupon_id = wp_insert_post(array(
+			wp_insert_post(array(
 			    'post_type' => 'shop_coupon',
 			    'post_title' => wgc_unique_key(),
 			    'post_status' => 'publish',
@@ -242,43 +247,12 @@ class Woo_gift_card_Public {
 				'date_expires' => $expiry_days ? strtotime($expiry_days, strtotime($order->get_meta('wgc-receiver-schedule') ?: "now")) : "",
 				'apply_before_tax' => "no",
 				'free_shipping' => "no",
-				'wgc-order' => $order_id
+				//our custom parameters to recognise this order and items later
+				'wgc-order' => $order_id,
+				'wgc-order-item' => $item->get_id(),
+				'wgc-order-item-index' => $i
 			    )
 			));
-
-			if (is_wp_error($coupon_id)) {
-			    return;
-			}
-
-			//save template here if supported
-			if (false && $product->is_virtual() && !empty($product->get_meta('wgc-template'))) {
-			    $curl_options = array(
-				CURLOPT_URL => get_rest_url(null, "woo-gift-card/v1/template"),
-				CURLOPT_POST => true,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_POSTFIELDS => array(
-				    'wgc-receiver-template' => $order->get_meta('wgc-receiver-template'),
-				    'wgc-receiver-price' => wgc_format_coupon_value($coupon_id),
-				    'wgc-receiver-name' => $order->get_meta('wgc-receiver-name'),
-				    'wgc-receiver-email' => $order->get_meta('wgc-receiver-email'),
-				    'wgc-receiver-message' => $order->get_meta('wgc-receiver-message'),
-				    'wgc-event' => $order->get_meta('wgc-event'),
-				    'wgc-receiver-schedule' => $order->get_meta('wgc-receiver-schedule'),
-				    'wgc-receiver-image' => $order->get_meta('wgc-receiver-image'),
-				)
-			    );
-
-			    $curl = curl_init();
-			    curl_setopt_array($curl, $curl_options);
-
-			    $pdf = curl_exec($curl);
-			    curl_close($curl);
-
-			    wc_mail($pdf, $curl, $curl_options);
-			}
-
-			//send mail to customer
-			//with pdf attachment and voucher code
 		    }
 		}
 	    }
@@ -485,8 +459,9 @@ class Woo_gift_card_Public {
 		} else {
 		    if (has_post_thumbnail($template)) {
 			$thumbnail_id = get_post_thumbnail_id($template);
-			$url = wp_get_attachment_image_url($thumbnail_id);
+			$url = wp_get_attachment_image_url($thumbnail_id, "full");
 
+			//todo maybe disable this to allow customised admin images to reflect to customer
 			$cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($url);
 		    }
 		}

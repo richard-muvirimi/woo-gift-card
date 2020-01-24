@@ -67,7 +67,7 @@ class Woo_gift_card_Rest {
      * On initialize the rest api
      */
     public function register_routes() {
-	register_rest_route('woo-gift-card/v1', '/template', array(
+	register_rest_route('woo-gift-card/v1', '/template/preview', array(
 	    'methods' => WP_REST_Server::CREATABLE,
 	    'callback' => array($this, 'ajax_template_iframe'),
 	    'args' => array(
@@ -160,7 +160,7 @@ class Woo_gift_card_Rest {
 	 */
 	$regex = "(?P<file>(\\\\?([^\\/]*[\\/])*)([^\\/]+)$)";
 
-	register_rest_route('woo-gift-card/v1', '/template/t/' . $regex, array(
+	register_rest_route('woo-gift-card/v1', '/template/preview/' . $regex, array(
 	    'methods' => WP_REST_Server::READABLE,
 	    'callback' => array($this, 'ajax_get_file'),
 	    'args' => array(
@@ -197,10 +197,23 @@ class Woo_gift_card_Rest {
 					"numberposts" => 1,
 					"post_type" => "shop_coupon",
 					"post_title" => $param,
-					"meta_key" => "wgc-order"
+					'meta_query' => array(
+					    array(
+						'key' => 'wgc-order'
+					    ),
+					    array(
+						'key' => 'wgc-order-item'
+					    ),
+					    array(
+						'key' => 'wgc-order-item-index'
+					    ),
+					)
 				    ))) > 0;
 			}
 			return false;
+		    },
+		    'sanitize_callback' => function($param, $request, $key) {
+			return urldecode($param);
 		    }
 		)
 	    ),
@@ -211,27 +224,45 @@ class Woo_gift_card_Rest {
 
 	$coupon = get_posts(array(
 	    "numberposts" => 1,
-	    "post_type" => "shop_coupon",
 	    "post_title" => $request->get_param("coupon"),
-	    "meta_key" => "wgc-order"
+	    "post_type" => "shop_coupon",
+	    'meta_query' => array(
+		array(
+		    'key' => 'wgc-order'
+		),
+		array(
+		    'key' => 'wgc-order-item'
+		),
+		array(
+		    'key' => 'wgc-order-item-index'
+		),
+	    )
 	));
 
-	$order = wc_get_order(get_post_meta($coupon[0]->ID, "wgc-order", true));
+	if (!empty($coupon)) {
 
-	/**
-	 * @var \WC_Meta_Data $meta_data
-	 */
-	foreach ($order->get_meta_data() as $meta_data) {
-	    $key = $meta_data->get_data()['key'];
+	    $order = wc_get_order(get_post_meta($coupon[0]->ID, "wgc-order", true));
+	    $item = $order->get_item(get_post_meta($coupon[0]->ID, "wgc-order-item", true));
 
-	    if (strpos($key, "wgc-") !== false) {
-		$this->params[$key] = $meta_data->get_data()['value'];
+	    /**
+	     * @var \WC_Meta_Data $meta_data
+	     */
+	    foreach ($item->get_meta_data() as $meta_data) {
+		$key = $meta_data->get_data()['key'];
+
+		if (strpos($key, "wgc-") !== false) {
+		    $this->params[$key] = $meta_data->get_data()['value'];
+		}
 	    }
-	}
 
-	$pdf = $this->get_pdf(get_post($this->params["wgc-receiver-template"] ?: 592));
-	$pdf->stream(sanitize_file_name($request->get_param("coupon") . ".pdf"), array('Attachment' => 0));
-	exit();
+	    $this->params['wgc-product'] = $item->get_product()->get_id();
+	    $this->params['wgc-order'] = $order->get_id();
+	    $this->params['wgc-coupon'] = $request->get_param("coupon");
+
+	    $pdf = $this->get_pdf(get_post($this->params["wgc-receiver-template"]));
+	    $pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"), array('Attachment' => 0));
+	    exit();
+	}
     }
 
     public function ajax_get_file(WP_REST_Request $request) {
@@ -448,6 +479,10 @@ class Woo_gift_card_Rest {
 	if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
 	    $file = $_FILES['wgc-receiver-image'];
 	    $path = $file['tmp_name'];
+	} elseif (isset($this->params['wgc-receiver-image'])) {
+	    //saved background image
+
+	    $path = $this->params['wgc-receiver-image'];
 	} elseif (has_post_thumbnail($template)) {
 	    $thumb_id = get_post_thumbnail_id($template);
 
@@ -470,8 +505,9 @@ class Woo_gift_card_Rest {
 	$shortcode = str_replace("wgc-", "", $sCode);
 	$html = "";
 
-	$template = get_post($this->params['wgc-receiver-template']);
-	$product = isset($this->params['wgc-product']) ? wc_get_product($this->params['wgc-product']) : null;
+	$template = get_post(isset($this->params['wgc-receiver-template']) ? $this->params['wgc-receiver-template'] : null);
+	$product = wc_get_product(isset($this->params['wgc-product']) ? $this->params['wgc-product'] : false);
+	$order = wc_get_order(isset($this->params['wgc-order']) ? $this->params['wgc-order'] : false);
 
 	switch ($shortcode) {
 	    case "amount":
@@ -501,11 +537,13 @@ class Woo_gift_card_Rest {
 		/**
 		 * The title of the gift voucher
 		 */
-		if (version_compare(phpversion(), "7", ">=")) {
-		    $html = $this->params['wgc-event'] ?? apply_filters('the_title', $template->post_title);
-		} else {
-		    $event = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : "";
-		    $html = $event ?: apply_filters('the_title', $template->post_title);
+		if (!is_null($template)) {
+		    if (version_compare(phpversion(), "7", ">=")) {
+			$html = $this->params['wgc-event'] ?? apply_filters('the_title', $template->post_title);
+		    } else {
+			$event = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : "";
+			$html = $event ?: apply_filters('the_title', $template->post_title);
+		    }
 		}
 		break;
 	    case "expiry-days":
@@ -513,14 +551,26 @@ class Woo_gift_card_Rest {
 		 * The number of days gift voucher will expire in
 		 */
 		if ($product && is_object($product)) {
-		    $html = $product->get_meta("wgc-expiry-days") ?: __("Never", "woo-gift-card");
+		    if ($product->get_meta("wgc-expiry-days")) {
+			if ($product->get_meta('wgc-schedule') == "yes") {
+
+			    $date = new WC_DateTime();
+			    $date->setTimestamp(strtotime($this->params['wgc-receiver-schedule']));
+
+			    $html = sprintf(__("Valid from %s for %s days", "woo-gift-card"), wc_format_datetime($date), $product->get_meta("wgc-expiry-days"));
+			} else {
+			    $html = $product->get_meta("wgc-expiry-days");
+			}
+		    } else {
+			$html = __("Never", "woo-gift-card");
+		    }
 		}
 		break;
 	    case "from":
 		/**
 		 * The name of the sender of gift voucher
 		 */
-		$html = get_user_option("display_name");
+		$html = get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
 		break;
 	    case "logo":
 		/**
@@ -536,6 +586,7 @@ class Woo_gift_card_Rest {
 		$html = isset($this->params['wgc-receiver-message']) ? $this->params['wgc-receiver-message'] : "";
 		break;
 	    case "order-id":
+		$html = is_object($order) ? "#" . $order->get_id() : "";
 		break;
 	    case "product-name":
 		if ($product && is_object($product)) {
@@ -547,10 +598,10 @@ class Woo_gift_card_Rest {
 		 * The recipient name of the gift voucher
 		 */
 		if (version_compare(phpversion(), "7", ">=")) {
-		    $html = $this->params['wgc-receiver-name'] ?? get_user_option("display_name");
+		    $html = $this->params['wgc-receiver-name'] ?? get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
 		} else {
 		    $name = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : "";
-		    $html = $name ?: get_user_option("display_name");
+		    $html = $name ?: get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
 		}
 		break;
 	    case "to-email":
@@ -558,88 +609,84 @@ class Woo_gift_card_Rest {
 		 * The recipient email of the gift voucher
 		 */
 		if (version_compare(phpversion(), "7", ">=")) {
-		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email");
+		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
 		} else {
 		    $email = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : "";
-		    $html = $email ?: get_user_option("email");
+		    $html = $email ?: get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
 		}
 		break;
 	    case "code":
 
-		$meta = get_post_meta($template->ID);
+		if (!is_null($template)) {
+		    $meta = get_post_meta($template->ID);
 
-		$prefix = get_option("wgc-code-prefix");
-		$code = str_repeat("X", get_option("wgc-code-length"));
-		$suffix = get_option("wgc-code-suffix");
+		    $coupon = isset($this->params['wgc-coupon']) ? $this->params['wgc-coupon'] : get_option("wgc-code-prefix") . str_repeat("X", get_option("wgc-code-length")) . get_option("wgc-code-suffix");
 
-		switch (get_post_meta($template->ID, "wgc-coupon-type", true)) {
-		    case 'qrcode':
+		    switch (get_post_meta($template->ID, "wgc-coupon-type", true)) {
+			case 'qrcode':
 
-			$qrcode = $prefix . $code . $suffix;
+			    $file = get_temp_dir() . $coupon . ".png";
 
-			$file = get_temp_dir() . $qrcode . ".png";
+			    QRcode::png($coupon, $file, $meta["wgc-coupon-qrcode-ecc"][0], $meta["wgc-coupon-qrcode-size"][0], $meta["wgc-coupon-qrcode-margin"][0]);
 
-			QRcode::png($qrcode, $file, $meta["wgc-coupon-qrcode-ecc"][0], $meta["wgc-coupon-qrcode-size"][0], $meta["wgc-coupon-qrcode-margin"][0]);
+			    $image = file_get_contents($file);
 
-			$image = file_get_contents($file);
+			    $html = '<div class="qrcode-container">';
+			    $html .= '<div class="qrcode-img"><img alt="' . $coupon . '" ';
+			    $html .= 'src="' . wgc_content_to_base64($image, wgc_get_mime_type_for_file($file)) . '"';
+			    $html .= "></div>";
 
-			$html = '<div class="qrcode-container">';
-			$html .= '<div class="qrcode-img"><img alt="' . $qrcode . '" ';
-			$html .= 'src="' . wgc_content_to_base64($image, wgc_get_mime_type_for_file($file)) . '"';
-			$html .= "></div>";
+			    if ($meta["wgc-coupon-qrcode-code"][0] == "yes") {
+				$html .= '<div class="qrcode">' . $coupon . '</div>';
+			    }
 
-			if ($meta["wgc-coupon-qrcode-code"][0] == "yes") {
-			    $html .= '<div class="qrcode">' . $qrcode . '</div>';
-			}
+			    $html .= "</div>";
 
-			$html .= "</div>";
+			    break;
+			case 'barcode':
 
-			break;
-		    case 'barcode':
+			    $generator = false;
+			    $html = '<div class="barcode-container">';
 
-			$generator = false;
-			$barcode = $prefix . $code . $suffix;
-			$html = '<div class="barcode-container">';
+			    switch ($meta["wgc-coupon-barcode-image-type"][0]) {
+				case "html";
+				    $generator = new Picqer\Barcode\BarcodeGeneratorHTML();
 
-			switch ($meta["wgc-coupon-barcode-image-type"][0]) {
-			    case "html";
-				$generator = new Picqer\Barcode\BarcodeGeneratorHTML();
+				    $html .= $generator->getBarcode($coupon, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $meta["wgc-coupon-barcode-color"][0]);
 
-				$html .= $generator->getBarcode($code, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $meta["wgc-coupon-barcode-color"][0]);
+				    break;
+				case "svg";
+				    $generator = new Picqer\Barcode\BarcodeGeneratorSVG();
+				    $color = $meta["wgc-coupon-barcode-color"][0];
+				case "png";
+				    $generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorPNG();
+				case "jpg";
+				    $generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorJPG();
 
-				break;
-			    case "svg";
-				$generator = new Picqer\Barcode\BarcodeGeneratorSVG();
-				$color = $meta["wgc-coupon-barcode-color"][0];
-			    case "png";
-				$generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorPNG();
-			    case "jpg";
-				$generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorJPG();
+				    $color ?: $this->hexColorToArray($meta["wgc-coupon-barcode-color"][0]);
 
-				$color ?: $this->hexColorToArray($meta["wgc-coupon-barcode-color"][0]);
+				    $image = $generator->getBarcode($coupon, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $color);
 
-				$image = $generator->getBarcode($code, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $color);
+				    $html .= '<div class="barcode-img"><img alt="' . $coupon . '" ';
+				    $html .= 'src="' . wgc_content_to_base64($image, wgc_get_mime_type_for_file("image." . $meta["wgc-coupon-barcode-image-type"][0])) . '"';
+				    $html .= "></div>";
 
-				$html .= '<div class="barcode-img"><img alt="' . $barcode . '" ';
-				$html .= 'src="' . wgc_content_to_base64($image, wgc_get_mime_type_for_file("image." . $meta["wgc-coupon-barcode-image-type"][0])) . '"';
-				$html .= "></div>";
+				    break;
+			    }
 
-				break;
-			}
+			    $html .= '<div class="barcode" style="color: ' . esc_attr($meta["wgc-coupon-barcode-color"][0]) . ';">' . $coupon . '</div>';
+			    $html .= "</div>";
 
-			$html .= '<div class="barcode" style="color: ' . esc_attr($meta["wgc-coupon-barcode-color"][0]) . ';">' . $barcode . '</div>';
-			$html .= "</div>";
-
-			break;
-		    default:
-			$html = $prefix . $code . $suffix;
+			    break;
+			default:
+			    $html = $coupon;
+		    }
 		}
-
 		break;
 	}
 
 	if (empty($html)) {
-	    $html = '[' . strtoupper($shortcode) . ']';
+	    $html = is_object($order) ? "&nbsp;" : '[' . strtoupper($shortcode) . ']';
 	}
 
 	return $html;

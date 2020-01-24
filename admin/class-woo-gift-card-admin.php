@@ -118,7 +118,7 @@ class Woo_gift_card_Admin {
 	if (get_current_screen()->id == "edit-wgc-template") {
 	    wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
 	    wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
-		"pdf_template_url" => get_rest_url(null, "woo-gift-card/v1/template/")
+		"pdf_template_url" => get_rest_url(null, $this->plugin_name . "/v1/template/preview/")
 	    ));
 	}
     }
