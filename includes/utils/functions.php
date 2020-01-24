@@ -83,23 +83,25 @@ function wgc_get_post_var($name) {
  * @param type $param
  * @return string
  */
-function wgc_unique_key($email) {
-    $key = strtoupper(wp_generate_password());
+function wgc_unique_key() {
+    $prefix = get_option("wgc-code-prefix");
+    $code = "";
+    $suffix = get_option("wgc-code-suffix");
 
-    $giftCards = get_posts(array(
-	'posts_per_page' => 1,
-	'post_type' => 'woo-gift-card',
-	'author' => $email,
-	'meta_key' => 'woo-gift-card-key',
-	'meta_value' => $key,
-	'fields' => 'ids'
-    ));
+    $special = get_option("wgc-code-special") == "on";
 
-    //if exists then redo
-    if (count($giftCards)) {
+    do {
+	$code = wp_generate_password(get_option("wgc-code-length"), $special, $special);
+    } while (post_exists($prefix . $code . $suffix, "", "", "shop_coupon") != 0);
 
-	return wgc_unique_key($email);
+    return $prefix . $code . $suffix;
+}
+
+function wgc_format_coupon_value($coupon_id) {
+
+    if (strpos(get_post_meta($coupon_id, 'discount_type', true), "fixed") !== false) {
+	esc_html_e(get_woocommerce_currency_symbol() . get_post_meta($coupon_id, 'coupon_amount', true));
+    } else {
+	esc_html_e(get_post_meta($coupon_id, 'coupon_amount', true) . "%");
     }
-
-    return $key;
 }

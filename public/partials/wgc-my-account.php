@@ -23,7 +23,7 @@ $coupons = get_posts(
 if ($coupons) :
     ?>
 
-    <table class="shop_table shop_table_responsive my_account_woo-gift-card">
+    <table class="shop_table shop_table_responsive my_account_wgc-vouchers">
         <caption><?php printf(__('Gift vouchers you own (%s).', 'woo-gift-card'), get_user_option("user_email")); ?></caption>
         <thead>
     	<tr>
@@ -59,19 +59,18 @@ if ($coupons) :
 			<?php esc_html_e(wc_get_coupon_types()[$coupon_meta['discount_type'][0]]); ?>
 		    </td>
 		    <td>
-			<?php
-			if (strpos($coupon_meta['discount_type'][0], "fixed") !== false) {
-			    esc_html_e(get_woocommerce_currency_symbol() . $coupon_meta['coupon_amount'][0]);
-			} else {
-			    esc_html_e($coupon_meta['coupon_amount'][0] . "%");
-			}
-			?>
+			<?php esc_html_e(wgc_format_coupon_value($coupon->ID)); ?>
 		    </td>
 		    <td>
 			<?php esc_html_e($coupon->post_excerpt); ?>
 		    </td>
 		    <td>
-			<?php esc_html_e(wc_format_datetime($coupon_meta['expiry_date'][0])); ?>
+			<?php
+			$date = new WC_DateTime();
+			$date->setTimestamp($coupon_meta['date_expires'][0]);
+
+			esc_html_e(wc_format_datetime($date));
+			?>
 		    </td>
 		</tr>
 	    <?php endforeach; ?>

@@ -163,6 +163,33 @@ class Woo_gift_card_Public {
     }
 
     /**
+     * Save cart meta data to order
+     * @param \WC_Order_Item_Product $item
+     * @param string $cart_item_key
+     * @param array $values
+     * @param \WC_Order $order
+     */
+    public function woocommerce_checkout_create_order_line_item($item, $cart_item_key, $values, $order) {
+
+	$product = $values['data'];
+
+	if ($product->is_type("woo-gift-card")) {
+
+	    $cart_item = WC()->cart->get_cart_item($cart_item_key);
+
+	    //add all our meta data from cart
+	    foreach ($cart_item as $key => $value) {
+		if (strpos($key, "wgc-") !== false) {
+		    //add_post_meta($order->get_id(), $key, $value);
+		    $order->add_meta_data($key, $value);
+		}
+	    }
+
+	    $order->save_meta_data();
+	}
+    }
+
+    /**
      * Called when the customer order has been paid. creates the gift card if it does not already exists.
      *
      * @param int $order_id
@@ -189,22 +216,12 @@ class Woo_gift_card_Public {
 		    for ($i = 0; $i < $item->get_quantity(); $i++) {
 			//save template in case it is deleted, create coupon
 			//do a post request to retrieve  template
-
-			$prefix = get_option("wgc-code-prefix");
-			$code = "";
-			$suffix = get_option("wgc-code-suffix");
-
-			do {
-			    $code = wp_generate_password(get_option("wgc-code-length"), get_option("wgc-code-special") == "on", get_option("wgc-code-special") == "on");
-			} while (post_exists($prefix . $code . $suffix, "", "", "shop_coupon") != 0);
-
 			//coupon expiry dates
-			$date = date('Y-m-d 00:00:00', $product->get_meta("wgc-schedule") ?: "time()");
-			$expiry_days = $product->get_meta("wgc-expiry-days") ? date_add($date, date_interval_create_from_date_string($product->get_meta("wgc-expiry-days") . " days")) : "";
+			$expiry_days = $product->get_meta("wgc-expiry-days") ? "+" . $product->get_meta("wgc-expiry-days") . " days" : "";
 
-			wp_insert_post(array(
+			$coupon_id = wp_insert_post(array(
 			    'post_type' => 'shop_coupon',
-			    'post_title' => $prefix . $code . $suffix,
+			    'post_title' => wgc_unique_key(),
 			    'post_status' => 'publish',
 			    'post_content' => '',
 			    'post_excerpt' => get_plugin_data(plugin_dir_path(__DIR__) . DIRECTORY_SEPARATOR . $this->plugin_name . ".php")["Name"],
@@ -222,15 +239,46 @@ class Woo_gift_card_Public {
 				'customer_email' => $product->get_meta("wgc-emails"),
 				'usage_limit' => $product->get_meta("wgc-multiple"),
 				'limit_usage_to_x_items' => $product->get_meta("wgc-usability"),
-				'expiry_date' => date_format($expiry_days, "Y-m-d") ?: "",
+				'date_expires' => $expiry_days ? strtotime($expiry_days, strtotime($order->get_meta('wgc-receiver-schedule') ?: "now")) : "",
 				'apply_before_tax' => "no",
 				'free_shipping' => "no",
-				'exclude_product_ids' => $product->get_meta("wgc-excluded-products"),
 				'wgc-order' => $order_id
 			    )
 			));
 
+			if (is_wp_error($coupon_id)) {
+			    return;
+			}
+
+			//save template here if supported
+			if (false && $product->is_virtual() && !empty($product->get_meta('wgc-template'))) {
+			    $curl_options = array(
+				CURLOPT_URL => get_rest_url(null, "woo-gift-card/v1/template"),
+				CURLOPT_POST => true,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_POSTFIELDS => array(
+				    'wgc-receiver-template' => $order->get_meta('wgc-receiver-template'),
+				    'wgc-receiver-price' => wgc_format_coupon_value($coupon_id),
+				    'wgc-receiver-name' => $order->get_meta('wgc-receiver-name'),
+				    'wgc-receiver-email' => $order->get_meta('wgc-receiver-email'),
+				    'wgc-receiver-message' => $order->get_meta('wgc-receiver-message'),
+				    'wgc-event' => $order->get_meta('wgc-event'),
+				    'wgc-receiver-schedule' => $order->get_meta('wgc-receiver-schedule'),
+				    'wgc-receiver-image' => $order->get_meta('wgc-receiver-image'),
+				)
+			    );
+
+			    $curl = curl_init();
+			    curl_setopt_array($curl, $curl_options);
+
+			    $pdf = curl_exec($curl);
+			    curl_close($curl);
+
+			    wc_mail($pdf, $curl, $curl_options);
+			}
+
 			//send mail to customer
+			//with pdf attachment and voucher code
 		    }
 		}
 	    }
@@ -420,36 +468,34 @@ class Woo_gift_card_Public {
 		//message
 		$cart_item_data['wgc-receiver-message'] = substr(wgc_get_post_var('wgc-receiver-message'), 0, get_option("wgc-message-length")) ?: "";
 
-		if (!empty($product->get_meta('wgc-template'))) {
-		    //template
-		    $template = get_post(wgc_get_post_var('wgc-receiver-template'));
-		    if (is_object($template)) {
-			$cart_item_data['wgc-receiver-template'] = $template->ID;
-		    } else {
-			throw new Exception(__("Please enter valid details to proceed."));
-		    }
-
-		    //image
-		    if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
-			$file = $_FILES['wgc-receiver-image'];
-			$path = $file['tmp_name'];
-
-			$cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($path);
-		    } else {
-			if (has_post_thumbnail($template)) {
-			    $thumbnail_id = get_post_thumbnail_id($template);
-			    $url = wp_get_attachment_image_url($thumbnail_id);
-
-			    $cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($url);
-			}
-		    }
-
-		    //event
-		    $cart_item_data['wgc-event'] = wgc_get_post_var("wgc-event") ?: $template->post_title;
+		//template
+		$template = get_post(wgc_get_post_var('wgc-receiver-template'));
+		if (is_object($template)) {
+		    $cart_item_data['wgc-receiver-template'] = $template->ID;
+		} else {
+		    throw new Exception(__("Please enter valid details to proceed."));
 		}
 
+		//image
+		if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
+		    $file = $_FILES['wgc-receiver-image'];
+		    $path = $file['tmp_name'];
+
+		    $cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($path);
+		} else {
+		    if (has_post_thumbnail($template)) {
+			$thumbnail_id = get_post_thumbnail_id($template);
+			$url = wp_get_attachment_image_url($thumbnail_id);
+
+			$cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($url);
+		    }
+		}
+
+		//event
+		$cart_item_data['wgc-event'] = wgc_get_post_var("wgc-event") ?: $template->post_title;
+
 		//schedule
-		if (!empty($product->get_meta('wgc-schedule'))) {
+		if ($product->get_meta('wgc-schedule') == "yes") {
 		    $schedule = wgc_get_post_var('wgc-receiver-schedule');
 		    if ($schedule) {
 			$cart_item_data['wgc-receiver-schedule'] = $schedule;

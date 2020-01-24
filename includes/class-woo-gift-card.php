@@ -336,6 +336,9 @@ class Woo_gift_card {
 
 	//cart item data
 	$this->loader->add_filter('woocommerce_get_item_data', $plugin_public, 'woocommerce_get_item_data', 10, 2);
+
+	//save cart item data to order
+	$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'woocommerce_checkout_create_order_line_item', 10, 4);
     }
 
     /**
