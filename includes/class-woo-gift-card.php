@@ -79,6 +79,7 @@ class Woo_gift_card {
 	$this->define_admin_hooks();
 	$this->define_public_hooks();
 	$this->define_rest_hooks();
+	$this->define_email_hooks();
     }
 
     /**
@@ -127,6 +128,12 @@ class Woo_gift_card {
 	 * side of the site.
 	 */
 	require_once plugin_dir_path(dirname(__FILE__)) . 'rest/class-woo-gift-card-rest.php';
+
+	/**
+	 * The class responsible for defining all actions that occur in the email
+	 * side of the plugin.
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'email/class-woo-gift-card-email.php';
 
 	/**
 	 * The file responsible for all plugin utility functions.
@@ -344,6 +351,25 @@ class Woo_gift_card {
 	$this->loader->add_filter('woocommerce_order_item_display_meta_key', $plugin_public, 'woocommerce_order_item_display_meta_key', 10, 3);
 	$this->loader->add_filter('woocommerce_order_item_display_meta_value', $plugin_public, 'woocommerce_order_item_display_meta_value', 10, 3);
 	$this->loader->add_filter('woocommerce_order_item_get_formatted_meta_data', $plugin_public, 'woocommerce_order_item_get_formatted_meta_data', 10, 2);
+    }
+
+    /**
+     * Register all of the hooks related to the email functionality
+     * of the plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_email_hooks() {
+
+	$plugin_email = new Woo_gift_card_Email($this->get_plugin_name(), $this->get_version());
+
+	//add our gift voucher balance hook
+	$this->loader->add_filter('woocommerce_email_actions', $plugin_email, 'woocommerce_email_actions');
+
+	//register our email class
+	$this->loader->add_filter('wgc_coupon_state_notification', $plugin_email, 'wgc_coupon_state_notification');
+	$this->loader->add_filter('woocommerce_email_classes', $plugin_email, 'woocommerce_email_classes');
     }
 
     /**

@@ -14,7 +14,7 @@ $coupons = get_posts(
 	array(
 	    "numberposts" => -1,
 	    'post_type' => 'shop_coupon',
-	    'author' => get_current_user_id(),
+	    // 'author' => get_current_user_id(),
 	    'post_status' => 'publish',
 	    'meta_query' => array(
 		array(
@@ -25,6 +25,10 @@ $coupons = get_posts(
 		),
 		array(
 		    'key' => 'wgc-order-item-index'
+		),
+		array(
+		    //add all recipient emails
+		    'key' => 'customer_email'
 		),
 	    )
 	)

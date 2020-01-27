@@ -159,7 +159,7 @@ class Woo_gift_card_Public {
      */
     public function woocommerce_account_endpoint() {
 
-	wc_get_template("wgc-my-account.php", array("plugin_name" => $this->plugin_name), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/");
+	wc_get_template("wgc-my-account.php", array("plugin_name" => $this->plugin_name), "", plugin_dir_path(__DIR__) . "public/partials/");
     }
 
     /**
@@ -224,7 +224,7 @@ class Woo_gift_card_Public {
 			//coupon expiry dates
 			$expiry_days = $product->get_meta("wgc-expiry-days") ? "+" . $product->get_meta("wgc-expiry-days") . " days" : "";
 
-			wp_insert_post(array(
+			$coupon = wp_insert_post(array(
 			    'post_type' => 'shop_coupon',
 			    'post_title' => wgc_unique_key(),
 			    'post_status' => 'publish',
@@ -241,7 +241,8 @@ class Woo_gift_card_Public {
 				'exclude_product_ids' => implode(",", $product->get_meta("wgc-excluded-products")),
 				'product_categories' => implode(",", $product->get_meta("wgc-product-categories")),
 				'exclude_product_categories' => implode(",", $product->get_meta("wgc-excluded-product-categories")),
-				'customer_email' => $product->get_meta("wgc-emails"),
+				//will use email patterns for owners of gift voucher and receiver email if not
+				'customer_email' => $order->get_meta('wgc-receiver-email') == get_user_option("user_email", $order->get_customer_id()) ? $product->get_meta("wgc-emails") : $order->get_meta('wgc-receiver-email'),
 				'usage_limit' => $product->get_meta("wgc-multiple"),
 				'limit_usage_to_x_items' => $product->get_meta("wgc-usability"),
 				'date_expires' => $expiry_days ? strtotime($expiry_days, strtotime($order->get_meta('wgc-receiver-schedule') ?: "now")) : "",
@@ -253,6 +254,11 @@ class Woo_gift_card_Public {
 				'wgc-order-item-index' => $i
 			    )
 			));
+
+			if ($coupon && !is_wp_error($coupon)) {
+
+			    do_action("wgc_coupon_state", $coupon);
+			}
 		    }
 		}
 	    }
@@ -423,24 +429,34 @@ class Woo_gift_card_Public {
 
 	    $cart_item_data['wgc-receiver-price'] = $price;
 
+	    //receiver email
+	    $email = wgc_get_post_var('wgc-receiver-email');
+	    if ($email && $email !== false) {
+		if (is_email($email)) {
+		    $cart_item_data['wgc-receiver-email'] = $email;
+		} else {
+		    throw new Exception(__("Please enter a valid recipient email to proceed."));
+		}
+	    } else {
+		$cart_item_data['wgc-receiver-email'] = get_user_option("user_email");
+	    }
+
+	    //message
+	    $cart_item_data['wgc-receiver-message'] = substr(wgc_get_post_var('wgc-receiver-message'), 0, get_option("wgc-message-length")) ?: "";
+
+	    //schedule
+	    if ($product->get_meta('wgc-schedule') == "yes") {
+		$schedule = wgc_get_post_var('wgc-receiver-schedule');
+		if ($schedule) {
+		    $cart_item_data['wgc-receiver-schedule'] = $schedule;
+		} else {
+		    throw new Exception(__("Please enter valid details to proceed."));
+		}
+	    }
+
 	    if ($product->is_virtual() && !empty($product->get_meta('wgc-template'))) {
 		//receiver name
 		$cart_item_data['wgc-receiver-name'] = wgc_get_post_var('wgc-receiver-name') ?: "";
-
-		//receiver email
-		$email = wgc_get_post_var('wgc-receiver-email');
-		if ($email && $email !== false) {
-		    if (is_email($email)) {
-			$cart_item_data['wgc-receiver-email'] = $email;
-		    } else {
-			throw new Exception(__("Please enter a valid recipient email to proceed."));
-		    }
-		} else {
-		    $cart_item_data['wgc-receiver-email'] = get_user_option("user_email");
-		}
-
-		//message
-		$cart_item_data['wgc-receiver-message'] = substr(wgc_get_post_var('wgc-receiver-message'), 0, get_option("wgc-message-length")) ?: "";
 
 		//template
 		$template = get_post(wgc_get_post_var('wgc-receiver-template'));
@@ -449,6 +465,9 @@ class Woo_gift_card_Public {
 		} else {
 		    throw new Exception(__("Please enter valid details to proceed."));
 		}
+
+		//event
+		$cart_item_data['wgc-event'] = wgc_get_post_var("wgc-event") ?: $template->post_title;
 
 		//image
 		if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
@@ -463,19 +482,6 @@ class Woo_gift_card_Public {
 
 			//todo maybe disable this to allow customised admin images to reflect to customer
 			$cart_item_data['wgc-receiver-image'] = wgc_path_to_base64($url);
-		    }
-		}
-
-		//event
-		$cart_item_data['wgc-event'] = wgc_get_post_var("wgc-event") ?: $template->post_title;
-
-		//schedule
-		if ($product->get_meta('wgc-schedule') == "yes") {
-		    $schedule = wgc_get_post_var('wgc-receiver-schedule');
-		    if ($schedule) {
-			$cart_item_data['wgc-receiver-schedule'] = $schedule;
-		    } else {
-			throw new Exception(__("Please enter valid details to proceed."));
 		    }
 		}
 	    }
@@ -644,4 +650,20 @@ class Woo_gift_card_Public {
 	return $formatted_meta;
     }
 
+    /**
+     * limit users who can use gift voucher
+     * notify user in email about gift card
+     * schedule gift card sending
+     * resend gift card email
+     *
+     * import coupon codes
+     * add template as downloadable
+     *
+     * notify of coupon balance etc
+     * send email multiple support
+     *
+     * thank you gift coupons
+     * edit coupon meta data
+     *
+     */
 }
