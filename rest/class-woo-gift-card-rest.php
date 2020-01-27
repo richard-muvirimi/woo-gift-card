@@ -538,12 +538,12 @@ class Woo_gift_card_Rest {
 		 * The title of the gift voucher
 		 */
 		if (!is_null($template)) {
-		    if (version_compare(phpversion(), "7", ">=")) {
-			$html = $this->params['wgc-event'] ?? apply_filters('the_title', $template->post_title);
-		    } else {
-			$event = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : "";
-			$html = $event ?: apply_filters('the_title', $template->post_title);
-		    }
+//		    if (version_compare(phpversion(), "7.0", ">=")) {
+//			$html = $this->params['wgc-event'] ?? apply_filters('the_title', $template->post_title);
+//		    } else {
+		    $event = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : "";
+		    $html = $event ?: apply_filters('the_title', $template->post_title);
+//		    }
 		}
 		break;
 	    case "expiry-days":
@@ -586,7 +586,7 @@ class Woo_gift_card_Rest {
 		$html = isset($this->params['wgc-receiver-message']) ? $this->params['wgc-receiver-message'] : "";
 		break;
 	    case "order-id":
-		$html = is_object($order) ? "#" . $order->get_id() : "";
+		$html = is_object($order) ? "#" . $order->get_order_number() : "";
 		break;
 	    case "product-name":
 		if ($product && is_object($product)) {
@@ -597,23 +597,23 @@ class Woo_gift_card_Rest {
 		/**
 		 * The recipient name of the gift voucher
 		 */
-		if (version_compare(phpversion(), "7", ">=")) {
-		    $html = $this->params['wgc-receiver-name'] ?? get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
-		} else {
-		    $name = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : "";
-		    $html = $name ?: get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
-		}
+//		if (version_compare(phpversion(), "7", ">=")) {
+//		    $html = $this->params['wgc-receiver-name'] ?? get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
+//		} else {
+		$name = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : "";
+		$html = $name ?: get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
+//		}
 		break;
 	    case "to-email":
 		/**
 		 * The recipient email of the gift voucher
 		 */
-		if (version_compare(phpversion(), "7", ">=")) {
-		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
-		} else {
-		    $email = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : "";
-		    $html = $email ?: get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
-		}
+//		if (version_compare(phpversion(), "7", ">=")) {
+//		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
+//		} else {
+		$email = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : "";
+		$html = $email ?: get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
+//		}
 		break;
 	    case "code":
 
