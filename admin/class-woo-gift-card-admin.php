@@ -73,15 +73,19 @@ class Woo_gift_card_Admin {
 	 */
 	switch (get_post_type()) {
 	    case 'wgc-template':
-		wp_enqueue_style($this->plugin_name . "template", plugin_dir_url(__FILE__) . 'css/woo-gift-card-template.css', array(), $this->version, 'all');
+		wp_enqueue_style($this->plugin_name . "-template", plugin_dir_url(__FILE__) . 'css/woo-gift-card-template.css', array(), $this->version, 'all');
 		break;
 	    default:
-		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-gift-card-admin.css', array(), $this->version, 'all');
 	}
 
 	//if list wgc-templates screen
-	if (strpos(get_current_screen()->id, "wgc-template") != false) {
-	    wp_enqueue_style($this->plugin_name . "-template-preview", plugin_dir_url(__DIR__) . 'public/css/wgc-pdf-preview.css', array(), $this->version);
+	switch (get_current_screen()->id) {
+	    case "wgc-template":
+		wp_enqueue_style($this->plugin_name . "-template-preview", plugin_dir_url(__DIR__) . 'public/css/wgc-pdf-preview.css', array(), $this->version);
+		break;
+	    case 'woo-gift-voucher_page_wgc-about':
+		wp_enqueue_style($this->plugin_name . "-about", plugin_dir_url(__FILE__) . 'css/woo-gift-card-admin.css', array(), $this->version, 'all');
+		break;
 	}
     }
 
@@ -108,18 +112,22 @@ class Woo_gift_card_Admin {
 		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/woo-gift-card-product.js', array('jquery'), $this->version, false);
 		break;
 	    case "wgc-template":
-		wp_enqueue_script($this->plugin_name . "template", plugin_dir_url(__FILE__) . 'js/woo-gift-card-template.js', array('jquery'), $this->version, false);
+		wp_enqueue_script($this->plugin_name . "-template", plugin_dir_url(__FILE__) . 'js/woo-gift-card-template.js', array('jquery'), $this->version, false);
 		break;
 	    default:
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/woo-gift-card-admin.js', array('jquery'), $this->version, false);
 	}
 
 	//if list wgc-templates screen
-	if (get_current_screen()->id == "edit-wgc-template") {
-	    wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
-	    wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
-		"pdf_template_url" => get_rest_url(null, $this->plugin_name . "/v1/template/preview/")
-	    ));
+	switch (get_current_screen()->id) {
+	    case "edit-wgc-template":
+		wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
+		wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
+		    "pdf_template_url" => get_rest_url(null, $this->plugin_name . "/v1/template/preview/")
+		));
+		break;
+	    case 'woo-gift-voucher_page_wgc-about':
+		wp_enqueue_script($this->plugin_name . "-about", plugin_dir_url(__FILE__) . 'js/woo-gift-card-admin.js', array('jquery'), $this->version, false);
+		break;
 	}
     }
 
@@ -215,15 +223,41 @@ class Woo_gift_card_Admin {
      * @return void
      */
     public function on_admin_menu() {
-	add_menu_page(__('Woo Gift Voucher', 'woo-gift-card'), __('Woo Gift Voucher', 'woo-gift-card'), 'manage_options', 'wgc-template');
+	add_menu_page(__('Woo Gift Voucher', 'woo-gift-card'), __('Woo Gift Voucher', 'woo-gift-card'), 'manage_woocommerce', 'wgc-template');
 
 	include_once plugin_dir_path(__DIR__) . "/admin/partials/options/class-wgc-options.php";
 
+	//options
 	add_submenu_page('wgc-template', __('Options', 'woo-gift-card'), __('Options', 'woo-gift-card'), 'manage_options', 'wgc-options', array($this, 'render_options_page'));
+
+	//about
+	add_submenu_page('wgc-template', __('About', 'woo-gift-card'), __('About', 'woo-gift-card'), 'manage_options', 'wgc-about', array($this, 'render_about_page'));
     }
 
     public function render_options_page() {
 	include_once plugin_dir_path(__DIR__) . "/admin/partials/options/wgc-options.php";
+    }
+
+    public function render_about_page() {
+	$plugin = get_plugin_data(plugin_dir_path(__DIR__) . "woo-gift-card.php");
+
+	$data = array(
+	    "plugin_name" => $plugin["Name"],
+	    "plugin_description" => $plugin["Description"],
+	    "plugin_version" => $plugin["Version"],
+	    "wp_version" => get_bloginfo("version"),
+	    "wp_required_version" => $plugin["RequiresWP"],
+	    "wc_version" => function_exists("WC") ? WC()->version : "0",
+	    "wc_required_version" => $plugin['WC requires at least'],
+	    "php_version" => phpversion(),
+	    "php_required_version" => $plugin["RequiresPHP"],
+	    "MBString" => extension_loaded("MBString"),
+	    "DOM" => extension_loaded("DOM"),
+	    "GD" => function_exists('imagecreate'),
+	    "Imagick" => extension_loaded('imagick'),
+	);
+
+	wc_get_template("wgc-admin-about.php", $data, "", plugin_dir_path(__DIR__) . "/admin/partials/about/");
     }
 
     /**
