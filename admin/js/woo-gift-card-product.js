@@ -12,9 +12,9 @@
 	$('#inventory_product_data .options_group p').addClass('show_if_woo-gift-card');
 
 	//handle pricing type changes
-	$('#wgc-pricing').change(() => {
+	$('#wgc-pricing').change((e) => {
 
-	    let selectClass = "wgc-pricing-" + $('#wgc-pricing').val();
+	    let selectClass = "wgc-pricing-" + $(e.target).val();
 	    let selector = "[class~='" + selectClass + "']";
 
 	    //hide all pricing options
@@ -27,7 +27,7 @@
 	$('#wgc-discount').change((e) => {
 
 	    let discount = "fixed";
-	    if ($('#wgc-discount').val().indexOf(discount) === -1) {
+	    if ($(e.target).val().indexOf(discount) === -1) {
 		discount = "percentage";
 	    }
 

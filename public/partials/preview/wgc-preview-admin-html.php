@@ -49,7 +49,7 @@
     </head>
     <body onload="load_template()" >
 	<iframe name="wgc-preview-frame" class="wgc-preview-frame" frameborder="0" width="100%" height="100%"></iframe>
-	<form action="<?php esc_attr_e(get_rest_url(null, "woo-gift-card/v1/template/")) ?>" id="wgc-preview-form" class="wgc-preview-form" method="post" target="wgc-preview-frame">
+	<form action="<?php esc_attr_e(wgc_preview_link()) ?>" id="wgc-preview-form" class="wgc-preview-form" method="post" target="wgc-preview-frame">
 	    <input type="hidden" name="wgc-receiver-template" value="<?php esc_attr_e($post->ID) ?>" >
 	</form>
     </body>

@@ -80,9 +80,10 @@ class Woo_gift_card_Admin {
 
 	//if list wgc-templates screen
 	switch (get_current_screen()->id) {
-	    case "wgc-template":
+	    case "edit-wgc-template":
 		wp_enqueue_style($this->plugin_name . "-template-preview", plugin_dir_url(__DIR__) . 'public/css/wgc-pdf-preview.css', array(), $this->version);
 		break;
+	    case 'toplevel_page_wgc-dashboard':
 	    case 'woo-gift-voucher_page_wgc-about':
 		wp_enqueue_style($this->plugin_name . "-about", plugin_dir_url(__FILE__) . 'css/woo-gift-card-admin.css', array(), $this->version, 'all');
 		break;
@@ -122,9 +123,10 @@ class Woo_gift_card_Admin {
 	    case "edit-wgc-template":
 		wp_enqueue_script($this->plugin_name . "-template-preview", plugin_dir_url(__FILE__) . 'js/wgc-preview.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name . "-template-preview", 'wgc_product', array(
-		    "pdf_template_url" => get_rest_url(null, $this->plugin_name . "/v1/template/preview/")
+		    "pdf_template_url" => wgc_preview_link()
 		));
 		break;
+	    case 'toplevel_page_wgc-dashboard':
 	    case 'woo-gift-voucher_page_wgc-about':
 		wp_enqueue_script($this->plugin_name . "-about", plugin_dir_url(__FILE__) . 'js/woo-gift-card-admin.js', array('jquery'), $this->version, false);
 		break;
@@ -139,9 +141,10 @@ class Woo_gift_card_Admin {
     public function init() {
 
 	if (wc_coupons_enabled()) {
+
 	    register_post_type('wgc-template', array(
 		'show_ui' => true,
-		'show_in_menu' => current_user_can('manage_woocommerce') ? 'wgc-template' : true,
+		'show_in_menu' => 'wgc-dashboard',
 		'exclude_from_search' => true,
 		'hierarchical' => false,
 		"description" => __("Woo Gift Card Template post type", 'woo-gift-card'),
@@ -223,15 +226,17 @@ class Woo_gift_card_Admin {
      * @return void
      */
     public function on_admin_menu() {
-	add_menu_page(__('Woo Gift Voucher', 'woo-gift-card'), __('Woo Gift Voucher', 'woo-gift-card'), 'manage_woocommerce', 'wgc-template');
+	add_menu_page(__('Woo Gift Voucher', 'woo-gift-card'), __('Woo Gift Voucher', 'woo-gift-card'), 'manage_woocommerce', 'wgc-dashboard', wc_coupons_enabled() ? "" : array($this, 'render_about_page'), 'dashicons-businessman');
 
-	include_once plugin_dir_path(__DIR__) . "/admin/partials/options/class-wgc-options.php";
+	if (wc_coupons_enabled()) {
+	    include_once plugin_dir_path(__DIR__) . "/admin/partials/options/class-wgc-options.php";
 
-	//options
-	add_submenu_page('wgc-template', __('Options', 'woo-gift-card'), __('Options', 'woo-gift-card'), 'manage_options', 'wgc-options', array($this, 'render_options_page'));
+	    //options
+	    add_submenu_page('wgc-dashboard', __('Options', 'woo-gift-card'), __('Options', 'woo-gift-card'), 'manage_options', 'wgc-options', array($this, 'render_options_page'));
 
-	//about
-	add_submenu_page('wgc-template', __('About', 'woo-gift-card'), __('About', 'woo-gift-card'), 'manage_options', 'wgc-about', array($this, 'render_about_page'));
+	    //about
+	    add_submenu_page('wgc-dashboard', __('About', 'woo-gift-card'), __('About', 'woo-gift-card'), 'manage_options', 'wgc-dashboard', array($this, 'render_about_page'));
+	}
     }
 
     public function render_options_page() {
@@ -481,7 +486,7 @@ class Woo_gift_card_Admin {
      */
     public function add_product_type($types) {
 
-	if (current_user_can('manage_woocommerce')) {
+	if (wc_coupons_enabled() && current_user_can('manage_woocommerce')) {
 	    $types[$this->plugin_name] = __("Gift Voucher", $this->plugin_name);
 	}
 
@@ -496,14 +501,16 @@ class Woo_gift_card_Admin {
      */
     public function setup_product_data_tabs($product_data_tabs) {
 
-	$product_data_tabs['inventory']['class'][] = 'show_if_' . $this->plugin_name;
+	if (wc_coupons_enabled()) {
+	    $product_data_tabs['inventory']['class'][] = 'show_if_' . $this->plugin_name;
 
-	$product_data_tabs["woo-gift-card"] = array(
-	    'label' => __('Gift Voucher', 'woo-gift-card'),
-	    'target' => 'wgc-general',
-	    'class' => array('show_if_' . $this->plugin_name),
-	    'priority' => 11,
-	);
+	    $product_data_tabs["woo-gift-card"] = array(
+		'label' => __('Gift Voucher', 'woo-gift-card'),
+		'target' => 'wgc-general',
+		'class' => array('show_if_' . $this->plugin_name),
+		'priority' => 11,
+	    );
+	}
 
 	return $product_data_tabs;
     }
@@ -514,6 +521,14 @@ class Woo_gift_card_Admin {
 	    global $product_object;
 
 	    wc_get_template("wgc-product-coupon-options.php", compact("product_object"), "", plugin_dir_path(dirname(__FILE__)) . "admin/partials/product/");
+	}
+    }
+
+    public function woocommerce_product_options_stock() {
+	if (wc_coupons_enabled()) {
+	    global $product_object;
+
+	    wc_get_template("wgc-product-inventory-options.php", compact("product_object"), "", plugin_dir_path(dirname(__FILE__)) . "admin/partials/product/");
 	}
     }
 
