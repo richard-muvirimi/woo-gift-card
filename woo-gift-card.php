@@ -8,16 +8,20 @@
  * @package           Woo_gift_card
  *
  * @wordpress-plugin
- * Plugin Name:       Woo Gift Card
+ * Plugin Name:       Woo Gift Voucher
  * Plugin URI:        tyganeutronics.com
- * Description:       The Woocommerce Gift Card Plugin.
+ * Description:       The Woocommerce Gift Voucher Plugin.
+ * Requires PHP:      5.6
+ * Requires at least: 5.0.0
  * Version:           1.0.0
- * Author:            Manas Mishra
+ * Author:            Richard Muvirimi
  * Author URI:        tyganeutronics.com
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       woo_gift_card
  * Domain Path:       /languages
+ * WC requires at least: 3.0.0
+ * WC tested up to:   3.9.0
  */
 // If this file is called directly, abort.
 if (!defined('WPINC')) {
@@ -25,7 +29,7 @@ if (!defined('WPINC')) {
 }
 
 /**
- * Currently plugin version.
+ * Current plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
@@ -76,6 +80,6 @@ function run_woo_gift_card() {
 // If the WC class doesn't exist
 // it means WooCommerce is not installed on the site
 // so do nothing
-//if (function_exists('WC')) {
+//if (class_exists('WC')) {
 run_woo_gift_card();
 //}

@@ -11,6 +11,28 @@
 	$('#inventory_product_data .options_group:has(p._sold_individually_field)').addClass('show_if_woo-gift-card');
 	$('#inventory_product_data .options_group p').addClass('show_if_woo-gift-card');
 
+	//handle coupon code changes
+	$('textarea#wgc-coupon-codes').on("keydown keyup change", (e) => {
+
+	    //replace all whitespace characters with comma
+	    let coupons = $(e.target).val().replace(/\s/g, ",");
+	    let length = coupons.split(",").filter((coupon) => {
+		//remove all empty entries
+		return coupon.trim().length > 0;
+	    }).length;
+
+	    let stock = $("#_stock");
+	    if (coupons.length > 0 && length > 0) {
+		if (!stock.attr("readonly")) {
+		    stock.attr("readonly", "true");
+		}
+		stock.val(length);
+	    } else {
+		stock.removeAttr("readonly");
+		stock.val(0);
+	    }
+	}).change();
+
 	//handle pricing type changes
 	$('#wgc-pricing').change((e) => {
 

@@ -71,7 +71,7 @@ $pricing = $product->get_meta("wgc-pricing");
 	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 	    <label for="wgc-receiver-email"><?php esc_html_e('Receiver email(s)', 'woo-gift-card'); ?>&nbsp;<span class="required">*</span></label>
 	    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-email" id="wgc-receiver-email" value="<?php esc_attr_e(get_user_option("user_email")); ?>" required/>
-	    <span><em><?php esc_html_e('Will default to account email, separate multiple recipients with commas.', 'woo-gift-card') ?></em></span>
+	    <span><em><?php esc_html_e('Separate multiple recipients with commas.', 'woo-gift-card') ?></em></span>
 	</p>
 
 	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
@@ -82,14 +82,14 @@ $pricing = $product->get_meta("wgc-pricing");
 
 	<!-- if can be scheduled-->
 	<?php if (!empty($product->get_meta('wgc-schedule'))): ?>
-            <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+    	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-receiver-schedule"><?php esc_html_e('Date to send Gift Voucher', 'woo-gift-card'); ?></label>
     	    <input type="date" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-schedule" id="wgc-receiver-schedule" value="<?php esc_attr_e(date('Y-m-d')) ?>"  min="<?php esc_attr_e(date('Y-m-d')) ?>"/>
 
 		<?php if ($product->get_meta('wgc-expiry-days')): ?>
 		    <span><em><?php printf(esc_html('Will expire in %s days after purchase or scheduled send.', 'woo-gift-card'), $product->get_meta('wgc-expiry-days')) ?></em></span>
 		<?php endif; ?>
-            </p>
+    	</p>
 	<?php endif; ?>
     </fieldset>
 
@@ -104,7 +104,7 @@ $pricing = $product->get_meta("wgc-pricing");
     	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-receiver-name"><?php esc_html_e('Receiver name', 'woo-gift-card'); ?>&nbsp;<span class="required">*</span></label>
     	    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-name" id="wgc-receiver-name" value="<?php esc_attr_e(get_user_option("display_name")); ?>" required/>
-    	    <span><em><?php esc_html_e('Will default to account name', 'woo-gift-card') ?></em></span>
+    	    <span><em><?php esc_html_e('Will default to account name.', 'woo-gift-card') ?></em></span>
     	</p>
 
     	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">

@@ -145,10 +145,13 @@ class Woo_gift_card {
 	 */
 	if (!class_exists("Picqer\Barcode\BarcodeGenerator")) {
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGenerator.php';
-	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorPNG.php';
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorSVG.php';
-	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorJPG.php';
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorHTML.php';
+
+	    if (function_exists('imagecreate') || extension_loaded('imagick')) {
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorPNG.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorJPG.php';
+	    }
 	}
 
 	/**
@@ -210,6 +213,9 @@ class Woo_gift_card {
 
 	//woo gift card thank you options
 	$this->loader->add_action('woocommerce_product_options_general_product_data', $plugin_admin, 'setup_woo_gift_card_product');
+
+	//product inventory tab
+	$this->loader->add_action('woocommerce_product_options_stock', $plugin_admin, 'woocommerce_product_options_stock');
 
 	//save product type
 	$this->loader->add_filter('woocommerce_admin_process_product_object', $plugin_admin, 'save_product_object');

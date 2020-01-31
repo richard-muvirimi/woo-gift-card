@@ -418,58 +418,6 @@ class Woo_gift_card_Admin {
     }
 
     /**
-     * Save our gift card custom fields, will default to product defaults if empty
-     *
-     * @param int $post_id
-     */
-    public function save_post($post_id) {
-
-	$value = sanitize_text_field(filter_input(INPUT_POST, 'wgc-value'));
-	$balance = sanitize_text_field(filter_input(INPUT_POST, 'wgc-balance'));
-	$key = sanitize_text_field(filter_input(INPUT_POST, 'wgc-key'));
-
-	if (empty($value) || empty($balance) || empty($key)) {
-
-	    set_transient('wgc-notice', __('Empty gift voucher values set to defaults'));
-	    set_transient('wgc-notice-class', 'notice-info');
-	}
-
-	if (empty($value)) {
-
-//Here we get product and set $value to gift card value defaulting to product price if empty
-	    $products = wc_get_products(array(
-		'posts_per_page' => 1,
-		'id' => get_post_meta($post_id, 'wgc-product', true)
-	    ));
-
-	    $price = get_post_meta($products[0]->id, 'wgc-value', true);
-
-	    $value = $price ? $price : $products[0]->get_regular_price();
-	}
-
-	if (empty($balance)) {
-
-	    $balance = $value;
-	}
-
-	if (empty($key)) {
-
-	    $posts = get_posts(array(
-		'posts_per_page' => 1,
-		'post_type' => 'woo-gift-card',
-		'id' => $post_id,
-	    ));
-
-//get a unique key for user
-	    $key = WooGiftCardsUtils::get_unique_key(get_user_by('id', $posts[0]['post_author']));
-	}
-
-	update_post_meta($post_id, 'wgc-value', sanitize_text_field($value));
-	update_post_meta($post_id, 'wgc-balance', sanitize_text_field($balance));
-	update_post_meta($post_id, 'wgc-key', sanitize_text_field($key));
-    }
-
-    /**
      * require custom product type
      *
      * @return void
@@ -722,6 +670,15 @@ class Woo_gift_card_Admin {
 	$product->update_meta_data("wgc-excluded-products", wgc_get_post_var('wgc-excluded-products'));
 	$product->update_meta_data("wgc-product-categories", wgc_get_post_var('wgc-product-categories'));
 	$product->update_meta_data("wgc-excluded-product-categories", wgc_get_post_var('wgc-excluded-product-categories'));
+
+	//coupons
+	$raw_coupons = preg_split("/\s|,/", wgc_get_post_var('wgc-coupon-codes'));
+
+	$coupons = array_filter($raw_coupons, function ($coupon) {
+	    return strlen(trim($coupon)) > 0;
+	});
+
+	$product->update_meta_data("wgc-coupon-codes", implode(" ", $coupons));
 
 	$product->save();
 	$product->save_meta_data();

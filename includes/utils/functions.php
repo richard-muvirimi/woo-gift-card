@@ -78,25 +78,6 @@ function wgc_get_post_var($name) {
     return false;
 }
 
-/**
- *
- * @param type $param
- * @return string
- */
-function wgc_unique_key() {
-    $prefix = get_option("wgc-code-prefix");
-    $code = "";
-    $suffix = get_option("wgc-code-suffix");
-
-    $special = get_option("wgc-code-special") == "on";
-
-    do {
-	$code = wp_generate_password(get_option("wgc-code-length"), $special, $special);
-    } while (post_exists($prefix . $code . $suffix, "", "", "shop_coupon") != 0);
-
-    return $prefix . $code . $suffix;
-}
-
 function wgc_format_coupon_value($coupon_id) {
 
     if (strpos(get_post_meta($coupon_id, 'discount_type', true), "fixed") !== false) {
@@ -114,4 +95,22 @@ function wgc_get_pricing_types() {
 	"user" => __("User Price", 'woo-gift-card'),
 	    // "variable" => __("Variable Price", 'woo-gift-card')
     );
+}
+
+function wgc_get_barcode_output_types() {
+    $generators = array(
+	"svg" => __("Svg", 'woo-gift-card'),
+	"html" => __("Html", 'woo-gift-card')
+    );
+
+    if (function_exists('imagecreate') || extension_loaded('imagick')) {
+	$generators["png"] = __("Png", 'woo-gift-card');
+	$generators["jpg"] = __("Jpg", 'woo-gift-card');
+    }
+
+    return $generators;
+}
+
+function wgc_preview_link($plugin_name = "woo-gift-card") {
+    return get_rest_url(null, $plugin_name . "/v1/template/preview/");
 }

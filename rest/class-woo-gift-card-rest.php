@@ -538,12 +538,7 @@ class Woo_gift_card_Rest {
 		 * The title of the gift voucher
 		 */
 		if (!is_null($template)) {
-//		    if (version_compare(phpversion(), "7.0", ">=")) {
-//			$html = $this->params['wgc-event'] ?? apply_filters('the_title', $template->post_title);
-//		    } else {
-		    $event = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : "";
-		    $html = $event ?: apply_filters('the_title', $template->post_title);
-//		    }
+		    $html = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : apply_filters('the_title', $template->post_title);
 		}
 		break;
 	    case "expiry-days":
@@ -597,23 +592,13 @@ class Woo_gift_card_Rest {
 		/**
 		 * The recipient name of the gift voucher
 		 */
-//		if (version_compare(phpversion(), "7", ">=")) {
-//		    $html = $this->params['wgc-receiver-name'] ?? get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
-//		} else {
-		$name = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : "";
-		$html = $name ?: get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
-//		}
+		$html = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
 		break;
 	    case "to-email":
 		/**
 		 * The recipient email of the gift voucher
 		 */
-//		if (version_compare(phpversion(), "7", ">=")) {
-//		    $html = $this->params['wgc-receiver-email'] ?? get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
-//		} else {
-		$email = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : "";
-		$html = $email ?: get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
-//		}
+		$html = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
 		break;
 	    case "code":
 
@@ -699,9 +684,9 @@ class Woo_gift_card_Rest {
      */
     private function hexColorToArray($color) {
 
-	$color = trim($color, "#");
+	$hex_color = sanitize_hex_color_no_hash($color);
 
-	$chunks = array_slice(explode(".", chunk_split($color, 2, ".")), 0, 3);
+	$chunks = explode(".", chunk_split($hex_color, 2, "."));
 
 	return array_map("hexdec", $chunks);
     }

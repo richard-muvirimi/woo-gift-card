@@ -27,7 +27,7 @@ $coupons = get_posts(
 		    'key' => 'wgc-order-item-index'
 		),
 		array(
-		    //add all recipient emails
+		    //todo add all recipient emails
 		    'key' => 'customer_email'
 		),
 	    )
@@ -63,41 +63,45 @@ if (!empty($coupons)) :
 	    <?php
 	    foreach ($coupons as $coupon) :
 		$coupon_meta = get_post_meta($coupon->ID);
-		?>
-		<tr class="woo-gift-card">
-		    <td>
-			<?php esc_html_e(wc_format_coupon_code($coupon->post_title)); ?>
-		    </td>
-		    <td>
-			<?php esc_html_e(wgc_format_coupon_value($coupon->ID)); ?>
-		    </td>
-		    <?php
-		    $order = wc_get_order(get_post_meta($coupon->ID, "wgc-order", true));
-		    $item = $order->get_item(get_post_meta($coupon->ID, "wgc-order-item", true));
-		    $has_template = $item->get_meta("wgc-receiver-template");
+
+		$order = wc_get_order($coupon_meta["wgc-order"][0]);
+		if ($order !== false) :
 		    ?>
-		    <td colspan=" <?php esc_attr_e($has_template ? 1 : 2) ?>">
-			<?php
-			$product = $item->get_product();
-			if ($product->get_meta("wgc-expiry-days")) {
-
-			    $date = new WC_DateTime();
-			    $date->setTimestamp($coupon_meta['date_expires'][0]);
-
-			    esc_html_e(wc_format_datetime($date));
-			} else {
-			    _e("Never", "woo-gift-card");
-			}
-			?>
-		    </td>
-		    <?php if ($has_template): ?>
+	    	<tr class="woo-gift-card">
 	    	    <td>
-	    		<a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->post_title))); ?>" class="woocommerce-button button view">
-				<?php _e("View", "woo-gift-card") ?>
-	    		</a>
+			    <?php esc_html_e(wc_format_coupon_code($coupon->post_title)); ?>
 	    	    </td>
-		    <?php endif; ?>
-		</tr>
+	    	    <td>
+			    <?php esc_html_e(wgc_format_coupon_value($coupon->ID)); ?>
+	    	    </td>
+			<?php
+			$item = $order->get_item($coupon_meta["wgc-order-item"][0]);
+
+			$has_template = $item->get_meta("wgc-receiver-template");
+			?>
+	    	    <td colspan=" <?php esc_attr_e($has_template ? 1 : 2) ?>">
+			    <?php
+			    $product = $item->get_product();
+			    if ($product->get_meta("wgc-expiry-days")) {
+
+				$date = new WC_DateTime();
+				$date->setTimestamp($coupon_meta['date_expires'][0]);
+
+				esc_html_e(wc_format_datetime($date));
+			    } else {
+				_e("Never", "woo-gift-card");
+			    }
+			    ?>
+	    	    </td>
+			<?php if ($has_template): ?>
+			    <td>
+				<a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->post_title))); ?>" class="woocommerce-button button view">
+				    <?php _e("View", "woo-gift-card") ?>
+				</a>
+			    </td>
+			<?php endif; ?>
+	    	</tr>
+		<?php endif; ?>
 	    <?php endforeach; ?>
         </tbody>
     </table>

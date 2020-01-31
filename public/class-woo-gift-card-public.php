@@ -226,7 +226,7 @@ class Woo_gift_card_Public {
 
 			$coupon = wp_insert_post(array(
 			    'post_type' => 'shop_coupon',
-			    'post_title' => wgc_unique_key(),
+			    'post_title' => $this->get_unique_key($product),
 			    'post_status' => 'publish',
 			    'post_content' => '',
 			    'post_excerpt' => get_plugin_data(plugin_dir_path(__DIR__) . DIRECTORY_SEPARATOR . $this->plugin_name . ".php")["Name"],
@@ -266,8 +266,42 @@ class Woo_gift_card_Public {
     }
 
     /**
+     *
+     * @param \WC_Product_Woo_Gift_Card $product
+     * @return string
+     */
+    private function get_unique_key($product) {
+	$code = "";
+
+	if ($product->get_manage_stock()) {
+	    $coupons = preg_split("/\s/", $product->get_meta("wgc-coupon-codes"));
+
+	    if (!empty($coupons)) {
+		$code = array_shift($coupons);
+
+		$product->update_meta_data("wgc-coupon-codes", implode(" ", $coupons));
+		$product->save_meta_data();
+	    }
+	}
+
+	//$coupons
+	if (empty($code)) {
+	    $prefix = get_option("wgc-code-prefix");
+	    $suffix = get_option("wgc-code-suffix");
+
+	    $special = get_option("wgc-code-special") == "on";
+
+	    do {
+		$code = $prefix . wp_generate_password(get_option("wgc-code-length"), $special, $special) . $suffix;
+	    } while (post_exists($code, "", "", "shop_coupon") != 0);
+	}
+
+	return $code;
+    }
+
+    /**
      * This function outputs the content displayed before the add to cart button
-     * @global type $product
+     * @global WC_Product_Woo_Gift_Card $product
      */
     public function woocommerce_before_add_to_cart_button() {
 	global $product;
@@ -279,7 +313,7 @@ class Woo_gift_card_Public {
 
     /**
      * This function outputs the content displayed after the add to cart button
-     * @global type $product
+     * @global WC_Product_Woo_Gift_Card $product
      */
     public function woocommerce_after_add_to_cart_button() {
 	global $product;
