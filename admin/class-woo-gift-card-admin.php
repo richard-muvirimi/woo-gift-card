@@ -285,45 +285,6 @@ class Woo_gift_card_Admin {
     }
 
     /**
-     * Add a meta box that allows the admin to manage a certain gift card
-     *
-     * @param \WP_Post $post
-     * @return void
-     */
-    public function gift_card_meta_box($post) {
-
-	woocommerce_wp_text_input(
-		array(
-		    'id' => 'wgc-value',
-		    'value' => esc_html(get_post_meta($post->ID, 'wgc-value', true)),
-		    'data_type' => 'price',
-		    'label' => __('Gift Voucher Value', $this->plugin_name) . ' (' . get_woocommerce_currency_symbol() . ')',
-		    'description' => '<br>' . __('The monetary value of the gift voucher ', $this->plugin_name) . '(' . __('Will default to gift voucher value if not set', $this->plugin_name) . ')',
-		)
-	);
-
-	woocommerce_wp_text_input(
-		array(
-		    'id' => 'wgc-balance',
-		    'value' => esc_html(get_post_meta($post->ID, 'wgc-balance', true)),
-		    'data_type' => 'price',
-		    'label' => __('Gift Voucher Balance', $this->plugin_name) . ' (' . get_woocommerce_currency_symbol() . ')',
-		    'description' => '<br>' . __('The monetary balance of the gift voucher ', $this->plugin_name) . '(' . __('Will default to gift voucher value if not set', $this->plugin_name) . ')',
-		)
-	);
-
-	woocommerce_wp_text_input(
-		array(
-		    'id' => 'wgc-key',
-		    'value' => esc_html(get_post_meta($post->ID, 'wgc-key', true)),
-		    'data_type' => 'text',
-		    'label' => __('Gift Voucher Key', $this->plugin_name),
-		    'description' => '<br>' . __('The gift voucher unique key ', $this->plugin_name) . '(' . __('A new key will be generated if not set', $this->plugin_name) . ')',
-		)
-	);
-    }
-
-    /**
      * Render template help files
      */
     public function gift_card_help_meta_box() {
@@ -915,6 +876,122 @@ class Woo_gift_card_Admin {
 	    $content .= '</select></p>';
 	}
 	return $content;
+    }
+
+    /**
+     * Called when the customer order has been paid. creates the gift card if it does not already exists.
+     *
+     * @param int $order_id
+     * @return void
+     */
+    public function woocommerce_order_status_completed($order_id) {
+
+	$coupons = get_posts(array(
+	    "post_type" => "shop_coupon",
+	    'meta_query' => array(
+		array(
+		    'key' => 'wgc-order',
+		    'value' => $order_id,
+		),
+		array(
+		    'key' => 'wgc-order-item'
+		),
+		array(
+		    'key' => 'wgc-order-item-index'
+		),
+	    )
+	));
+
+	if (empty($coupons)) {
+	    //order has not yet been processed
+
+	    $order = wc_get_order($order_id);
+
+	    foreach ($order->get_items() as $item) {
+
+		$product = $item->get_product();
+		if ($product->is_type('woo-gift-card')) {
+
+		    //if gift card create for tracking
+		    for ($i = 0; $i < $item->get_quantity(); $i++) {
+			//save template in case it is deleted, create coupon
+			//do a post request to retrieve  template
+			//coupon expiry dates
+			$expiry_days = $product->get_meta("wgc-expiry-days") ? "+" . $product->get_meta("wgc-expiry-days") . " days" : "";
+
+			$coupon = wp_insert_post(array(
+			    'post_type' => 'shop_coupon',
+			    'post_title' => $this->get_unique_key($product),
+			    'post_status' => 'publish',
+			    'post_content' => '',
+			    'post_excerpt' => get_plugin_data(plugin_dir_path(__DIR__) . DIRECTORY_SEPARATOR . $this->plugin_name . ".php")["Name"],
+			    'meta_input' => array(
+				'discount_type' => $product->get_meta("wgc-discount"),
+				'coupon_amount' => strpos($product->get_meta("wgc-discount"), "fixed") !== false ? $product->get_meta("wgc-discount-fixed") : $product->get_meta("wgc-discount-percentage"),
+				'minimum_amount' => $product->get_meta("wgc-cart-min"),
+				'maximum_amount' => $product->get_meta("wgc-cart-max"),
+				'individual_use' => $product->get_meta("wgc-individual"),
+				'exclude_sale_items' => $product->get_meta("wgc-sale"),
+				'product_ids' => implode(",", $product->get_meta("wgc-products")),
+				'exclude_product_ids' => implode(",", $product->get_meta("wgc-excluded-products")),
+				'product_categories' => implode(",", $product->get_meta("wgc-product-categories")),
+				'exclude_product_categories' => implode(",", $product->get_meta("wgc-excluded-product-categories")),
+				//will use email patterns for owners of gift voucher and receiver email if not
+				'customer_email' => $order->get_meta('wgc-receiver-email') == get_user_option("user_email", $order->get_customer_id()) ? $product->get_meta("wgc-emails") : $order->get_meta('wgc-receiver-email'),
+				'usage_limit' => $product->get_meta("wgc-multiple"),
+				'limit_usage_to_x_items' => $product->get_meta("wgc-usability"),
+				'date_expires' => $expiry_days ? strtotime($expiry_days, strtotime($order->get_meta('wgc-receiver-schedule') ?: "now")) : "",
+				'apply_before_tax' => "no",
+				'free_shipping' => "no",
+				//our custom parameters to recognise this order and items later
+				'wgc-order' => $order_id,
+				'wgc-order-item' => $item->get_id(),
+				'wgc-order-item-index' => $i
+			    )
+			));
+
+			if ($coupon && !is_wp_error($coupon)) {
+
+			    do_action("wgc_coupon_state", $coupon);
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    /**
+     *
+     * @param \WC_Product_Woo_Gift_Card $product
+     * @return string
+     */
+    private function get_unique_key($product) {
+	$code = "";
+
+	if ($product->get_manage_stock()) {
+	    $coupons = preg_split("/\s/", $product->get_meta("wgc-coupon-codes"));
+
+	    if (!empty($coupons)) {
+		$code = array_shift($coupons);
+
+		$product->update_meta_data("wgc-coupon-codes", implode(" ", $coupons));
+		$product->save_meta_data();
+	    }
+	}
+
+	//$coupons
+	if (empty($code)) {
+	    $prefix = get_option("wgc-code-prefix");
+	    $suffix = get_option("wgc-code-suffix");
+
+	    $special = get_option("wgc-code-special") == "on";
+
+	    do {
+		$code = $prefix . wp_generate_password(get_option("wgc-code-length"), $special, $special) . $suffix;
+	    } while (post_exists($code, "", "", "shop_coupon") != 0);
+	}
+
+	return $code;
     }
 
 }

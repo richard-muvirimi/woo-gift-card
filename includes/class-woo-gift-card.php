@@ -202,6 +202,9 @@ class Woo_gift_card {
 	$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 	$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 
+	//on order completed
+	$this->loader->add_action('woocommerce_order_status_completed', $plugin_admin, 'woocommerce_order_status_completed');
+
 	//product type
 	$this->loader->add_action('woocommerce_loaded', $plugin_admin, 'woocommerce_loaded');
 
@@ -309,9 +312,6 @@ class Woo_gift_card {
 
 	//on init
 	$this->loader->add_action('init', $plugin_public, 'init');
-
-	//on order completed
-	$this->loader->add_action('woocommerce_order_status_completed', $plugin_public, 'payment_complete');
 
 	//my account page items
 	$this->loader->add_filter('woocommerce_account_menu_items', $plugin_public, 'filter_account_menu_items');
