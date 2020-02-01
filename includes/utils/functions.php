@@ -114,3 +114,42 @@ function wgc_get_barcode_output_types() {
 function wgc_preview_link($plugin_name = "woo-gift-card") {
     return get_rest_url(null, $plugin_name . "/v1/template/preview/");
 }
+
+function wgc_get_coupons_for_customer() {
+    $coupons = array_map(function($coupon) {
+	return new WC_Coupon($coupon->ID);
+    }, get_posts(
+		    array(
+			"numberposts" => -1,
+			'post_type' => 'shop_coupon',
+			'post_status' => 'publish',
+			'meta_query' => array(
+			    array(
+				'key' => 'wgc-order',
+				'compare' => "IN",
+				'value' => array_map("\WC_Order_Factory::get_order_id", wc_get_orders(array(
+				    "numberposts" => -1,
+				)))
+			    ),
+			    array(
+				'key' => 'wgc-order-item'
+			    ),
+			    array(
+				'key' => 'wgc-order-item-index'
+			    ),
+			    array(
+				'key' => 'customer_email',
+			    ),
+			)
+		    )
+    ));
+
+    return array_filter($coupons, function ($coupon) {
+	// Limit to defined email addresses.
+	$restrictions = $coupon->get_email_restrictions();
+	$emails = array(get_user_option("user_email", get_current_user_id()));
+
+	//from \WC_Cart::is_coupon_emails_allowed
+	return !(is_array($restrictions) && 0 < count($restrictions) && !WC()->cart->is_coupon_emails_allowed($emails, $restrictions));
+    });
+}
