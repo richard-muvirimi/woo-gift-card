@@ -77,12 +77,19 @@ if (!empty($coupons)) :
 			    <dd>&diamondsuit; <?php echo $coupon->get_usage_count() . " / " . $coupon->get_usage_limit() ?></dd>
 
 			    <!--expiry date-->
-			    <?php if ($coupon->get_date_expires() != null): ?>
+			    <?php if ($item->get_product()->get_meta('wgc-schedule') == "yes" && $coupon->get_date_expires() != null): ?>
 	    		    <dt><?php esc_html_e("Usage Period", "woo-gift-card") ?></dt>
 	    		    <dd>&diamondsuit; <?php echo wc_format_datetime((new WC_DateTime())->setTimestamp(strtotime($item->get_meta("wgc-receiver-schedule")))) . " - " . wc_format_datetime($coupon->get_date_expires()) ?></dd>
+
 			    <?php else: ?>
 	    		    <dt><?php esc_html_e("Usable From", "woo-gift-card") ?></dt>
-	    		    <dd>&diamondsuit; <?php echo wc_format_datetime((new WC_DateTime())->setTimestamp(strtotime($item->get_meta("wgc-receiver-schedule")))) ?></dd>
+
+				<?php if ($item->get_product()->get_meta('wgc-schedule') == "yes"): ?>
+				    <dd>&diamondsuit; <?php echo wc_format_datetime((new WC_DateTime())->setTimestamp(strtotime($item->get_meta("wgc-receiver-schedule")))) ?></dd>
+				<?php else: ?>
+				    <dd>&diamondsuit; <?php echo wc_format_datetime($coupon->get_date_created()) ?></dd>
+				<?php endif; ?>
+
 			    <?php endif; ?>
 			</dl>
 		    </td>

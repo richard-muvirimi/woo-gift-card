@@ -924,6 +924,7 @@ class Woo_gift_card_Admin {
 			    'post_title' => $this->get_unique_key($product),
 			    'post_status' => 'publish',
 			    'post_content' => '',
+			    'post_date' => $product->get_meta("wgc-schedule") == "yes" ? date('Y-m-d 00:00:00', strtotime($order->get_meta('wgc-receiver-schedule'))) : "",
 			    'post_excerpt' => get_plugin_data(plugin_dir_path(__DIR__) . DIRECTORY_SEPARATOR . $this->plugin_name . ".php")["Name"],
 			    'meta_input' => array(
 				'discount_type' => $product->get_meta("wgc-discount"),

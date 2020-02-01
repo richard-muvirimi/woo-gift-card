@@ -81,7 +81,7 @@ $pricing = $product->get_meta("wgc-pricing");
 	</p>
 
 	<!-- if can be scheduled-->
-	<?php if (!empty($product->get_meta('wgc-schedule'))): ?>
+	<?php if ($product->get_meta('wgc-schedule') == "yes"): ?>
     	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-receiver-schedule"><?php esc_html_e('Date to send Gift Voucher', 'woo-gift-card'); ?></label>
     	    <input type="date" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-receiver-schedule" id="wgc-receiver-schedule" value="<?php esc_attr_e(date('Y-m-d')) ?>"  min="<?php esc_attr_e(date('Y-m-d')) ?>"/>
