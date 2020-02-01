@@ -115,6 +115,10 @@ function wgc_preview_link($plugin_name = "woo-gift-card") {
     return get_rest_url(null, $plugin_name . "/v1/template/preview/");
 }
 
+/**
+ *
+ * @return array|\WC_Coupon
+ */
 function wgc_get_coupons_for_customer() {
     $coupons = array_map(function($coupon) {
 	return new WC_Coupon($coupon->ID);

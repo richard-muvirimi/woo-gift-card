@@ -15,25 +15,19 @@ $coupons = wgc_get_coupons_for_customer();
 if (!empty($coupons)) :
     ?>
 
-    <table class="shop_table shop_table_responsive my_account_wgc-vouchers">
+    <table class="shop_table shop_table_responsive my_account_orders table-wgc-vouchers">
         <caption><?php printf(__('Gift vouchers you own (%s).', 'woo-gift-card'), get_user_option("user_email", get_current_user_id())); ?></caption>
         <thead>
     	<tr>
-		<?php
-		$gift_card_columns = array(
-		    'wgc-code' => esc_html__('Coupon', 'woo-gift-card'),
-		    'wgc-amount' => esc_html__('Amount', 'woo-gift-card'),
-		    'wgc-expiry' => esc_html__('Expires', 'woo-gift-card'),
-		    'wgc-actions' => esc_html__('Actions', 'woo-gift-card'));
-
-		foreach ($gift_card_columns as $column_id => $column_name) :
-		    ?>
-		    <th class="<?php esc_attr_e($column_id); ?>">
-			<span class="nobr">
-			    <?php esc_html_e($column_name); ?>
-			</span>
-		    </th>
-		<?php endforeach; ?>
+    	    <th>
+		    <?php esc_html_e('Coupon Code', 'woo-gift-card') ?>
+    	    </th>
+    	    <th>
+		    <?php esc_html_e('Status', 'woo-gift-card') ?>
+    	    </th>
+    	    <th>
+		    <?php esc_html_e('&nbsp;', 'woo-gift-card') ?>
+    	    </th>
     	</tr>
         </thead>
 
@@ -42,40 +36,63 @@ if (!empty($coupons)) :
 	    foreach ($coupons as $coupon) :
 
 		$order = wc_get_order($coupon->get_meta("wgc-order"));
+		$item = $order->get_item($coupon->get_meta("wgc-order-item"));
 		?>
 		<tr class="woo-gift-card">
-		    <td>
+		    <td data-title="<?php esc_attr_e('Coupon Code', 'woo-gift-card') ?>">
 			<?php esc_html_e(wc_format_coupon_code($coupon->get_code())); ?>
 		    </td>
-		    <td class="">
-			<?php esc_html_e(wgc_format_coupon_value($coupon->get_id())); ?>
-		    </td>
-		    <?php
-		    $item = $order->get_item($coupon->get_meta("wgc-order-item"));
-
-		    $has_template = $item->get_meta("wgc-receiver-template");
-		    ?>
-		    <td colspan=" <?php esc_attr_e($has_template ? 1 : 2) ?>">
+		    <td data-title="<?php esc_attr_e('Status', 'woo-gift-card') ?>">
 			<?php
-			$product = $item->get_product();
-			if ($product->get_meta("wgc-expiry-days")) {
+			$discounts = new WC_Discounts(WC()->cart);
 
-			    esc_html_e(wc_format_datetime($coupon->get_date_expires()));
-			} else {
-			    _e("Never", "woo-gift-card");
-			}
+			$valid = $discounts->is_coupon_valid($coupon);
+
+			is_wp_error($valid) ? _e($valid->get_error_message()) : esc_html_e("Ready to use!", "woo-gift-card");
 			?>
 		    </td>
-		    <?php if ($has_template): ?>
-	    	    <td>
-	    		<a href="javascript:void()" class="woocommerce-button button view">
-				<?php _e("More", "woo-gift-card") ?>
+		    <td class="wgc-right">
+			<a href="JavaScript:void()" class="woocommerce-button button view wgc-btn-more" data-coupon="<?php esc_attr_e($coupon->get_id()) ?>">
+			    <?php esc_html_e("Details", "woo-gift-card") ?>
+			</a>
+		    </td>
+		</tr>
+		<tr class="wgc-more" id="wgc-more-<?php esc_attr_e($coupon->get_id()) ?>" style="display: none;">
+		    <td colspan="2">
+			<dl>
+			    <!--description-->
+			    <dt><?php esc_html_e("Description", "woo-gift-card") ?></dt>
+			    <dd>&diamondsuit; <?php echo $coupon->get_description() ?></dd>
+
+			    <!--discount type-->
+			    <dt><?php esc_html_e("Coupon Type", "woo-gift-card") ?></dt>
+			    <dd>&diamondsuit; <?php echo wc_get_coupon_types()[$coupon->get_discount_type()] ?></dd>
+
+			    <!--coupon value-->
+			    <dt><?php esc_html_e("Coupon Value", "woo-gift-card") ?></dt>
+			    <dd>&diamondsuit; <?php echo $coupon->get_amount() ?></dd>
+
+			    <!--usage limits-->
+			    <dt><?php esc_html_e("Current Usage / Limit", "woo-gift-card") ?></dt>
+			    <dd>&diamondsuit; <?php echo $coupon->get_usage_count() . " / " . $coupon->get_usage_limit() ?></dd>
+
+			    <!--expiry date-->
+			    <?php if ($coupon->get_date_expires() != null): ?>
+	    		    <dt><?php esc_html_e("Usage Period", "woo-gift-card") ?></dt>
+	    		    <dd>&diamondsuit; <?php echo wc_format_datetime((new WC_DateTime())->setTimestamp(strtotime($item->get_meta("wgc-receiver-schedule")))) . " - " . wc_format_datetime($coupon->get_date_expires()) ?></dd>
+			    <?php else: ?>
+	    		    <dt><?php esc_html_e("Usable From", "woo-gift-card") ?></dt>
+	    		    <dd>&diamondsuit; <?php echo wc_format_datetime((new WC_DateTime())->setTimestamp(strtotime($item->get_meta("wgc-receiver-schedule")))) ?></dd>
+			    <?php endif; ?>
+			</dl>
+		    </td>
+		    <td>
+			<?php if ($item->get_meta("wgc-receiver-template") !== false): ?>
+	    		<a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
+				<?php _e("View Template", "woo-gift-card") ?>
 	    		</a>
-	    		<a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button view">
-				<?php _e("View", "woo-gift-card") ?>
-	    		</a>
-	    	    </td>
-		    <?php endif; ?>
+			<?php endif; ?>
+		    </td>
 		</tr>
 	    <?php endforeach; ?>
         </tbody>
@@ -88,4 +105,4 @@ if (!empty($coupons)) :
         </a>
 	<?php esc_html_e('No gift vouchers available yet.', 'wooc-gift-card'); ?>
     </div>
-<?php endif; ?>
+<?php endif;

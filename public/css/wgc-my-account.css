@@ -1,0 +1,30 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+/*content: url("../img/wallet-giftcard.svg");*/
+body.woocommerce-account ul li.woocommerce-MyAccount-navigation-link--wgc-vouchers a:before {
+    content: "\f0d6";
+}
+
+table.table-wgc-vouchers .wgc-center{
+    text-align: center;
+}
+
+table.table-wgc-vouchers .wgc-right{
+    text-align: right;
+}
+
+table.table-wgc-vouchers .wgc-left{
+    text-align: left;
+}
+
+table.table-wgc-vouchers td a.wgc-btn-more{
+    white-space: nowrap;
+}
+
+/*table.table-wgc-vouchers tr.wgc-more td{
+    border-radius: 5px;
+    border: 2px solid #73AD21;
+}*/
