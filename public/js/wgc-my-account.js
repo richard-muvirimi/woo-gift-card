@@ -8,11 +8,10 @@
 
 	    //close all open
 	    let coupon = $(e.target).data("coupon");
-	    let info_tr = "table.table-wgc-vouchers #wgc-more-" + coupon;
+	    let info_tr = "#wgc-more-" + coupon;
 
-	    $("table.table-wgc-vouchers tr.wgc-more:not(" + info_tr + ")").hide(() => {
-		$(info_tr).toggle("slow");
-	    });
+	    $("tr[id^='wgc-more-']:not(" + info_tr + ")").hide();
+	    $(info_tr).toggle("slow");
 	});
 
     });

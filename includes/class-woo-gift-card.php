@@ -205,6 +205,9 @@ class Woo_gift_card {
 	//on order completed
 	$this->loader->add_action('woocommerce_order_status_completed', $plugin_admin, 'woocommerce_order_status_completed');
 
+	//save cart item data to order
+	$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_admin, 'woocommerce_checkout_create_order_line_item', 10, 4);
+
 	//product type
 	$this->loader->add_action('woocommerce_loaded', $plugin_admin, 'woocommerce_loaded');
 
@@ -349,9 +352,6 @@ class Woo_gift_card {
 
 	//cart item data
 	$this->loader->add_filter('woocommerce_get_item_data', $plugin_public, 'woocommerce_get_item_data', 10, 2);
-
-	//save cart item data to order
-	$this->loader->add_filter('woocommerce_checkout_create_order_line_item', $plugin_public, 'woocommerce_checkout_create_order_line_item', 10, 4);
 
 	//customise order meta data
 	$this->loader->add_filter('woocommerce_order_item_display_meta_key', $plugin_public, 'woocommerce_order_item_display_meta_key', 10, 3);

@@ -169,27 +169,6 @@ class Woo_gift_card_Public {
     }
 
     /**
-     * Save cart meta data to order
-     * @param \WC_Order_Item_Product $item
-     * @param string $cart_item_key
-     * @param array $values
-     * @param \WC_Order $order
-     */
-    public function woocommerce_checkout_create_order_line_item($item, $cart_item_key, $values, $order) {
-
-	$product = $values['data'];
-
-	if ($product->is_type("woo-gift-card")) {
-
-	    foreach ($values as $key => $value) {
-		if (strpos($key, "wgc-") !== false) {
-		    $item->add_meta_data($key, $value);
-		}
-	    }
-	}
-    }
-
-    /**
      * This function outputs the content displayed before the add to cart button
      * @global WC_Product_Woo_Gift_Card $product
      */
