@@ -106,7 +106,7 @@ if (!empty($coupons)) :
 	    		    </a>
 	    		</p>
 	    		<p>
-	    		    <a href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
+	    		    <a href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/download/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
 				    <?php _e("Download PDF", "woo-gift-card") ?>
 	    		    </a>
 	    		</p>

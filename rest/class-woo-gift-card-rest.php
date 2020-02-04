@@ -67,16 +67,16 @@ class Woo_gift_card_Rest {
      * On initialize the rest api
      */
     public function register_routes() {
-	register_rest_route('woo-gift-card/v1', '/template/preview', array(
+	register_rest_route($this->plugin_name . '/v1', '/template/preview', array(
 	    'methods' => WP_REST_Server::CREATABLE,
-	    'callback' => array($this, 'ajax_template_iframe'),
+	    'callback' => array($this, 'rest_template_iframe'),
 	    'args' => array(
 		'required' => true,
 		'wgc-product' => array(
 		    'validate_callback' => function($param, $request, $key) {
 			if ($param && is_numeric($param)) {
 			    $product = wc_get_product($param);
-			    return !is_null($product) && $product->is_type('woo-gift-card');
+			    return !is_null($product) && $product->is_type($this->plugin_name . '');
 			}
 			return true;
 		    }
@@ -160,17 +160,17 @@ class Woo_gift_card_Rest {
 	 */
 	$regex = "(?P<file>(\\\\?([^\\/]*[\\/])*)([^\\/]+)$)";
 
-	register_rest_route('woo-gift-card/v1', '/template/preview/' . $regex, array(
+	register_rest_route($this->plugin_name . '/v1', '/template/preview/' . $regex, array(
 	    'methods' => WP_REST_Server::READABLE,
-	    'callback' => array($this, 'ajax_get_file'),
+	    'callback' => array($this, 'rest_get_file'),
 	    'args' => array(
 		'required' => true,
 	    ),
 	));
 
-	register_rest_route('woo-gift-card/v1', '/template/' . $regex, array(
+	register_rest_route($this->plugin_name . '/v1', '/template/' . $regex, array(
 	    'methods' => WP_REST_Server::READABLE,
-	    'callback' => array($this, 'ajax_get_file'),
+	    'callback' => array($this, 'rest_get_file'),
 	    'args' => array(
 		'required' => true,
 		'file' => array(
@@ -183,44 +183,56 @@ class Woo_gift_card_Rest {
 
 	$coupon_regex = "(?P<coupon>[A-Za-z0-9!\@#$%\^\&\*\(\)-_\[\]\{\}<>~`\+=,\.;\:/\?|]+)";
 
-	register_rest_route('woo-gift-card/v1', '/coupon/' . $coupon_regex, array(
-	    'methods' => WP_REST_Server::READABLE,
-	    'callback' => array($this, 'ajax_get_coupon'),
-	    'args' => array(
-		'required' => true,
-		'coupon' => array(
-		    'validate_callback' => function($param, $request, $key) {
-			if ($param) {
+	$coupon_args = array(
+	    'required' => true,
+	    'coupon' => array(
+		'validate_callback' => function($param, $request, $key) {
+		    if ($param) {
 
-			    //if image was sent with request
-			    return count(get_posts(array(
-					"numberposts" => 1,
-					"post_type" => "shop_coupon",
-					"post_title" => $param,
-					'meta_query' => array(
-					    array(
-						'key' => 'wgc-order'
-					    ),
-					    array(
-						'key' => 'wgc-order-item'
-					    ),
-					    array(
-						'key' => 'wgc-order-item-index'
-					    ),
-					)
-				    ))) > 0;
-			}
-			return false;
-		    },
-		    'sanitize_callback' => function($param, $request, $key) {
-			return urldecode($param);
+			//if image was sent with request
+			return count(get_posts(array(
+				    "numberposts" => 1,
+				    "post_type" => "shop_coupon",
+				    "post_title" => $param,
+				    'meta_query' => array(
+					array(
+					    'key' => 'wgc-order'
+					),
+					array(
+					    'key' => 'wgc-order-item'
+					),
+					array(
+					    'key' => 'wgc-order-item-index'
+					),
+				    )
+				))) > 0;
 		    }
+		    return false;
+		},
+		'sanitize_callback' => function($param, $request, $key) {
+		    return urldecode($param);
+		}
+	    )
+	);
+
+	register_rest_route($this->plugin_name . '/v1', '/coupon/' . $coupon_regex, array(
+	    'methods' => WP_REST_Server::READABLE,
+	    'callback' => array($this, 'rest_get_coupon'),
+	    'args' => $coupon_args,
+	));
+
+	register_rest_route($this->plugin_name . '/v1', '/download/' . $coupon_regex, array(
+	    'methods' => WP_REST_Server::READABLE,
+	    'callback' => array($this, 'rest_get_coupon'),
+	    'args' => array_merge($coupon_args, array(
+		"download" => array(
+		    'sanitize_callback' => "__return_true"
 		)
-	    ),
+	    )),
 	));
     }
 
-    public function ajax_get_coupon(WP_REST_Request $request) {
+    public function rest_get_coupon(WP_REST_Request $request) {
 
 	$coupon = get_posts(array(
 	    "numberposts" => 1,
@@ -260,12 +272,17 @@ class Woo_gift_card_Rest {
 	    $this->params['wgc-coupon'] = $request->get_param("coupon");
 
 	    $pdf = $this->get_pdf(get_post($this->params["wgc-receiver-template"]));
-	    $pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"), array('Attachment' => 0));
+
+	    if ($request->get_param("download")) {
+		$pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"));
+	    } else {
+		$pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"), array('Attachment' => 0));
+	    }
 	    exit();
 	}
     }
 
-    public function ajax_get_file(WP_REST_Request $request) {
+    public function rest_get_file(WP_REST_Request $request) {
 
 	$path = $request->get_param('file');
 
@@ -281,7 +298,7 @@ class Woo_gift_card_Rest {
 	/**
 	 * Before outputting the requested file
 	 */
-	echo apply_filters("wgc_ajax_template_file", ob_get_clean(), basename($path), $mime);
+	echo apply_filters("wgc_filter_template_file", ob_get_clean(), $path, $mime);
 
 	//wp set content type to json so, we have to exit here to prevent that
 	exit();
@@ -294,8 +311,8 @@ class Woo_gift_card_Rest {
      * @param string $path
      * @param array $mimes
      */
-    public function wgc_ajax_template_file($content, $path, $mimes) {
-	if (basename($path) == "viewer.html") {
+    public function wgc_filter_template_file($content, $path, $mimes) {
+	if (basename($path) === "viewer.html") {
 
 	    $template = get_post($this->params['wgc-receiver-template']);
 
@@ -310,19 +327,19 @@ class Woo_gift_card_Rest {
 	    $script .= '<meta http-equiv="Cache-control" content="public">';
 	    $script .= '<script> window.wgc_pdf_base64 = "' . esc_js(base64_encode($pdf->output())) . '";</script>';
 	    $script .= '<script src="' . get_site_url(null, $jquery->src) . '"></script>';
-	    $script .= '<script src="' . plugin_dir_url(__DIR__) . 'public/js/woo-gift-card-template.js' . '"></script></head>';
+	    $script .= '<script src="' . plugin_dir_url(__DIR__) . 'public/js/wgc-template.js' . '"></script></head>';
 
 	    $content = str_replace("</head>", $script, $content);
 	}
 	return $content;
     }
 
-    public function ajax_template_iframe(WP_REST_Request $request) {
+    public function rest_template_iframe(WP_REST_Request $request) {
 
 	$request->set_param("file", "viewer.html");
 	$this->params = $request->get_params();
 
-	$this->ajax_get_file($request);
+	$this->rest_get_file($request);
     }
 
     private function get_pdf($template) {

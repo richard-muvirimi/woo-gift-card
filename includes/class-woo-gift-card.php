@@ -300,7 +300,7 @@ class Woo_gift_card {
 	}
 
 	//filter requested file content
-	$this->loader->add_filter("wgc_ajax_template_file", $plugin_rest, "wgc_ajax_template_file", 10, 3);
+	$this->loader->add_filter("wgc_filter_template_file", $plugin_rest, "wgc_filter_template_file", 10, 3);
 
 	//filter for post content images
 	$this->loader->add_filter("the_content", $plugin_rest, "the_content");
