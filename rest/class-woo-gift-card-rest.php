@@ -648,7 +648,7 @@ class Woo_gift_card_Rest {
 				case "jpg";
 				    $generator = is_object($generator) ? $generator : new Picqer\Barcode\BarcodeGeneratorJPG();
 
-				    $color ?: $this->hexColorToArray($meta["wgc-coupon-barcode-color"][0]);
+				    $color ?: wc_rgb_from_hex($meta["wgc-coupon-barcode-color"][0]);
 
 				    $image = $generator->getBarcode($coupon, $meta["wgc-coupon-barcode-type"][0], $meta["wgc-coupon-barcode-width"][0], $meta["wgc-coupon-barcode-height"][0], $color);
 
@@ -675,20 +675,6 @@ class Woo_gift_card_Rest {
 	}
 
 	return $html;
-    }
-
-    /**
-     * Convert a hex color to dec
-     * @param string $color
-     * @return array
-     */
-    private function hexColorToArray($color) {
-
-	$hex_color = sanitize_hex_color_no_hash($color);
-
-	$chunks = explode(".", chunk_split($hex_color, 2, "."));
-
-	return array_map("hexdec", $chunks);
     }
 
 }
