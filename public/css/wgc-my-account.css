@@ -24,6 +24,10 @@ table.table-wgc-vouchers td a.wgc-btn-more{
     white-space: nowrap;
 }
 
+table.table-wgc-vouchers tr.wgc-more{
+    border-bottom: 2px solid black;
+}
+
 /*table.table-wgc-vouchers tr.wgc-more td{
     border-radius: 5px;
     border: 2px solid #73AD21;

@@ -38,7 +38,7 @@ if (!empty($coupons)) :
 		$order = wc_get_order($coupon->get_meta("wgc-order"));
 		$item = $order->get_item($coupon->get_meta("wgc-order-item"));
 		?>
-		<tr class="woo-gift-card">
+		<tr class="wgc-voucher" id="wgc-voucher-<?php esc_attr_e($coupon->get_id()) ?>">
 		    <td data-title="<?php esc_attr_e('Coupon Code', 'woo-gift-card') ?>">
 			<?php esc_html_e(wc_format_coupon_code($coupon->get_code())); ?>
 		    </td>
@@ -52,7 +52,7 @@ if (!empty($coupons)) :
 			?>
 		    </td>
 		    <td class="wgc-right">
-			<a href="JavaScript:void()" class="woocommerce-button button view wgc-btn-more" data-coupon="<?php esc_attr_e($coupon->get_id()) ?>">
+			<a href="JavaScript:void()" class="woocommerce-button button view wgc-btn-more wgc-center" data-coupon="<?php esc_attr_e($coupon->get_id()) ?>">
 			    <?php esc_html_e("Details", "woo-gift-card") ?>
 			</a>
 		    </td>
@@ -61,20 +61,25 @@ if (!empty($coupons)) :
 		    <td colspan="2">
 			<dl>
 			    <!--description-->
-			    <dt><?php esc_html_e("Description", "woo-gift-card") ?></dt>
-			    <dd>&diamondsuit; <?php echo $coupon->get_description() ?></dd>
+			    <?php if (!empty($coupon->get_description())): ?>
+	    		    <dt><?php esc_html_e("Description", "woo-gift-card") ?></dt>
+	    		    <dd>&diamondsuit; <?php _e($coupon->get_description(), "woo-gift-card") ?></dd>
+			    <?php endif; ?>
 
 			    <!--discount type-->
+			    <?php $discount = wc_get_coupon_types()[$coupon->get_discount_type()]; ?>
 			    <dt><?php esc_html_e("Coupon Type", "woo-gift-card") ?></dt>
-			    <dd>&diamondsuit; <?php echo wc_get_coupon_types()[$coupon->get_discount_type()] ?></dd>
-
-			    <!--coupon value-->
-			    <dt><?php esc_html_e("Coupon Value", "woo-gift-card") ?></dt>
-			    <dd>&diamondsuit; <?php echo $coupon->get_amount() ?></dd>
+			    <dd>&diamondsuit; <?php echo $discount . " (" . (strpos($discount, "fixed") !== false ? wc_price($coupon->get_amount()) : $coupon->get_amount() . "%") . ")" ?></dd>
 
 			    <!--usage limits-->
-			    <dt><?php esc_html_e("Current Usage / Limit", "woo-gift-card") ?></dt>
-			    <dd>&diamondsuit; <?php echo $coupon->get_usage_count() . " / " . $coupon->get_usage_limit() ?></dd>
+			    <?php if ($coupon->get_usage_limit() > 0): ?>
+	    		    <dt><?php esc_html_e("Current Usage / Limit", "woo-gift-card") ?></dt>
+	    		    <dd>&diamondsuit; <?php echo $coupon->get_usage_count() . " / " . $coupon->get_usage_limit() ?></dd>
+			    <?php endif; ?>
+
+			    <!--date purchased-->
+			    <dt><?php esc_html_e("Date purchased", "woo-gift-card") ?></dt>
+			    <dd>&diamondsuit; <?php echo wc_format_datetime($order->get_date_completed()) ?></dd>
 
 			    <!--expiry date-->
 			    <?php if ($item->get_product()->get_meta('wgc-schedule') == "yes" && $coupon->get_date_expires() != null): ?>
@@ -93,12 +98,31 @@ if (!empty($coupons)) :
 			    <?php endif; ?>
 			</dl>
 		    </td>
-		    <td>
+		    <td class="wgc-right">
 			<?php if ($item->get_meta("wgc-receiver-template") !== false): ?>
-	    		<a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
-				<?php _e("View Template", "woo-gift-card") ?>
-	    		</a>
+	    		<p>
+	    		    <a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
+				    <?php _e("View Template", "woo-gift-card") ?>
+	    		    </a>
+	    		</p>
+	    		<p>
+	    		    <a href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
+				    <?php _e("Download PDF", "woo-gift-card") ?>
+	    		    </a>
+	    		</p>
 			<?php endif; ?>
+
+			<p>
+			    <a href="JavaScript:void()" class="woocommerce-button button wgc-send-email" data-nonce="<?php esc_attr_e(wp_create_nonce("wgc-send-mail")) ?>" data-which="<?php esc_attr_e($coupon->get_id()) ?>">
+				<?php _e("Resend Email", "woo-gift-card") ?>
+			    </a>
+			</p>
+			<p>
+			    <a href="JavaScript:void()" class="woocommerce-button button wgc-delete-voucher" data-nonce="<?php esc_attr_e(wp_create_nonce("wgc-delete-voucher")) ?>" data-which="<?php esc_attr_e($coupon->get_id()) ?>">
+				<?php _e("Delete Voucher", "woo-gift-card") ?>
+			    </a>
+			</p>
+
 		    </td>
 		</tr>
 	    <?php endforeach; ?>

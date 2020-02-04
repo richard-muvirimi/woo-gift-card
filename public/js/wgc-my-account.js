@@ -14,6 +14,52 @@
 	    $(info_tr).toggle("slow");
 	});
 
+	$("table.table-wgc-vouchers a.wgc-send-email").click((e) => {
+	    e.preventDefault();
+
+	    let which = $(e.target).data("which");
+
+	    $.post({url: window.wgc_account.ajax_url,
+		data: {
+		    _ajax_nonce: $(e.target).data("nonce"),
+		    action: "wgc_send_mail",
+		    which: which
+		},
+		success: function (response) {
+
+		    if (response.success) {
+
+		    } else {
+
+		    }
+		}}
+	    );
+	});
+
+	$("table.table-wgc-vouchers a.wgc-delete-voucher").click((e) => {
+	    e.preventDefault();
+
+	    let which = $(e.target).data("which");
+
+	    $.post({url: window.wgc_account.ajax_url,
+		data: {
+		    _ajax_nonce: $(e.target).data("nonce"),
+		    action: "wgc_delete_voucher",
+		    which: which
+		},
+		success: function (response) {
+
+		    if (response.success) {
+			$("#wgc-voucher-" + which + ", #wgc-more-" + which).fadeOut();
+		    }
+
+		    //empty notice after one minute
+		    $(".woocommerce-notices-wrapper:first").empty().append(response.data);
+		    $(".woocommerce-notices-wrapper:first .woocommerce-Message").delay(1000 * 30).fadeOut();
+		}}
+	    );
+	});
+
     });
 
 })(jQuery);
