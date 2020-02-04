@@ -103,7 +103,7 @@ function wgc_get_barcode_output_types() {
 	"html" => __("Html", 'woo-gift-card')
     );
 
-    if (function_exists('imagecreate') || extension_loaded('imagick')) {
+    if (wgc_supports_image_barcode()) {
 	$generators["png"] = __("Png", 'woo-gift-card');
 	$generators["jpg"] = __("Jpg", 'woo-gift-card');
     }
@@ -156,4 +156,31 @@ function wgc_get_coupons_for_customer() {
 	//from \WC_Cart::is_coupon_emails_allowed
 	return !(is_array($restrictions) && 0 < count($restrictions) && !WC()->cart->is_coupon_emails_allowed($emails, $restrictions));
     });
+}
+
+/**
+ * Whether image generation is supported
+ *
+ * @return boolean
+ */
+function wgc_supports_image_barcode() {
+    return wgc_supports_qrcode() || extension_loaded('imagick');
+}
+
+/**
+ * Whether qrcode generation is supported
+ *
+ * @return boolean
+ */
+function wgc_supports_qrcode() {
+    return function_exists('imagecreate');
+}
+
+/**
+ * Whether pdf generation is supported
+ *
+ * @return boolean
+ */
+function wgc_supports_pdf_generation() {
+    return extension_loaded("DOM") && extension_loaded("MBString") && wgc_supports_image_barcode();
 }

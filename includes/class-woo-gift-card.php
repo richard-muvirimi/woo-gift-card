@@ -80,6 +80,7 @@ class Woo_gift_card {
 	$this->define_public_hooks();
 	$this->define_rest_hooks();
 	$this->define_email_hooks();
+	$this->define_ajax_hooks();
     }
 
     /**
@@ -136,6 +137,12 @@ class Woo_gift_card {
 	require_once plugin_dir_path(dirname(__FILE__)) . 'email/class-woo-gift-card-email.php';
 
 	/**
+	 * The class responsible for defining all actions that occur in the ajax
+	 * side of the plugin.
+	 */
+	require_once plugin_dir_path(dirname(__FILE__)) . 'ajax/class-woo-gift-card-ajax.php';
+
+	/**
 	 * The file responsible for all plugin utility functions.
 	 */
 	require_once plugin_dir_path(dirname(__FILE__)) . 'includes/utils/functions.php';
@@ -148,7 +155,7 @@ class Woo_gift_card {
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorSVG.php';
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorHTML.php';
 
-	    if (function_exists('imagecreate') || extension_loaded('imagick')) {
+	    if (wgc_supports_image_barcode()) {
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorPNG.php';
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/php-barcode-generator-master/src/BarcodeGeneratorJPG.php';
 	    }
@@ -157,7 +164,7 @@ class Woo_gift_card {
 	/**
 	 * Qrcode generating classes
 	 */
-	if (!class_exists("QRtools")) {
+	if (wgc_supports_qrcode() && !class_exists("QRtools")) {
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/phpqrcode/phpqrcode.php';
 	}
 
@@ -165,7 +172,7 @@ class Woo_gift_card {
 	 * Pdf libraries
 	 * @filesource https://github.com/dompdf/dompdf/releases
 	 */
-	if (!class_exists("Dompdf")) {
+	if (wgc_supports_pdf_generation() && !class_exists("Dompdf")) {
 	    require_once plugin_dir_path(dirname(__FILE__)) . 'includes/libs/dompdf/autoload.inc.php';
 	}
 
@@ -376,6 +383,24 @@ class Woo_gift_card {
 	//register our email class
 	$this->loader->add_filter('wgc_coupon_state_notification', $plugin_email, 'wgc_coupon_state_notification');
 	$this->loader->add_filter('woocommerce_email_classes', $plugin_email, 'woocommerce_email_classes');
+    }
+
+    /**
+     * Register all of the hooks related to the ajax functionality
+     * of the plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_ajax_hooks() {
+
+	$plugin_ajax = new Woo_gift_card_Ajax($this->get_plugin_name(), $this->get_version());
+
+	//delete voucher ajax
+	$this->loader->add_action('wp_ajax_wgc_send_mail', $plugin_ajax, 'send_mail');
+
+	//send mail ajax
+	$this->loader->add_action('wp_ajax_wgc_delete_voucher', $plugin_ajax, 'delete_voucher');
     }
 
     /**
