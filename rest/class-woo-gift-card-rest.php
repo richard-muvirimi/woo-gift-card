@@ -67,7 +67,10 @@ class Woo_gift_card_Rest {
      * On initialize the rest api
      */
     public function register_routes() {
-	register_rest_route($this->plugin_name . '/v1', '/template/preview', array(
+	//coupon genaration
+	//template generation
+
+	register_rest_route($this->plugin_name . '/v1', '/coupon/view', array(
 	    'methods' => WP_REST_Server::CREATABLE,
 	    'callback' => array($this, 'rest_template_iframe'),
 	    'args' => array(
@@ -82,11 +85,22 @@ class Woo_gift_card_Rest {
 		    }
 		),
 		'wgc-receiver-template' => array(
-		    'validate_callback' => function($param, $request, $key) {
+		    'validate_callback' => function(string $param, WP_REST_Request $request, string $key) {
 			if ($param) {
 			    //if set validate
-			    return $param && is_numeric($param) && is_object(get_post($param));
+			    return $request->get_param("wgc-coupon") ?: $param && is_numeric($param) && is_object(get_post($param));
 			}
+
+			return false;
+		    }
+		),
+		'wgc-coupon' => array(
+		    'validate_callback' => function(string $param, WP_REST_Request $request, string $key) {
+			if ($param) {
+			    //if set validate
+			    return $param && wgc_has_coupon($param);
+			}
+
 			return false;
 		    }
 		),
@@ -151,7 +165,7 @@ class Woo_gift_card_Rest {
 		)
 	    ),
 	    'permission_callback' => function () {
-		return true || is_user_logged_in();
+		return wgc_supports_pdf_generation();
 	    }
 	));
 
@@ -160,15 +174,18 @@ class Woo_gift_card_Rest {
 	 */
 	$regex = "(?P<file>(\\\\?([^\\/]*[\\/])*)([^\\/]+)$)";
 
-	register_rest_route($this->plugin_name . '/v1', '/template/preview/' . $regex, array(
+	register_rest_route($this->plugin_name . '/v1', '/coupon/view/' . $regex, array(
 	    'methods' => WP_REST_Server::READABLE,
 	    'callback' => array($this, 'rest_get_file'),
 	    'args' => array(
 		'required' => true,
 	    ),
+	    'permission_callback' => function () {
+		return wgc_supports_pdf_generation();
+	    }
 	));
 
-	register_rest_route($this->plugin_name . '/v1', '/template/' . $regex, array(
+	register_rest_route($this->plugin_name . '/v1', '/coupon/' . $regex, array(
 	    'methods' => WP_REST_Server::READABLE,
 	    'callback' => array($this, 'rest_get_file'),
 	    'args' => array(
@@ -179,65 +196,73 @@ class Woo_gift_card_Rest {
 		    }
 		)
 	    ),
+	    'permission_callback' => function () {
+		return wgc_supports_pdf_generation();
+	    }
 	));
 
 	$coupon_regex = "(?P<coupon>[A-Za-z0-9!\@#$%\^\&\*\(\)-_\[\]\{\}<>~`\+=,\.;\:/\?|]+)";
 
-	$coupon_args = array(
-	    'required' => true,
-	    'coupon' => array(
-		'validate_callback' => function($param, $request, $key) {
-		    if ($param) {
+	register_rest_route($this->plugin_name . '/v1', '/download/coupon/' . $coupon_regex, array(
+	    'methods' => WP_REST_Server::READABLE,
+	    'callback' => array($this, 'rest_get_coupon'),
+	    'args' => array(
+		'required' => true,
+		'coupon' => array(
+		    'validate_callback' => function($param, $request, $key) {
+			if ($param) {
 
-			//if image was sent with request
-			return count(get_posts(array(
-				    "numberposts" => 1,
-				    "post_type" => "shop_coupon",
-				    "post_title" => $param,
-				    'meta_query' => array(
-					array(
-					    'key' => 'wgc-order'
-					),
-					array(
-					    'key' => 'wgc-order-item'
-					),
-					array(
-					    'key' => 'wgc-order-item-index'
-					),
-				    )
-				))) > 0;
+			    //if image was sent with request
+			    return count(get_posts(array(
+					"numberposts" => 1,
+					"post_type" => "shop_coupon",
+					"post_title" => $param,
+					'meta_query' => array(
+					    array(
+						'key' => 'wgc-order'
+					    ),
+					    array(
+						'key' => 'wgc-order-item'
+					    ),
+					    array(
+						'key' => 'wgc-order-item-index'
+					    ),
+					)
+				    ))) > 0;
+			}
+			return false;
+		    },
+		    'sanitize_callback' => function($param, $request, $key) {
+			return urldecode($param);
 		    }
-		    return false;
-		},
-		'sanitize_callback' => function($param, $request, $key) {
-		    return urldecode($param);
-		}
-	    )
-	);
-
-	register_rest_route($this->plugin_name . '/v1', '/coupon/' . $coupon_regex, array(
-	    'methods' => WP_REST_Server::READABLE,
-	    'callback' => array($this, 'rest_get_coupon'),
-	    'args' => $coupon_args,
-	));
-
-	register_rest_route($this->plugin_name . '/v1', '/download/' . $coupon_regex, array(
-	    'methods' => WP_REST_Server::READABLE,
-	    'callback' => array($this, 'rest_get_coupon'),
-	    'args' => array_merge($coupon_args, array(
-		"download" => array(
-		    'sanitize_callback' => "__return_true"
 		)
-	    )),
+	    ),
+	    'permission_callback' => function () {
+		return wgc_supports_pdf_generation();
+	    }
 	));
     }
 
     public function rest_get_coupon(WP_REST_Request $request) {
 
+	$this->get_template_from_coupon($request->get_param("coupon"));
+
+	$template = get_post($this->params['wgc-receiver-template']);
+
+	$pdf = $this->get_pdf($template);
+
+	$pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"));
+	wp_die();
+    }
+
+    private function get_template_from_coupon($which) {
+
 	$coupon = get_posts(array(
-	    "numberposts" => 1,
-	    "post_title" => $request->get_param("coupon"),
+	    "posts_per_page" => 1,
+	    "title" => $which,
 	    "post_type" => "shop_coupon",
+	    'post_status' => 'publish',
+	    'orderby' => 'date',
 	    'meta_query' => array(
 		array(
 		    'key' => 'wgc-order'
@@ -251,7 +276,10 @@ class Woo_gift_card_Rest {
 	    )
 	));
 
-	if (!empty($coupon)) {
+	if (empty($coupon)) {
+	    //coupon not found
+	    wp_die();
+	} else {
 
 	    $order = wc_get_order(get_post_meta($coupon[0]->ID, "wgc-order", true));
 	    $item = $order->get_item(get_post_meta($coupon[0]->ID, "wgc-order-item", true));
@@ -269,16 +297,7 @@ class Woo_gift_card_Rest {
 
 	    $this->params['wgc-product'] = $item->get_product()->get_id();
 	    $this->params['wgc-order'] = $order->get_id();
-	    $this->params['wgc-coupon'] = $request->get_param("coupon");
-
-	    $pdf = $this->get_pdf(get_post($this->params["wgc-receiver-template"]));
-
-	    if ($request->get_param("download")) {
-		$pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"));
-	    } else {
-		$pdf->stream(esc_html(do_shortcode("[wgc-event]") . ".pdf"), array('Attachment' => 0));
-	    }
-	    exit();
+	    $this->params['wgc-coupon'] = $coupon[0]->post_title;
 	}
     }
 
@@ -314,9 +333,16 @@ class Woo_gift_card_Rest {
     public function wgc_filter_template_file($content, $path, $mimes) {
 	if (basename($path) === "viewer.html") {
 
+	    //if coupon code is available then this is not a preview
+	    $coupon = isset($this->params['wgc-coupon']) && $this->params['wgc-coupon'] ? $this->params['wgc-coupon'] : false;
+	    if ($coupon !== false) {
+		$this->get_template_from_coupon($coupon);
+	    }
+
 	    $template = get_post($this->params['wgc-receiver-template']);
 
 	    $pdf = $this->get_pdf($template);
+
 	    //Get an instance of WP_Scripts or create new;
 	    $wp_scripts = wp_scripts();
 
@@ -337,7 +363,7 @@ class Woo_gift_card_Rest {
     public function rest_template_iframe(WP_REST_Request $request) {
 
 	$request->set_param("file", "viewer.html");
-	$this->params = $request->get_params();
+	$this->params = array_merge($this->params ?: array(), $request->get_params());
 
 	$this->rest_get_file($request);
     }
@@ -464,7 +490,7 @@ class Woo_gift_card_Rest {
      * @return boolean
      */
     private function is_pdf_request() {
-	return isset($this->params);
+	return isset($this->params) && !empty($this->params);
     }
 
     /**
@@ -496,7 +522,7 @@ class Woo_gift_card_Rest {
 	if (isset($_FILES['wgc-receiver-image']) && $_FILES['wgc-receiver-image']['size']) {
 	    $file = $_FILES['wgc-receiver-image'];
 	    $path = $file['tmp_name'];
-	} elseif (isset($this->params['wgc-receiver-image'])) {
+	} elseif (isset($this->params['wgc-receiver-image']) && $this->params['wgc-receiver-image']) {
 	    //saved background image
 
 	    $path = $this->params['wgc-receiver-image'];
@@ -522,9 +548,9 @@ class Woo_gift_card_Rest {
 	$shortcode = str_replace("wgc-", "", $sCode);
 	$html = "";
 
-	$template = get_post(isset($this->params['wgc-receiver-template']) ? $this->params['wgc-receiver-template'] : null);
-	$product = wc_get_product(isset($this->params['wgc-product']) ? $this->params['wgc-product'] : false);
-	$order = wc_get_order(isset($this->params['wgc-order']) ? $this->params['wgc-order'] : false);
+	$template = get_post(isset($this->params['wgc-receiver-template']) && $this->params['wgc-receiver-template'] ? $this->params['wgc-receiver-template'] : null);
+	$product = wc_get_product(isset($this->params['wgc-product']) && $this->params['wgc-product'] ? $this->params['wgc-product'] : false);
+	$order = wc_get_order(isset($this->params['wgc-order']) && $this->params['wgc-order'] ? $this->params['wgc-order'] : false);
 
 	switch ($shortcode) {
 	    case "amount":
@@ -555,7 +581,7 @@ class Woo_gift_card_Rest {
 		 * The title of the gift voucher
 		 */
 		if (!is_null($template)) {
-		    $html = isset($this->params['wgc-event']) ? $this->params['wgc-event'] : apply_filters('the_title', $template->post_title);
+		    $html = isset($this->params['wgc-event']) && $this->params['wgc-event'] ? $this->params['wgc-event'] : apply_filters('the_title', $template->post_title);
 		}
 		break;
 	    case "expiry-days":
@@ -595,7 +621,7 @@ class Woo_gift_card_Rest {
 		}
 		break;
 	    case "message":
-		$html = isset($this->params['wgc-receiver-message']) ? $this->params['wgc-receiver-message'] : "";
+		$html = isset($this->params['wgc-receiver-message']) && $this->params['wgc-receiver-message'] ? $this->params['wgc-receiver-message'] : "";
 		break;
 	    case "order-id":
 		$html = is_object($order) ? "#" . $order->get_order_number() : "";
@@ -609,20 +635,20 @@ class Woo_gift_card_Rest {
 		/**
 		 * The recipient name of the gift voucher
 		 */
-		$html = isset($this->params['wgc-receiver-name']) ? $this->params['wgc-receiver-name'] : get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
+		$html = isset($this->params['wgc-receiver-name']) && $this->params['wgc-receiver-name'] ? $this->params['wgc-receiver-name'] : get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0);
 		break;
 	    case "to-email":
 		/**
 		 * The recipient email of the gift voucher
 		 */
-		$html = isset($this->params['wgc-receiver-email']) ? $this->params['wgc-receiver-email'] : get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
+		$html = isset($this->params['wgc-receiver-email']) && $this->params['wgc-receiver-email'] ? $this->params['wgc-receiver-email'] : get_user_option("email", is_object($order) ? $order->get_customer_id() : 0);
 		break;
 	    case "code":
 
 		if (!is_null($template)) {
 		    $meta = get_post_meta($template->ID);
 
-		    $coupon = isset($this->params['wgc-coupon']) ? $this->params['wgc-coupon'] : get_option("wgc-code-prefix") . str_repeat("X", get_option("wgc-code-length")) . get_option("wgc-code-suffix");
+		    $coupon = isset($this->params['wgc-coupon']) && $this->params['wgc-coupon'] ? $this->params['wgc-coupon'] : get_option("wgc-code-prefix") . str_repeat("X", get_option("wgc-code-length")) . get_option("wgc-code-suffix");
 
 		    switch (get_post_meta($template->ID, "wgc-coupon-type", true)) {
 			case 'qrcode':

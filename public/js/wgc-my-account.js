@@ -36,6 +36,24 @@
 	    );
 	});
 
+	$("table.table-wgc-vouchers a.wgc-btn-view").click((e) => {
+	    e.preventDefault();
+
+	    let form = $("form.wgc-preview-form").get(0);
+
+	    //coupon code
+	    let template_input = document.createElement("input");
+	    template_input.type = "hidden";
+	    template_input.name = "wgc-coupon";
+	    template_input.value = $(e.target).data("code");
+	    form.appendChild(template_input);
+
+	    form.submit();
+
+	    $(".wgc-preview-modal:first").show();
+
+	});
+
 	$("table.table-wgc-vouchers a.wgc-delete-voucher").click((e) => {
 	    e.preventDefault();
 

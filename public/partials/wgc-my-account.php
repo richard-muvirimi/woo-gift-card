@@ -99,14 +99,15 @@ if (!empty($coupons)) :
 			</dl>
 		    </td>
 		    <td class="wgc-right">
-			<?php if ($item->get_meta("wgc-receiver-template") !== false): ?>
+			<?php //if there are templates and pdf generation can be done ?>
+			<?php if ($item->get_meta("wgc-receiver-template") !== false && wgc_supports_pdf_generation()): ?>
 	    		<p>
-	    		    <a target="_blank" href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/coupon/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
+	    		    <a href="JavaScript:void()" class="woocommerce-button button wgc-btn-view" data-code="<?php esc_attr_e(urlencode($coupon->get_code())) ?>">
 				    <?php _e("View Template", "woo-gift-card") ?>
 	    		    </a>
 	    		</p>
 	    		<p>
-	    		    <a href="<?php echo esc_url(get_rest_url(null, $plugin_name . "/v1/download/" . urlencode($coupon->get_code()))); ?>" class="woocommerce-button button">
+	    		    <a href="<?php echo esc_url(wgc_download_link() . urlencode($coupon->get_code())); ?>" class="woocommerce-button button">
 				    <?php _e("Download PDF", "woo-gift-card") ?>
 	    		    </a>
 	    		</p>
@@ -128,6 +129,9 @@ if (!empty($coupons)) :
 	    <?php endforeach; ?>
         </tbody>
     </table>
+    <form id="wgc-preview-form" class="wgc-preview-form" method="post" target="wgc-preview-frame" action="<?php esc_attr_e(wgc_preview_link()) ?>">
+	<?php wc_get_template("wgc-preview-html.php", array(), "", plugin_dir_path(__FILE__) . "preview/"); ?>
+    </form>
 <?php else : ?>
     <div class="woocommerce-Message woocommerce-Message--info woocommerce-info">
         <a class="woocommerce-Button button"

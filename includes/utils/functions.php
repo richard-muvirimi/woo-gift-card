@@ -112,7 +112,11 @@ function wgc_get_barcode_output_types() {
 }
 
 function wgc_preview_link($plugin_name = "woo-gift-card") {
-    return get_rest_url(null, $plugin_name . "/v1/template/preview/");
+    return get_rest_url(null, $plugin_name . "/v1/coupon/view/");
+}
+
+function wgc_download_link($plugin_name = "woo-gift-card") {
+    return get_rest_url(null, $plugin_name . "/v1/download/coupon/");
 }
 
 /**
@@ -127,6 +131,7 @@ function wgc_get_coupons_for_customer() {
 			"numberposts" => -1,
 			'post_type' => 'shop_coupon',
 			'post_status' => 'publish',
+			'orderby' => 'date',
 			'meta_query' => array(
 			    array(
 				'key' => 'wgc-order',
@@ -183,4 +188,23 @@ function wgc_supports_qrcode() {
  */
 function wgc_supports_pdf_generation() {
     return extension_loaded("DOM") && extension_loaded("MBString") && wgc_supports_image_barcode();
+}
+
+function wgc_has_coupon($coupon) {
+    return count(get_posts(array(
+		"numberposts" => 1,
+		"post_title" => $coupon,
+		"post_type" => "shop_coupon",
+		'meta_query' => array(
+		    array(
+			'key' => 'wgc-order'
+		    ),
+		    array(
+			'key' => 'wgc-order-item'
+		    ),
+		    array(
+			'key' => 'wgc-order-item-index'
+		    ),
+		)
+	    ))) > 0;
 }

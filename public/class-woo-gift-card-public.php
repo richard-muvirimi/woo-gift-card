@@ -86,6 +86,7 @@ class Woo_gift_card_Public {
 	//wgc-my-account
 
 	if (is_account_page()) {
+	    wp_enqueue_style($this->plugin_name . "-preview", plugin_dir_url(__FILE__) . 'css/wgc-pdf-preview.css', array(), $this->version);
 	    wp_enqueue_style($this->plugin_name . "-account", plugin_dir_url(__FILE__) . 'css/wgc-my-account.css', array(), $this->version);
 	}
     }
@@ -118,7 +119,8 @@ class Woo_gift_card_Public {
 		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/wgc-product.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array(
 		    "maxlength" => get_option('wgc-message-length'),
-		    "pdf_template_url" => get_rest_url(null, $this->plugin_name . "/v1/template/preview/")));
+		    "pdf_template_url" => wgc_preview_link(),
+		));
 	    }
 	}
 
@@ -126,6 +128,7 @@ class Woo_gift_card_Public {
 	    wp_enqueue_script($this->plugin_name . "-account", plugin_dir_url(__FILE__) . 'js/wgc-my-account.js', array('jquery'), $this->version, false);
 	    wp_localize_script($this->plugin_name . "-account", 'wgc_account', array(
 		"ajax_url" => admin_url('admin-ajax.php'),
+		"coupon_view_url" => wgc_preview_link(),
 	    ));
 	}
     }
