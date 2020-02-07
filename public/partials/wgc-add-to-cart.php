@@ -109,7 +109,7 @@ $pricing = $product->get_meta("wgc-pricing");
 
     	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
     	    <label for="wgc-event"><?php esc_html_e('Event Title', 'woo-gift-card'); ?></label>
-    	    <input class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-event" id="wgc-event" />
+    	    <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="wgc-event" id="wgc-event" />
     	    <span><em><?php esc_html_e('Will default to template name if empty', 'woo-gift-card') ?></em></span>
     	</p>
 
@@ -123,6 +123,7 @@ $pricing = $product->get_meta("wgc-pricing");
 				<span>
 				    <?php esc_html_e(get_post_field('post_title', $template)) ?>
 				</span>
+				<br>
 				<?php
 				if (has_post_thumbnail($template)) {
 				    $thumbnail_id = get_post_thumbnail_id($template);
@@ -131,6 +132,7 @@ $pricing = $product->get_meta("wgc-pricing");
 				    echo $product->get_image("thumbnail", "thumbnail");
 				}
 				?>
+				<br>
 				<sub>
 				    <?php
 				    $orientation = get_post_meta($template, "wgc-template-orientation", true);
