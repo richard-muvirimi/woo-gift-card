@@ -243,10 +243,6 @@ class Woo_gift_card {
 	//admin notices
 	$this->loader->add_action('admin_notices', $plugin_admin, 'show_admin_notice');
 
-	// admin gateways list
-	$this->loader->add_filter('manage_woo-gift-card_posts_columns', $plugin_admin, 'add_columns');
-	$this->loader->add_action('manage_woo-gift-card_posts_custom_column', $plugin_admin, 'add_column_data', 10, 2);
-
 	//admin menu initialising
 	$this->loader->add_action('admin_menu', $plugin_admin, 'on_admin_menu');
 

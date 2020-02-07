@@ -147,27 +147,30 @@ defined('ABSPATH') || exit;
 	?>
     </div>
 </div>
-<div class="options_group show_if_woo-gift-card">
-    <p class="form-field show_if_virtual">
-	<label for="wgc-template"><?php _e('Templates', 'woo-gift-card'); ?></label>
-	<select id="wgc-template" name="wgc-template[]" style="width: 50%;"  class="wc-enhanced-select" multiple="multiple" data-placeholder="<?php esc_attr_e('No templates', 'woo-gift-card'); ?>">
-	    <?php
-	    $template_ids = $product_object->get_meta('wgc-template');
-	    $templates = get_posts(array(
-		'numberposts' => -1,
-		'post_type' => 'wgc-template',
-		'post_status' => 'publish',
-		'fields' => array('ids'),
-		'orderby' => "name"
-	    ));
 
-	    if ($templates) {
-		foreach ($templates as $template) {
-		    echo '<option value="' . esc_attr($template->ID) . '"' . wc_selected($template->ID, $template_ids) . '>' . esc_html($template->post_title) . '</option>';
+<?php if (wgc_supports_pdf_generation()): ?>
+    <div class="options_group show_if_woo-gift-card">
+        <p class="form-field show_if_virtual">
+    	<label for="wgc-template"><?php _e('Templates', 'woo-gift-card'); ?></label>
+    	<select id="wgc-template" name="wgc-template[]" style="width: 50%;"  class="wc-enhanced-select" multiple="multiple" data-placeholder="<?php esc_attr_e('No templates', 'woo-gift-card'); ?>">
+		<?php
+		$template_ids = $product_object->get_meta('wgc-template');
+		$templates = get_posts(array(
+		    'numberposts' => -1,
+		    'post_type' => 'wgc-template',
+		    'post_status' => 'publish',
+		    'fields' => array('ids'),
+		    'orderby' => "name"
+		));
+
+		if ($templates) {
+		    foreach ($templates as $template) {
+			echo '<option value="' . esc_attr($template->ID) . '"' . wc_selected($template->ID, $template_ids) . '>' . esc_html($template->post_title) . '</option>';
+		    }
 		}
-	    }
-	    ?>
-	</select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                                                  ?>
-    </p>
-</div>
+		?>
+    	</select> <?php echo wc_help_tip(__('The gift voucher template list customers can select from', 'woo-gift-card')); // WPCS: XSS ok.                                                                                                                   ?>
+        </p>
+    </div>
+<?php endif; ?>
 

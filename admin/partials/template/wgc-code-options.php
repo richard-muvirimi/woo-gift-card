@@ -22,11 +22,7 @@ $meta = get_post_meta($post_id);
 	'id' => 'wgc-coupon-type',
 	'label' => __('Gift Voucher Display', 'woo-gift-card'),
 	'description' => __('The coupon code display format', 'woo-gift-card'),
-	'options' => array(
-	    "code" => __("Coupon Code", 'woo-gift-card'),
-	    "qrcode" => __("QrCode", 'woo-gift-card'),
-	    "barcode" => __("Bar Code", 'woo-gift-card')
-	),
+	'options' => wgc_get_supported_code_types(),
 	'value' => isset($meta['wgc-coupon-type']) ? $meta['wgc-coupon-type'][0] : "code",
 	'desc_tip' => true
     ));

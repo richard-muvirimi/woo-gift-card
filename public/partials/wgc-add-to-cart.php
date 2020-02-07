@@ -95,7 +95,7 @@ $pricing = $product->get_meta("wgc-pricing");
 
     <?php
     $templates = $product->get_meta('wgc-template');
-    if ($product->is_virtual() && !empty($templates)):
+    if ($product->is_virtual() && !empty($templates) && wgc_supports_pdf_generation()):
 	?>
 
         <fieldset>

@@ -208,3 +208,18 @@ function wgc_has_coupon($coupon) {
 		)
 	    ))) > 0;
 }
+
+function wgc_get_supported_code_types() {
+    $codes = array();
+    $codes["code"] = __("Coupon Code", 'woo-gift-card');
+
+    if (count(wgc_get_barcode_output_types()) > 0) {
+	$codes["barcode"] = __("Bar Code", 'woo-gift-card');
+    }
+
+    if (wgc_supports_qrcode()) {
+	$codes["qrcode"] = __("QrCode", 'woo-gift-card');
+    }
+
+    return $codes;
+}

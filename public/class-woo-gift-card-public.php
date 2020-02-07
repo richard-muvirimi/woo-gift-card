@@ -195,7 +195,7 @@ class Woo_gift_card_Public {
 
 	if ($product->is_type('woo-gift-card')) {
 
-	    if ($product->get_meta("wgc-pricing") != 'fixed' && $product->is_virtual() && !empty($product->get_meta('wgc-template'))) {
+	    if ($product->get_meta("wgc-pricing") != 'fixed' && $product->is_virtual() && !empty($product->get_meta('wgc-template')) && wgc_supports_pdf_generation()) {
 		wc_get_template("wgc-preview-html.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/preview/");
 		wc_get_template("wgc-preview-button.php", compact("product"), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/preview/");
 	    }

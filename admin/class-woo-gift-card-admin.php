@@ -143,7 +143,7 @@ class Woo_gift_card_Admin {
 	if (wc_coupons_enabled()) {
 
 	    register_post_type('wgc-template', array(
-		'show_ui' => true,
+		'show_ui' => wgc_supports_pdf_generation(),
 		'show_in_menu' => 'wgc-dashboard',
 		'exclude_from_search' => true,
 		'hierarchical' => false,
@@ -175,7 +175,7 @@ class Woo_gift_card_Admin {
 		'rewrite' => array('slug' => 'wgc-template', 'gift-card-template'),
 		'supports' => array('title', 'author', 'editor', 'revisions', 'thumbnail'),
 		'delete_with_user' => false,
-		'publicly_queryable' => true,
+		'publicly_queryable' => wgc_supports_pdf_generation(), //disable/enable previewing
 		'description' => __('Templates for gift cards that will be sent to customers', 'woo-gift-card'),
 		'register_meta_box_cb' => array($this, 'register_template_meta_box')
 	    ));
@@ -213,7 +213,7 @@ class Woo_gift_card_Admin {
 		"taxonomy" => "wgc-template-dimension"
 	    ));
 
-	    if (empty($sizes)) {
+	    if (empty($sizes) && wgc_supports_pdf_generation()) {
 		require_once plugin_dir_path(__DIR__) . 'includes/install/Dimensions.php';
 		DimensionsInstaller::Install();
 	    }
@@ -314,7 +314,7 @@ class Woo_gift_card_Admin {
      * @return type
      */
     public function post_row_actions($actions, $post) {
-	if ($post->post_type == 'wgc-template') {
+	if ($post->post_type == 'wgc-template' && wgc_supports_pdf_generation()) {
 
 	    $actions["view"] = '<a href="JavaScript:void()" class="wgc-template-preview" data-template="' . esc_attr($post->ID) . '">' . __("View", "woo-gift-card") . "</a>";
 	}
@@ -370,7 +370,7 @@ class Woo_gift_card_Admin {
 		$query->is_singular = false;
 		ob_start();
 
-		wc_get_template("wgc-preview-admin-html.php", compact("post"), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/preview/");
+		wc_get_template("wgc-preview-admin-html.php", compact("post"), "", plugin_dir_path(__DIR__) . "public/partials/preview/");
 
 		ob_flush();
 		exit();
@@ -607,7 +607,9 @@ class Woo_gift_card_Admin {
 	}
 
 	//templates
-	$product->update_meta_data("wgc-template", wgc_get_post_var('wgc-template'));
+	if (wgc_supports_pdf_generation()) {
+	    $product->update_meta_data("wgc-template", wgc_get_post_var('wgc-template'));
+	}
 
 	//restrictions
 	$product->update_meta_data("wgc-cart-min", wgc_get_post_var('wgc-cart-min'));
@@ -719,23 +721,6 @@ class Woo_gift_card_Admin {
     }
 
     /**
-     * out put our data for each custom column added to the woo gift card manage screen
-     *
-     * @param string $column
-     * @param int $post_id
-     * @return void
-     */
-    public function add_column_data($column, $post_id) {
-
-	switch ($column) {
-	    case 'wgc-value':
-	    case 'wgc-balance':
-		echo get_woocommerce_currency_symbol() . get_post_meta($post_id, $column, true);
-		break;
-	}
-    }
-
-    /**
      * Add is thank you gift voucher product type to woocommerce product edit screen
      *
      * @param array $product_types
@@ -760,31 +745,6 @@ class Woo_gift_card_Admin {
 	}
 
 	return $product_types;
-    }
-
-    /**
-     * Add our custom column title to the woo gift card manage screen
-     *
-     * @param array $columns
-     * @return void
-     */
-    public function add_columns($columns) {
-
-	$cols = array();
-
-	foreach ($columns as $key => $item) {
-	    $cols[$key] = $item;
-
-	    if ($key === 'author') {
-		$cols['wgc-value'] = __('Initial Value', 'woo-gift-card');
-		$cols['wgc-balance'] = __('Balance', 'woo-gift-card');
-	    }
-	}
-
-	$cols['title'] = __('Gift Voucher', 'woo-gift-card');
-	$cols['author'] = __('Owner', 'woo-gift-card');
-
-	return $cols;
     }
 
     /**
