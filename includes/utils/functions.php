@@ -9,6 +9,17 @@ defined('ABSPATH') || exit;
  * @return string
  */
 function wgc_path_to_base64($path) {
+    $wp_content = strpos($path, "wp-content");
+
+    if ($wp_content !== false) {
+	//normalize path to use address of this site
+	$_path = site_url(substr($path, $wp_content));
+
+	if (file_exists($_path)) {
+	    $path = $_path;
+	}
+    }
+
     $data = file_get_contents($path);
 
     $mime = wgc_get_mime_type_for_file($path);
@@ -120,11 +131,46 @@ function wgc_download_link($plugin_name = "woo-gift-card") {
 }
 
 /**
+ * get a coupon object from coupon code
  *
- * @return array|\WC_Coupon
+ * @param string $which
+ * @return \WC_Coupon|false
  */
-function wgc_get_coupons_for_customer() {
-    $coupons = array_map(function($coupon) {
+function wgc_get_coupon($which = "") {
+
+    $coupons = get_posts(array(
+	"posts_per_page" => 1,
+	"title" => $which,
+	"post_type" => "shop_coupon",
+	'post_status' => 'publish',
+	'orderby' => 'date',
+	'meta_query' => array(
+	    array(
+		'key' => 'wgc-order',
+		'compare' => "IN",
+		'value' => array_map("\WC_Order_Factory::get_order_id", wc_get_orders(array(
+		    "numberposts" => -1,
+		)))
+	    ),
+	    array(
+		'key' => 'wgc-order-item'
+	    ),
+	    array(
+		'key' => 'wgc-order-item-index'
+	    ),
+	)
+    ));
+
+    return empty($coupons) ? false : new WC_Coupon($coupons[0]->ID);
+}
+
+/**
+ * Get all customer coupons
+ *
+ * @return \WC_Coupon|array
+ */
+function wgc_get_coupons() {
+    return array_map(function($coupon) {
 	return new WC_Coupon($coupon->ID);
     }, get_posts(
 		    array(
@@ -152,8 +198,15 @@ function wgc_get_coupons_for_customer() {
 			)
 		    )
     ));
+}
 
-    return array_filter($coupons, function ($coupon) {
+/**
+ *
+ * @return array|\WC_Coupon
+ */
+function wgc_get_coupons_for_customer() {
+
+    return array_filter(wgc_get_coupons(), function ($coupon) {
 	// Limit to defined email addresses.
 	$restrictions = $coupon->get_email_restrictions();
 	$emails = array(get_user_option("user_email", get_current_user_id()));
@@ -191,22 +244,7 @@ function wgc_supports_pdf_generation() {
 }
 
 function wgc_has_coupon($coupon) {
-    return count(get_posts(array(
-		"numberposts" => 1,
-		"post_title" => $coupon,
-		"post_type" => "shop_coupon",
-		'meta_query' => array(
-		    array(
-			'key' => 'wgc-order'
-		    ),
-		    array(
-			'key' => 'wgc-order-item'
-		    ),
-		    array(
-			'key' => 'wgc-order-item-index'
-		    ),
-		)
-	    ))) > 0;
+    return is_a(wgc_get_coupon($coupon), "WC_Coupon");
 }
 
 function wgc_get_supported_code_types() {
