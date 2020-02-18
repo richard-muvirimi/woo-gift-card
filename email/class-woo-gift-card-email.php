@@ -58,7 +58,7 @@ class Woo_gift_card_Email {
     public function woocommerce_email_actions($email_actions) {
 	if (wc_coupons_enabled()) {
 	    $email_actions [] = 'wgc_coupon_published';
-	    $email_actions [] = 'wgc_coupon_state_changed';
+	    $email_actions [] = 'wgc_coupon_applied';
 	}
 
 	return $email_actions;
@@ -75,7 +75,7 @@ class Woo_gift_card_Email {
 	    include_once plugin_dir_path(__FILE__) . 'models/class-wc-email-coupon.php';
 
 	    $emails ["WGC_Email_Coupon_Received"] = include_once plugin_dir_path(__FILE__) . 'models/class-wc-email-coupon-received.php';
-	    $emails ["WGC_Email_Coupon_Status"] = include_once plugin_dir_path(__FILE__) . 'models/class-wc-email-coupon-status.php';
+	    $emails ["WGC_Email_Coupon_Applied"] = include_once plugin_dir_path(__FILE__) . 'models/class-wc-email-coupon-applied.php';
 	}
 
 	return $emails;
@@ -102,8 +102,32 @@ class Woo_gift_card_Email {
 		     *
 		     * @param \WC_Coupon $coupon The coupon just saved
 		     */
-		    do_action("wgc_coupon_published", $coupon, $update);
+		    do_action("wgc_coupon_published", $coupon);
 		}
+	    }
+	}
+    }
+
+    /**
+     * A coupon code has been applied
+     * @param type $coupon_code
+     */
+    public function woocommerce_applied_coupon($coupon_code) {
+
+	$coupon_id = wc_get_coupon_id_by_code($coupon_code);
+
+	if ($coupon_id !== 0) {
+
+	    $coupon = new \WC_Coupon($coupon_id);
+
+	    if ($coupon->meta_exists("wgc-order") && $coupon->meta_exists("wgc-order-item")) {
+
+		/**
+		 * Action hook fired after a coupon has been applied.
+		 *
+		 * @param \WC_Coupon $coupon The coupon just applied
+		 */
+		do_action("wgc_coupon_applied", $coupon);
 	    }
 	}
     }

@@ -900,7 +900,7 @@ class Woo_gift_card_Admin {
 			//coupon expiry dates
 			$expiry_days = $product->get_meta("wgc-expiry-days") ? "+" . $product->get_meta("wgc-expiry-days") . " days" : "";
 
-			$coupon = wp_insert_post(array(
+			wp_insert_post(array(
 			    'post_type' => 'shop_coupon',
 			    'post_title' => $this->get_unique_key($product),
 			    'post_status' => 'publish',
@@ -931,11 +931,6 @@ class Woo_gift_card_Admin {
 				'wgc-order-item-index' => $i
 			    )
 			));
-
-			if ($coupon && !is_wp_error($coupon)) {
-
-			    do_action("wgc_coupon_state", $coupon);
-			}
 		    }
 		}
 	    }

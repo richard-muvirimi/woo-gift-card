@@ -381,6 +381,9 @@ class Woo_gift_card {
 
 	//on publish post type
 	$this->loader->add_filter('save_post', $plugin_email, 'save_coupon_post', 10, 3);
+
+	//coupon code has been applied
+	$this->loader->add_filter('woocommerce_applied_coupon', $plugin_email, 'woocommerce_applied_coupon');
     }
 
     /**

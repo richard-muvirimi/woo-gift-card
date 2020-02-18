@@ -9,33 +9,32 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-if (!class_exists('WGC_Email_Coupon_Received', false)) :
+if (!class_exists('WGC_Email_Coupon_Applied', false)) :
 
     /**
      * Coupon Status.
      *
-     * An email sent to the customer when they receive a gift voucher.
+     * An email sent to the customer when their gift card balance is changed.
      *
-     * @class       WC_Email_Coupon_Received
+     * @class       WC_Email_Coupon_Status
      * @version     3.5.0
      * @package     WooGiftCard/Classes/Emails
      * @extends     WC_Email
      */
-    class WGC_Email_Coupon_Received extends WGC_Email_Coupon {
+    class WGC_Email_Coupon_Applied extends WGC_Email_Coupon {
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-	    $this->id = 'wgc_coupon_published';
-	    $this->title = __('Coupon Received (Gift Voucher)', 'woo-gift-card');
-	    $this->description = __('New Coupon Emails are sent to clients if they are listed as the receipint of a gift voucher purchase.', 'woo-gift-card');
-	    $this->template_html = 'partials/wgc-coupon-received.php';
-	    $this->template_plain = 'partials/plain/wgc-coupon-received.php';
+	    $this->id = 'wgc_coupon_applied';
+	    $this->title = __('Coupon Applied (Gift Voucher)', 'woo-gift-card');
+	    $this->description = __('Customer "Gift Voucher Coupon" emails are sent to the customer when their "Gift Voucher Coupon" has been applied.', 'woo-gift-card');
+	    $this->template_html = 'partials/wgc-coupon-applied.php';
+	    $this->template_plain = 'partials/plain/wgc-coupon-applied.php';
 
 	    // Triggers for this email.
-	    add_action('wgc_coupon_published_notification', array($this, 'trigger'));
-
+	    add_action('wgc_coupon_applied_notification', array($this, 'trigger'));
 	    // Call parent constructor.
 	    parent::__construct();
 	}
@@ -47,7 +46,7 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 	 * @return string
 	 */
 	public function get_default_subject() {
-	    return __('[{site_title}]: New Gift Voucher', 'woo-gift-card');
+	    return __('[{site_title}]: Your Gift Voucher Has Been Applied', 'woo-gift-card');
 	}
 
 	/**
@@ -85,14 +84,12 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 	 */
 	public function get_content_html() {
 
-	    $order = wc_get_order($this->get_coupon()->get_meta("wgc-order"));
-
 	    return wc_get_template_html(
 		    $this->template_html, array(
 		'email_heading' => $this->get_heading(),
 		'additional_content' => $this->get_additional_content(),
 		'blogname' => $this->get_blogname(),
-		'coupon_sender' => get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0),
+		'coupon_code' => $this->get_coupon()->get_code(),
 		'sent_to_admin' => false,
 		"recipient" => $this->get_recipient_name(),
 		'plain_text' => false,
@@ -108,14 +105,12 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 	 */
 	public function get_content_plain() {
 
-	    $order = wc_get_order($this->get_coupon()->get_meta("wgc-order"));
-
 	    return wc_get_template_html(
 		    $this->template_plain, array(
 		'email_heading' => $this->get_heading(),
 		'additional_content' => $this->get_additional_content(),
 		'blogname' => $this->get_blogname(),
-		'coupon_sender' => get_user_option("display_name", is_object($order) ? $order->get_customer_id() : 0),
+		'coupon_code' => $this->get_coupon()->get_code(),
 		'sent_to_admin' => false,
 		"recipient" => $this->get_recipient_name(),
 		'plain_text' => true,
@@ -128,4 +123,4 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 
     endif;
 
-return new WGC_Email_Coupon_Received();
+return new WGC_Email_Coupon_Applied();
