@@ -35,6 +35,7 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 
 	    // Triggers for this email.
 	    add_action('wgc_coupon_published_notification', array($this, 'trigger'));
+	    add_action('wgc_coupon_email_notification', array($this, 'trigger'));
 
 	    // Call parent constructor.
 	    parent::__construct();

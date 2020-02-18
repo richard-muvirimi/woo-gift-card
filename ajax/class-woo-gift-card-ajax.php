@@ -58,7 +58,32 @@ class Woo_gift_card_Ajax {
 
 	$coupon_id = wgc_get_post_var("which");
 
-	wp_send_json_success();
+	$coupon = new \WC_Coupon($coupon_id);
+
+	$data = array();
+	if (wc_coupons_enabled() && $coupon->meta_exists("wgc-order") && $coupon->meta_exists("wgc-order-item")) {
+
+	    /**
+	     * Action hook fired after a coupon has been applied.
+	     *
+	     * @param \WC_Coupon $coupon The coupon just applied
+	     */
+	    do_action("wgc_coupon_email", $coupon);
+
+	    $data["message"] = __("Gift Voucher recipients have been notified successfully.", $this->plugin_name);
+	    $data["status"] = "message";
+	} else {
+	    $data["message"] = __("Failed to resend gift voucher notification email.", $this->plugin_name);
+	    $data["status"] = "error";
+	}
+
+	$template = wc_get_template_html("wgc-ajax-status.php", $data, "", plugin_dir_path(__FILE__) . "partials/");
+
+	if ($data["status"] === "message") {
+	    wp_send_json_success($template);
+	} else {
+	    wp_send_json_error($template);
+	}
     }
 
     public function delete_voucher() {

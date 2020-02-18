@@ -58,6 +58,7 @@ class Woo_gift_card_Email {
     public function woocommerce_email_actions($email_actions) {
 	if (wc_coupons_enabled()) {
 	    $email_actions [] = 'wgc_coupon_published';
+	    $email_actions [] = 'wgc_coupon_email';
 	    $email_actions [] = 'wgc_coupon_applied';
 	}
 
