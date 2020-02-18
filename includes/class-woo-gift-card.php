@@ -373,12 +373,14 @@ class Woo_gift_card {
 
 	$plugin_email = new Woo_gift_card_Email($this->get_plugin_name(), $this->get_version());
 
-	//add our gift voucher balance hook
+	//add custom email trigger hooks
 	$this->loader->add_filter('woocommerce_email_actions', $plugin_email, 'woocommerce_email_actions');
 
-	//register our email class
-	$this->loader->add_filter('wgc_coupon_state_notification', $plugin_email, 'wgc_coupon_state_notification');
+	//add custom email classes
 	$this->loader->add_filter('woocommerce_email_classes', $plugin_email, 'woocommerce_email_classes');
+
+	//on publish post type
+	$this->loader->add_filter('save_post', $plugin_email, 'save_coupon_post', 10, 3);
     }
 
     /**

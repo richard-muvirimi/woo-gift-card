@@ -213,22 +213,7 @@ class Woo_gift_card_Rest {
 			if ($param) {
 
 			    //if image was sent with request
-			    return count(get_posts(array(
-					"numberposts" => 1,
-					"post_type" => "shop_coupon",
-					"post_title" => $param,
-					'meta_query' => array(
-					    array(
-						'key' => 'wgc-order'
-					    ),
-					    array(
-						'key' => 'wgc-order-item'
-					    ),
-					    array(
-						'key' => 'wgc-order-item-index'
-					    ),
-					)
-				    ))) > 0;
+			    return wgc_has_coupon($param);
 			}
 			return false;
 		    },
@@ -257,32 +242,12 @@ class Woo_gift_card_Rest {
 
     private function get_template_from_coupon($which) {
 
-	$coupon = get_posts(array(
-	    "posts_per_page" => 1,
-	    "title" => $which,
-	    "post_type" => "shop_coupon",
-	    'post_status' => 'publish',
-	    'orderby' => 'date',
-	    'meta_query' => array(
-		array(
-		    'key' => 'wgc-order'
-		),
-		array(
-		    'key' => 'wgc-order-item'
-		),
-		array(
-		    'key' => 'wgc-order-item-index'
-		),
-	    )
-	));
+	$coupon = wgc_get_coupon($which);
 
-	if (empty($coupon)) {
-	    //coupon not found
-	    wp_die();
-	} else {
+	if (is_a($coupon, "WC_Coupon")) {
 
-	    $order = wc_get_order(get_post_meta($coupon[0]->ID, "wgc-order", true));
-	    $item = $order->get_item(get_post_meta($coupon[0]->ID, "wgc-order-item", true));
+	    $order = wc_get_order(get_post_meta($coupon->get_id(), "wgc-order", true));
+	    $item = $order->get_item(get_post_meta($coupon->get_id(), "wgc-order-item", true));
 
 	    /**
 	     * @var \WC_Meta_Data $meta_data
@@ -297,7 +262,10 @@ class Woo_gift_card_Rest {
 
 	    $this->params['wgc-product'] = $item->get_product()->get_id();
 	    $this->params['wgc-order'] = $order->get_id();
-	    $this->params['wgc-coupon'] = $coupon[0]->post_title;
+	    $this->params['wgc-coupon'] = $coupon->get_code();
+	} else {
+	    //coupon not found
+	    wp_die();
 	}
     }
 

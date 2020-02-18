@@ -261,3 +261,28 @@ function wgc_get_supported_code_types() {
 
     return $codes;
 }
+
+/**
+ * Get all users that can use a coupon code
+ *
+ * @param \WC_Coupon $coupon
+ * @return array
+ */
+function wgc_get_emails_for_coupon($coupon) {
+
+    $emails = array();
+
+    foreach ($coupon->get_email_restrictions() as $restriction) {
+	$user_emails = get_users(array(
+	    'search_columns' => array('user_email'),
+	    'search' => $restriction,
+	    'fields' => array('user_email'),
+	    'count_total' => false
+		)
+	);
+
+	$emails = array_merge($emails, array_column($user_emails, 'user_email'));
+    }
+
+    return array_unique($emails);
+}
