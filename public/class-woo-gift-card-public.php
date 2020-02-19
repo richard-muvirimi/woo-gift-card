@@ -77,7 +77,7 @@ class Woo_gift_card_Public {
 
 	    $product = wc_get_product($post);
 
-	    if ($product->is_type('woo-gift-card')) {
+	    if ($product->is_type($this->plugin_name)) {
 		wp_enqueue_style($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'css/wgc-product.css', array(), $this->version);
 		wp_enqueue_style($this->plugin_name . "-preview", plugin_dir_url(__FILE__) . 'css/wgc-pdf-preview.css', array(), $this->version);
 	    }
@@ -115,7 +115,7 @@ class Woo_gift_card_Public {
 
 	    $product = wc_get_product($post);
 
-	    if ($product->is_type('woo-gift-card')) {
+	    if ($product->is_type($this->plugin_name)) {
 		wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/wgc-product.js', array('jquery'), $this->version, false);
 		wp_localize_script($this->plugin_name . "-product", 'wgc_product', array(
 		    "maxlength" => get_option('wgc-message-length'),
@@ -157,7 +157,7 @@ class Woo_gift_card_Public {
 
 	    if ($key === 'downloads') {
 
-		$links['wgc-vouchers'] = __('Gift Vouchers', 'woo-gift-card');
+		$links['wgc-vouchers'] = __('Gift Vouchers', $this->plugin_name);
 	    }
 	}
 
@@ -181,7 +181,7 @@ class Woo_gift_card_Public {
     public function woocommerce_before_add_to_cart_button() {
 	global $product;
 
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 	    wc_get_template("wgc-add-to-cart.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/");
 	}
     }
@@ -193,7 +193,7 @@ class Woo_gift_card_Public {
     public function woocommerce_after_add_to_cart_button() {
 	global $product;
 
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 
 	    if ($product->get_meta("wgc-pricing") != 'fixed' && $product->is_virtual() && !empty($product->get_meta('wgc-template')) && wgc_supports_pdf_generation()) {
 		wc_get_template("wgc-preview-html.php", array(), "", plugin_dir_path(dirname(__FILE__)) . "public/partials/preview/");
@@ -211,7 +211,7 @@ class Woo_gift_card_Public {
 
 	foreach ($cart->cart_contents as $cart_item) {
 	    $product = $cart_item["data"];
-	    if ($product->is_type('woo-gift-card') && isset($cart_item['wgc-receiver-price'])) {
+	    if ($product->is_type($this->plugin_name) && isset($cart_item['wgc-receiver-price'])) {
 		$product->set_price($cart_item['wgc-receiver-price']);
 	    }
 	}
@@ -225,7 +225,7 @@ class Woo_gift_card_Public {
      */
     public function woocommerce_is_purchasable($purchasable, $product) {
 
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 
 	    //if we are not on the shop page to allow customisation first
 	    if (!is_shop()) {
@@ -238,7 +238,7 @@ class Woo_gift_card_Public {
 
     public function woocommerce_get_price_html($display_price, $product) {
 
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 	    switch ($product->get_meta("wgc-pricing")) {
 		case "range":
 		    $from = $product->get_meta('wgc-price-range-from');
@@ -267,7 +267,7 @@ class Woo_gift_card_Public {
 		    }
 		    break;
 		case "selected":
-		    $display_price = __("Select Price", 'woo-gift-card');
+		    $display_price = __("Select Price", $this->plugin_name);
 		    break;
 		case 'fixed':
 		default:
@@ -286,7 +286,7 @@ class Woo_gift_card_Public {
     public function woocommerce_product_is_visible($visible, $product_id) {
 	$product = wc_get_product($product_id);
 
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 	    $visible = $product->is_thankyouvoucher() === false;
 	}
 
@@ -300,7 +300,7 @@ class Woo_gift_card_Public {
     public function woocommerce_add_cart_item_data($cart_item_data, $product_id, $variation_id, $quantity) {
 
 	$product = wc_get_product($product_id);
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 
 	    //pricing
 	    $price = wgc_get_post_var('wgc-receiver-price');
@@ -409,7 +409,7 @@ class Woo_gift_card_Public {
      */
     public function woocommerce_cart_item_thumbnail($image, $cart_item, $cart_item_key) {
 
-	if ($cart_item["data"]->is_type('woo-gift-card')) {
+	if ($cart_item["data"]->is_type($this->plugin_name)) {
 	    if (isset($cart_item['wgc-receiver-image'])) {
 		$image = wgc_image_html($cart_item['wgc-receiver-image']);
 	    }
@@ -429,7 +429,7 @@ class Woo_gift_card_Public {
     public function woocommerce_cart_item_name($name, $cart_item, $cart_item_key) {
 
 	$product = $cart_item["data"];
-	if ($product->is_type('woo-gift-card') && is_cart() && !empty($product->get_meta('wgc-template'))) {
+	if ($product->is_type($this->plugin_name) && is_cart() && !empty($product->get_meta('wgc-template'))) {
 
 	    $name .= " (" . get_post_field("post_title", $cart_item["wgc-receiver-template"]) . ")";
 	}
@@ -445,9 +445,9 @@ class Woo_gift_card_Public {
     public function woocommerce_get_item_data($item_data, $cart_item) {
 
 	$product = $cart_item["data"];
-	if ($product->is_type('woo-gift-card') && is_cart() && !empty($product->get_meta('wgc-template'))) {
+	if ($product->is_type($this->plugin_name) && is_cart() && !empty($product->get_meta('wgc-template'))) {
 	    $item_data[] = array(
-		"key" => __("To", "woo-gift-card"),
+		"key" => __("To", $this->plugin_name),
 		"value" => $cart_item["wgc-receiver-email"]
 	    );
 	}
@@ -466,23 +466,23 @@ class Woo_gift_card_Public {
     public function woocommerce_order_item_display_meta_key($display_key, $meta, $order_item) {
 
 	$product = $order_item->get_product();
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 
 	    switch ($meta->key) {
 		case "wgc-receiver-price":
-		    $display_key = __("Pricing", "woo-gift-card");
+		    $display_key = __("Pricing", $this->plugin_name);
 		    break;
 		case "wgc-receiver-name":
-		    $display_key = __("Receiver Name", "woo-gift-card");
+		    $display_key = __("Receiver Name", $this->plugin_name);
 		    break;
 		case "wgc-receiver-email":
-		    $display_key = __("Receiver Email", "woo-gift-card");
+		    $display_key = __("Receiver Email", $this->plugin_name);
 		    break;
 		case "wgc-event":
-		    $display_key = __("Event", "woo-gift-card");
+		    $display_key = __("Event", $this->plugin_name);
 		    break;
 		case "wgc-receiver-schedule":
-		    $display_key = __("Scheduled", "woo-gift-card");
+		    $display_key = __("Scheduled", $this->plugin_name);
 		    break;
 	    }
 	}
@@ -501,7 +501,7 @@ class Woo_gift_card_Public {
     public function woocommerce_order_item_display_meta_value($display_value, $meta, $order_item) {
 
 	$product = $order_item->get_product();
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 
 	    switch ($meta->key) {
 		case "wgc-receiver-price":
@@ -529,7 +529,7 @@ class Woo_gift_card_Public {
     public function woocommerce_order_item_get_formatted_meta_data($formatted_meta, $order_item) {
 
 	$product = $order_item->get_product();
-	if ($product->is_type('woo-gift-card')) {
+	if ($product->is_type($this->plugin_name)) {
 
 	    $formatted_meta = array_filter($formatted_meta, function ($meta) {
 		switch ($meta->key) {

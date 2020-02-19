@@ -232,13 +232,13 @@ class Woo_gift_card {
 
 	//save product type
 	$this->loader->add_filter('woocommerce_admin_process_product_object', $plugin_admin, 'save_product_object');
-	$this->loader->add_filter('woocommerce_process_product_meta_' . $this->plugin_name, $plugin_admin, 'save_woo_gift_card_product');
+	$this->loader->add_filter('woocommerce_process_product_meta_' . $this->get_plugin_name(), $plugin_admin, 'save_woo_gift_card_product');
 
 	//on init
 	$this->loader->add_action('init', $plugin_admin, 'init');
 
 	//on save post
-	$this->loader->add_action('save_post_woo-gift-card', $plugin_admin, 'save_post');
+	$this->loader->add_action('save_post_' . $this->get_plugin_name(), $plugin_admin, 'save_post');
 
 	//admin notices
 	$this->loader->add_action('admin_notices', $plugin_admin, 'show_admin_notice');
