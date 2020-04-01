@@ -49,6 +49,14 @@ defined('ABSPATH') || exit;
 			'description' => __('Check this box if the coupon should not apply to items on sale. Per-item coupons will only work if the item is not on sale. Per-cart coupons will only work if there are items in the cart that are not on sale.', $plugin_name),
 			'value' => $product->get_coupon_sale("edit") ?: "no"
 		));
+
+		woocommerce_wp_checkbox(array(
+			'id' => 'wgc-free-shipping',
+			'wrapper_class' => 'show_if_woo-gift-card',
+			'label' => __('Allow free shipping', $plugin_name),
+			'description' => __('Check this box if the coupon grants free shipping. A <a href="https://docs.woocommerce.com/document/free-shipping/" target="_blank">free shipping method</a> must be enabled in your shipping zone and be set to require "a valid free shipping coupon" (see the "Free Shipping Requires" setting).', $plugin_name),
+			'value' => $product->get_coupon_free_shipping("edit") ?: "no"
+		));
 		?>
 	</div>
 	<div class="options_group show_if_woo-gift-card">

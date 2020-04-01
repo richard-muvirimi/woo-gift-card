@@ -302,6 +302,7 @@ class WGC_Admin
 			//options
 			$product->delete_meta_data("wgc-individual");
 			$product->delete_meta_data("wgc-sale");
+			$product->delete_meta_data("wgc-free-shipping");
 
 			//limits
 			$product->delete_meta_data("wgc-limit-usage-to-x-items");
@@ -342,6 +343,7 @@ class WGC_Admin
 		//options
 		$product->set_coupon_individual(wgc_get_post_var('wgc-individual'));
 		$product->set_coupon_sale(wgc_get_post_var('wgc-sale'));
+		$product->set_coupon_free_shipping(wgc_get_post_var('wgc-free-shipping'));
 
 		//limits
 		$product->set_coupon_limit_usage_to_x_items(wgc_get_post_var('wgc-limit-usage-to-x-items'));

@@ -189,6 +189,7 @@ function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $or
 		//options
 		$coupon->set_individual_use($product->get_coupon_individual());
 		$coupon->set_exclude_sale_items($product->get_coupon_sale());
+		$coupon->set_free_shipping($product->get_coupon_free_shipping());
 
 		//limits
 		$coupon->set_usage_limit($product->get_coupon_usage_limit());
@@ -209,9 +210,6 @@ function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $or
 		$coupon->set_excluded_product_ids($product->get_coupon_excluded_products());
 		$coupon->set_product_categories($product->get_coupon_product_categories());
 		$coupon->set_excluded_product_categories($product->get_coupon_excluded_product_categories());
-
-		//defaults
-		$coupon->set_free_shipping(false);
 
 		do_action("before-wgc-save-coupon", $coupon);
 

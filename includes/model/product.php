@@ -122,6 +122,17 @@ class WGC_Product extends WC_Product_Simple
     }
 
     /**
+     * Set coupon allows free shipping
+     *
+     * @since 1.0.0
+     * @param  string $value Coupon Free Shipping.
+     */
+    public function set_coupon_free_shipping($value = '')
+    {
+        $this->update_meta_data("wgc-free-shipping", $value);
+    }
+
+    /**
      * Set coupon per item usability limit
      *
      * @since 1.0.0
@@ -311,6 +322,18 @@ class WGC_Product extends WC_Product_Simple
     public function get_coupon_sale($context = 'view')
     {
         return $this->get_meta("wgc-sale", true, $context);
+    }
+
+    /**
+     * Get coupon allows free shipping
+     *
+     * @since 1.0.0
+     * @param  string $context What the value is for. Valid values are 'view' and 'edit'.
+     * @return string
+     */
+    public function get_coupon_free_shipping($context = 'view')
+    {
+        return $this->get_meta("wgc-free-shipping", true, $context);
     }
 
     /**
