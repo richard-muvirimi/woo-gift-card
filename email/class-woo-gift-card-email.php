@@ -99,14 +99,14 @@ class WGC_Email
             if ($post->post_type == "shop_coupon" && $post->post_status == "publish" && !$update) {
 
                 // send emails
-                $coupon = new \WC_Coupon($post_ID);
+                $coupon = new \WGC_Coupon($post_ID);
 
                 if ($coupon->meta_exists("wgc-order") && $coupon->meta_exists("wgc-order-item")) {
 
                     /**
-                     * Action hook fired after a new coupon has been saved.
+                     * Action hook fired after a new coupon has been published.
                      *
-                     * @param \WC_Coupon $coupon The coupon just saved
+                     * @param \WGC_Coupon $coupon The coupon just published
                      */
                     do_action("wgc_coupon_published", $coupon);
                 }
@@ -125,14 +125,14 @@ class WGC_Email
 
         if ($coupon_id !== 0) {
 
-            $coupon = new \WC_Coupon($coupon_id);
+            $coupon = new \WGC_Coupon($coupon_id);
 
             if ($coupon->meta_exists("wgc-order") && $coupon->meta_exists("wgc-order-item")) {
 
                 /**
                  * Action hook fired after a coupon has been applied.
                  *
-                 * @param \WC_Coupon $coupon The coupon just applied
+                 * @param \WGC_Coupon $coupon The coupon just applied
                  */
                 do_action("wgc_coupon_applied", $coupon);
             }

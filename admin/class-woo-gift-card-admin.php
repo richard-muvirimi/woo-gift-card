@@ -458,9 +458,9 @@ class WGC_Admin
 
 							//if gift card create for tracking
 							$item_processed = true;
-							for ($i = 0; $i < $order_item->get_quantity(); $i++) {
+							for ($index = 0; $index < $order_item->get_quantity(); $index++) {
 
-								$item_processed &= wgc_product_to_coupon($product, $order_item);
+								$item_processed &= wgc_product_to_coupon($product, $order_item, $index);
 							}
 
 							//update markers

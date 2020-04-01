@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Displays in woocommerce my account page, All the gift vouchers a customer owns
  *

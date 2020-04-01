@@ -31,7 +31,7 @@ function wgc_format_coupon_value($coupon_id)
  * get a coupon object from coupon code
  *
  * @param string $which
- * @return \WC_Coupon|false
+ * @return \WGC_Coupon|false
  */
 function wgc_get_coupon($which = "")
 {
@@ -59,13 +59,13 @@ function wgc_get_coupon($which = "")
 		)
 	));
 
-	return empty($coupons) ? false : new WC_Coupon($coupons[0]->ID);
+	return empty($coupons) ? false : new WGC_Coupon($coupons[0]->ID);
 }
 
 /**
  * Get all customer coupons
  *
- * @return \WC_Coupon|array
+ * @return \WGC_Coupon|array
  */
 function wgc_get_coupons()
 {
@@ -76,7 +76,22 @@ function wgc_get_coupons()
 			"numberposts" => -1,
 			'post_type' => 'shop_coupon',
 			'post_status' => 'publish',
-			'orderby' => 'date'
+			'orderby' => 'date',
+			'meta_query' => array(
+				array(
+					'key' => 'wgc-order',
+					'compare' => "IN",
+					'value' => array_map("\WC_Order_Factory::get_order_id", wc_get_orders(array(
+						"numberposts" => -1,
+					)))
+				),
+				array(
+					'key' => 'wgc-order-item'
+				),
+				array(
+					'key' => 'wgc-order-item-index'
+				),
+			)
 		)
 	));
 }
