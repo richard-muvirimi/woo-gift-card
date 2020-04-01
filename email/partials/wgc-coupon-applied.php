@@ -21,10 +21,10 @@ do_action('woocommerce_email_header', $email_heading, $email);
 ?>
 
 <?php /* translators: %s: Customer username */ ?>
-<p><?php printf(esc_html__('Hi %s,', 'woo-gift-card'), esc_html($recipient)); ?></p>
+<p><?php printf(esc_html__('Hi %s,', $plugin_name), esc_html($recipient)); ?></p>
 <?php /* translators: %1$s: Coupon Sender, %2$s: Site title, %3$s: My account link */ ?>
 <p>
-    <?php printf(esc_html__('Just to let you know &mdash; your gift voucher %1$s has been applied on %2$s and you can view more details at %3$s', 'woo-gift-card'), '<strong>' . esc_html(wc_format_coupon_code($coupon_code)) . '</strong>', esc_html($blogname), make_clickable(esc_url(wc_get_page_permalink('myaccount')))); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped  
+    <?php printf(esc_html__('Just to let you know &mdash; your gift voucher %1$s has been applied on %2$s and you can view more details at %3$s', $plugin_name), '<strong>' . esc_html(wc_format_coupon_code($coupon_code)) . '</strong>', esc_html($blogname), make_clickable(esc_url(wc_get_page_permalink('myaccount')))); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped  
     ?>
 </p>
 

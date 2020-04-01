@@ -105,6 +105,7 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 					"recipient" => $this->get_recipient_name(),
 					'plain_text' => false,
 					'email' => $this,
+					'plugin_name' => 'woo-gift-card'
 				),
 				"",
 				$this->template_base
@@ -132,6 +133,7 @@ if (!class_exists('WGC_Email_Coupon_Received', false)) :
 					"recipient" => $this->get_recipient_name(),
 					'plain_text' => true,
 					'email' => $this,
+					'plugin_name' => 'woo-gift-card'
 				),
 				"",
 				$this->template_base

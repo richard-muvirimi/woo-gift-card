@@ -228,8 +228,10 @@ function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $or
 		$coupon->set_excluded_product_categories($product->get_coupon_excluded_product_categories());
 
 		//order details
-		$coupon->set_order_id($order_item->get_order_id());
-		$coupon->set_order_item_id($order_item->get_product_id());
+		if (is_a($order_item, "WC_Order_Item_Product")) {
+			$coupon->set_order_id($order_item->get_order_id());
+			$coupon->set_order_item_id($order_item->get_product_id());
+		}
 		$coupon->set_order_item_index($order_item_index);
 
 		do_action("before-wgc-save-coupon", $coupon);

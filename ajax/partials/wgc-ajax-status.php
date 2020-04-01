@@ -13,5 +13,5 @@ defined('ABSPATH') || exit;
 ?>
 
 <div class="woocommerce-Message woocommerce-Message--<?php esc_attr_e($status); ?> woocommerce-<?php esc_attr_e($status); ?>">
-    <span><?php esc_html_e($message, 'wooc-gift-card'); ?></span>
+    <span><?php esc_html_e($message, $plugin_name); ?></span>
 </div>

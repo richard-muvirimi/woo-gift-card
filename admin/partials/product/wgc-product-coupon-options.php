@@ -36,7 +36,6 @@ defined('ABSPATH') || exit;
 		<?php
 		woocommerce_wp_checkbox(array(
 			'id' => 'wgc-individual',
-			'wrapper_class' => 'show_if_woo-gift-card',
 			'label' => __('Individual use only', $plugin_name),
 			'description' => __('Check this box if the coupon cannot be used in conjunction with other coupons.', $plugin_name),
 			'value' => $product->get_coupon_individual("edit") ?: "no"
@@ -44,7 +43,6 @@ defined('ABSPATH') || exit;
 
 		woocommerce_wp_checkbox(array(
 			'id' => 'wgc-sale',
-			'wrapper_class' => 'show_if_woo-gift-card',
 			'label' => __('Exclude sale items', $plugin_name),
 			'description' => __('Check this box if the coupon should not apply to items on sale. Per-item coupons will only work if the item is not on sale. Per-cart coupons will only work if there are items in the cart that are not on sale.', $plugin_name),
 			'value' => $product->get_coupon_sale("edit") ?: "no"
@@ -52,9 +50,8 @@ defined('ABSPATH') || exit;
 
 		woocommerce_wp_checkbox(array(
 			'id' => 'wgc-free-shipping',
-			'wrapper_class' => 'show_if_woo-gift-card',
 			'label' => __('Allow free shipping', $plugin_name),
-			'description' => __('Check this box if the coupon grants free shipping. A <a href="https://docs.woocommerce.com/document/free-shipping/" target="_blank">free shipping method</a> must be enabled in your shipping zone and be set to require "a valid free shipping coupon" (see the "Free Shipping Requires" setting).', $plugin_name),
+			'description' => sprintf(__('Check this box if the coupon grants free shipping. A <a href="%s" target="_blank">free shipping method</a> must be enabled in your shipping zone and be set to require "a valid free shipping coupon" (see the "Free Shipping Requires" setting).', 'woocommerce'), 'https://docs.woocommerce.com/document/free-shipping/'),
 			'value' => $product->get_coupon_free_shipping("edit") ?: "no"
 		));
 		?>
@@ -102,7 +99,6 @@ defined('ABSPATH') || exit;
 		<?php
 		woocommerce_wp_checkbox(array(
 			'id' => 'wgc-schedule',
-			'wrapper_class' => 'show_if_woo-gift-card',
 			'label' => __('Gift Voucher Scheduling', $plugin_name),
 			'description' => __('A customer can set a date to send coupon on front end during purchase.', $plugin_name),
 			'value' => $product->get_coupon_schedule('edit')

@@ -37,7 +37,7 @@ abstract class WGC_Email_Coupon extends WC_Email
     /**
      * Trigger.
      *
-     * @param \WC_Coupon    $coupon Coupon object.
+     * @param \WGC_Coupon    $coupon Coupon object.
      */
     public function trigger($coupon)
     {
@@ -54,7 +54,7 @@ abstract class WGC_Email_Coupon extends WC_Email
 
     /**
      *
-     * @param \WC_Coupon $coupon
+     * @param \WGC_Coupon $coupon
      */
     protected function set_coupon($coupon)
     {
@@ -63,7 +63,7 @@ abstract class WGC_Email_Coupon extends WC_Email
 
     /**
      *
-     * @return \WC_Coupon
+     * @return \WGC_Coupon
      */
     protected function get_coupon()
     {

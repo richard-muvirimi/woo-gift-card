@@ -61,15 +61,15 @@ class WGC_Ajax
 
 		$coupon_id = wgc_get_post_var("which");
 
-		$coupon = new \WC_Coupon($coupon_id);
+		$coupon = new \WGC_Coupon($coupon_id);
 
-		$data = array();
+		$data = array("plugin_name" => $this->plugin_name);
 		if (wc_coupons_enabled()) {
 
 			/**
 			 * Action hook fired after a coupon has been applied.
 			 *
-			 * @param \WC_Coupon $coupon The coupon just applied
+			 * @param \WGC_Coupon $coupon The coupon just applied
 			 */
 			do_action("wgc_coupon_email", $coupon);
 
@@ -97,7 +97,7 @@ class WGC_Ajax
 
 		$success = is_a(wp_trash_post($coupon_id), "\WP_Post");
 
-		$data = array();
+		$data = array("plugin_name" => $this->plugin_name);
 		if ($success) {
 			$data["message"] = __("Gift Voucher Deleted Successfully.", $this->plugin_name);
 			$data["status"] = "message";
