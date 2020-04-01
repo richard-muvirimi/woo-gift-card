@@ -20,7 +20,7 @@
  * @subpackage Woo_gift_card/includes
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class Woo_gift_card_Deactivator {
+class WGC_Deactivator {
 
     /**
      * Short Description. (use period)
@@ -34,8 +34,6 @@ class Woo_gift_card_Deactivator {
 	if (get_term_by('slug', 'woo-gift-card', 'product_type')) {
 	    wp_delete_term('woo-gift-card', 'product_type');
 	}
-
-	flush_rewrite_rules();
     }
 
 }

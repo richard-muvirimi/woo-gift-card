@@ -20,7 +20,8 @@
  * @subpackage Woo_gift_card/includes
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class Woo_gift_card_Activator {
+class WGC_Activator
+{
 
     /**
      * Short Description. (use period)
@@ -29,27 +30,11 @@ class Woo_gift_card_Activator {
      *
      * @since    1.0.0
      */
-    public static function activate() {
+    public static function activate()
+    {
 
-	if (!get_term_by('slug', 'woo-gift-card', 'product_type')) {
-	    wp_insert_term('woo-gift-card', 'product_type');
-	}
-
-	flush_rewrite_rules();
-
-	//install templates
-	$templates = get_posts(array(
-	    'numberposts' => 1,
-	    'post_type' => 'wgc-template'
-	));
-
-	if (empty($templates)) {
-	    //we do not have any templates and this is probably the first install so import them
-	}
-
-	//template dimensions
-	require_once plugin_dir_path(__DIR__) . 'includes/install/Dimensions.php';
-	DimensionsInstaller::Install();
+        if (!get_term_by('slug', 'woo-gift-card', 'product_type')) {
+            wp_insert_term('woo-gift-card', 'product_type');
+        }
     }
-
 }

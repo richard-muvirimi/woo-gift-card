@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The Woocommerce Gift Card Plugin.
+ * The Main Woocommerce Gift Card Plugin.
  *
  * @link              tyganeutronics.com
  * @since             1.0.0
@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name:       Woo Gift Voucher
  * Plugin URI:        tyganeutronics.com
- * Description:       The Woocommerce Gift Voucher Plugin.
+ * Description:       The Main Woocommerce Gift Voucher Plugin.
  * Requires PHP:      5.6
  * Requires at least: 5.0.0
  * Version:           1.0.0
@@ -39,22 +39,22 @@ define('WOO_GIFT_CARD_VERSION', '1.0.0');
  * The code that runs during plugin activation.
  * This action is documented in includes/class-woo_gift_card-activator.php
  */
-function activate_woo_gift_card() {
+function activate_wgc_main() {
     require_once plugin_dir_path(__FILE__) . 'includes/class-woo-gift-card-activator.php';
-    Woo_gift_card_Activator::activate();
+    WGC_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-woo_gift_card-deactivator.php
  */
-function deactivate_woo_gift_card() {
+function deactivate_wgc_main() {
     require_once plugin_dir_path(__FILE__) . 'includes/class-woo-gift-card-deactivator.php';
-    Woo_gift_card_Deactivator::deactivate();
+    WGC_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_woo_gift_card');
-register_deactivation_hook(__FILE__, 'deactivate_woo_gift_card');
+register_activation_hook(__FILE__, 'activate_wgc_main');
+register_deactivation_hook(__FILE__, 'deactivate_wgc_main');
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -71,15 +71,11 @@ require plugin_dir_path(__FILE__) . 'includes/class-woo-gift-card.php';
  *
  * @since    1.0.0
  */
-function run_woo_gift_card() {
+function run_wgc_main() {
 
     $plugin = new Woo_gift_card();
     $plugin->run();
 }
 
-// If the WC class doesn't exist
-// it means WooCommerce is not installed on the site
-// so do nothing
-//if (class_exists('WC')) {
-run_woo_gift_card();
-//}
+run_wgc_main();
+

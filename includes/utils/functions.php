@@ -2,132 +2,29 @@
 
 defined('ABSPATH') || exit;
 
-/**
- * Convert a file to a base 64 string
- *
- * @param string $path
- * @return string
- */
-function wgc_path_to_base64($path) {
-    $wp_content = strpos($path, "wp-content");
+function wgc_get_post_var($name)
+{
 
-    if ($wp_content !== false) {
-	//normalize path to use address of this site
-	$_path = site_url(substr($path, $wp_content));
-
-	if (file_exists($_path)) {
-	    $path = $_path;
+	if (isset($_POST[$name])) {
+		$filtered = "";
+		if (is_array($_POST[$name])) {
+			$filtered = $_POST[$name];
+		} else {
+			$filtered = trim(filter_input(INPUT_POST, $name));
+		}
+		return wc_clean(wp_unslash($filtered));
 	}
-    }
-
-    $data = file_get_contents($path);
-
-    $mime = wgc_get_mime_type_for_file($path);
-
-    return wgc_content_to_base64($data, $mime);
+	return false;
 }
 
-/**
- * Convert data to base64
- *
- * @param string $content
- * @param string $mime
- * @return string
- */
-function wgc_content_to_base64($content, $mime) {
-    return 'data:' . $mime . ';base64,' . base64_encode($content);
-}
+function wgc_format_coupon_value($coupon_id)
+{
 
-function wgc_get_mime_type_for_file($file) {
-    $ext = pathinfo(basename($file), PATHINFO_EXTENSION);
-
-    foreach (wp_get_mime_types() as $key => $value) {
-	if (in_array($ext, explode("|", $key))) {
-	    return $value;
-	}
-    }
-
-    return wgc_get_mime_type_for_file("file.txt");
-}
-
-function wgc_image_html($image, $size = "thumbnail", $class = "", $alt = "") {
-    $dimensions = wc_get_image_size($size);
-
-    $image_html = '<img src="' . esc_attr($image) . '" alt="' . esc_attr__($alt) . '" width="' . esc_attr($dimensions['width']) . '" class="' . esc_attr($class) . '" height="' . esc_attr($dimensions['height']) . '" />';
-
-    return $image_html;
-}
-
-function wgc_supported_shortcodes() {
-    return array(
-	"amount" => __("The monetary value of the gift voucher.*", 'woo-gift-card'),
-	"code" => __("The code to uniquely identify the gift voucher.", 'woo-gift-card'),
-	"disclaimer" => __("Disclaimer message to show to the receipent of the gift voucher.", 'woo-gift-card'),
-	"event" => __("What event is this gift voucher for.*", 'woo-gift-card'),
-	"expiry-days" => __("The expiry days of the gift voucher", 'woo-gift-card'),
-	"from" => __("The sender of the gift voucher", 'woo-gift-card'),
-	"logo" => __("This websites logo or name of site", 'woo-gift-card'),
-	"message" => __("A message sent by customer to the recipient of the gift voucher", 'woo-gift-card'),
-	"order-id" => __("The order id to use as reference of the gift voucher", 'woo-gift-card'),
-	"product-name" => __("The product name of this gift voucher", 'woo-gift-card'),
-	"to-name" => __("The name of the recipient of the gift voucher*", 'woo-gift-card'),
-	"to-email" => __("The email of the recipient of the gift voucher*", 'woo-gift-card'),
-    );
-}
-
-function wgc_get_post_var($name) {
-
-    if (isset($_POST[$name])) {
-	$filtered = "";
-	if (is_array($_POST[$name])) {
-	    $filtered = $_POST[$name];
+	if (strpos(get_post_meta($coupon_id, 'discount_type', true), "fixed") !== false) {
+		esc_html_e(get_woocommerce_currency_symbol() . get_post_meta($coupon_id, 'coupon_amount', true));
 	} else {
-	    $filtered = trim(filter_input(INPUT_POST, $name));
+		esc_html_e(get_post_meta($coupon_id, 'coupon_amount', true) . "%");
 	}
-	return wc_clean(wp_unslash($filtered));
-    }
-    return false;
-}
-
-function wgc_format_coupon_value($coupon_id) {
-
-    if (strpos(get_post_meta($coupon_id, 'discount_type', true), "fixed") !== false) {
-	esc_html_e(get_woocommerce_currency_symbol() . get_post_meta($coupon_id, 'coupon_amount', true));
-    } else {
-	esc_html_e(get_post_meta($coupon_id, 'coupon_amount', true) . "%");
-    }
-}
-
-function wgc_get_pricing_types() {
-    return array(
-	"fixed" => __("Fixed Price", 'woo-gift-card'),
-	"selected" => __("Selected Price", 'woo-gift-card'),
-	"range" => __("Range Price", 'woo-gift-card'),
-	"user" => __("User Price", 'woo-gift-card'),
-	    // "variable" => __("Variable Price", 'woo-gift-card')
-    );
-}
-
-function wgc_get_barcode_output_types() {
-    $generators = array(
-	"svg" => __("Svg", 'woo-gift-card'),
-	"html" => __("Html", 'woo-gift-card')
-    );
-
-    if (wgc_supports_image_barcode()) {
-	$generators["png"] = __("Png", 'woo-gift-card');
-	$generators["jpg"] = __("Jpg", 'woo-gift-card');
-    }
-
-    return $generators;
-}
-
-function wgc_preview_link($plugin_name = "woo-gift-card") {
-    return get_rest_url(null, $plugin_name . "/v1/coupon/view/");
-}
-
-function wgc_download_link($plugin_name = "woo-gift-card") {
-    return get_rest_url(null, $plugin_name . "/v1/download/coupon/");
 }
 
 /**
@@ -136,32 +33,33 @@ function wgc_download_link($plugin_name = "woo-gift-card") {
  * @param string $which
  * @return \WC_Coupon|false
  */
-function wgc_get_coupon($which = "") {
+function wgc_get_coupon($which = "")
+{
 
-    $coupons = get_posts(array(
-	"posts_per_page" => 1,
-	"title" => $which,
-	"post_type" => "shop_coupon",
-	'post_status' => 'publish',
-	'orderby' => 'date',
-	'meta_query' => array(
-	    array(
-		'key' => 'wgc-order',
-		'compare' => "IN",
-		'value' => array_map("\WC_Order_Factory::get_order_id", wc_get_orders(array(
-		    "numberposts" => -1,
-		)))
-	    ),
-	    array(
-		'key' => 'wgc-order-item'
-	    ),
-	    array(
-		'key' => 'wgc-order-item-index'
-	    ),
-	)
-    ));
+	$coupons = get_posts(array(
+		"posts_per_page" => 1,
+		"title" => $which,
+		"post_type" => "shop_coupon",
+		'post_status' => 'publish',
+		'orderby' => 'date',
+		'meta_query' => array(
+			array(
+				'key' => 'wgc-order',
+				'compare' => "IN",
+				'value' => array_map("\WC_Order_Factory::get_order_id", wc_get_orders(array(
+					"numberposts" => -1,
+				)))
+			),
+			array(
+				'key' => 'wgc-order-item'
+			),
+			array(
+				'key' => 'wgc-order-item-index'
+			),
+		)
+	));
 
-    return empty($coupons) ? false : new WC_Coupon($coupons[0]->ID);
+	return empty($coupons) ? false : new WC_Coupon($coupons[0]->ID);
 }
 
 /**
@@ -169,97 +67,41 @@ function wgc_get_coupon($which = "") {
  *
  * @return \WC_Coupon|array
  */
-function wgc_get_coupons() {
-    return array_map(function($coupon) {
-	return new WC_Coupon($coupon->ID);
-    }, get_posts(
-		    array(
+function wgc_get_coupons()
+{
+	return array_map(function ($coupon) {
+		return new WC_Coupon($coupon->ID);
+	}, get_posts(
+		array(
 			"numberposts" => -1,
 			'post_type' => 'shop_coupon',
 			'post_status' => 'publish',
-			'orderby' => 'date',
-			'meta_query' => array(
-			    array(
-				'key' => 'wgc-order',
-				'compare' => "IN",
-				'value' => array_map("\WC_Order_Factory::get_order_id", wc_get_orders(array(
-				    "numberposts" => -1,
-				)))
-			    ),
-			    array(
-				'key' => 'wgc-order-item'
-			    ),
-			    array(
-				'key' => 'wgc-order-item-index'
-			    ),
-			    array(
-				'key' => 'customer_email',
-			    ),
-			)
-		    )
-    ));
+			'orderby' => 'date'
+		)
+	));
 }
 
 /**
+ * Get all coupons that can be applied by customer
  *
  * @return array|\WC_Coupon
  */
-function wgc_get_coupons_for_customer() {
+function wgc_get_coupons_for_customer()
+{
 
-    return array_filter(wgc_get_coupons(), function ($coupon) {
-	// Limit to defined email addresses.
-	$restrictions = $coupon->get_email_restrictions();
-	$emails = array(get_user_option("user_email", get_current_user_id()));
+	return array_filter(wgc_get_coupons(), function ($coupon) {
+		// Limit to defined email addresses.
+		$restrictions = $coupon->get_email_restrictions();
+		$emails = array(get_user_option("user_email", get_current_user_id()));
 
-	//from \WC_Cart::is_coupon_emails_allowed
-	return !(is_array($restrictions) && 0 < count($restrictions) && !WC()->cart->is_coupon_emails_allowed($emails, $restrictions));
-    });
+		//from \WC_Cart::is_coupon_emails_allowed
+		return !(is_array($restrictions) && 0 < count($restrictions) && !WC()->cart->is_coupon_emails_allowed($emails, $restrictions));
+	});
 }
 
-/**
- * Whether image generation is supported
- *
- * @return boolean
- */
-function wgc_supports_image_barcode() {
-    return wgc_supports_qrcode() || extension_loaded('imagick');
-}
-
-/**
- * Whether qrcode generation is supported
- *
- * @return boolean
- */
-function wgc_supports_qrcode() {
-    return function_exists('imagecreate');
-}
-
-/**
- * Whether pdf generation is supported
- *
- * @return boolean
- */
-function wgc_supports_pdf_generation() {
-    return extension_loaded("DOM") && extension_loaded("MBString") && wgc_supports_image_barcode();
-}
-
-function wgc_has_coupon($coupon) {
-    return is_a(wgc_get_coupon($coupon), "WC_Coupon");
-}
-
-function wgc_get_supported_code_types() {
-    $codes = array();
-    $codes["code"] = __("Coupon Code", 'woo-gift-card');
-
-    if (count(wgc_get_barcode_output_types()) > 0) {
-	$codes["barcode"] = __("Bar Code", 'woo-gift-card');
-    }
-
-    if (wgc_supports_qrcode()) {
-	$codes["qrcode"] = __("QrCode", 'woo-gift-card');
-    }
-
-    return $codes;
+function wgc_has_coupon($coupon)
+{
+	return is_a(wgc_get_coupon($coupon), "WC_Coupon");
 }
 
 /**
@@ -268,21 +110,115 @@ function wgc_get_supported_code_types() {
  * @param \WC_Coupon $coupon
  * @return array
  */
-function wgc_get_emails_for_coupon($coupon) {
+function wgc_get_emails_for_coupon($coupon)
+{
 
-    $emails = array();
+	$emails = array();
 
-    foreach ($coupon->get_email_restrictions() as $restriction) {
-	$user_emails = get_users(array(
-	    'search_columns' => array('user_email'),
-	    'search' => $restriction,
-	    'fields' => array('user_email'),
-	    'count_total' => false
-		)
-	);
+	foreach ($coupon->get_email_restrictions() as $restriction) {
+		$user_emails = get_users(
+			array(
+				'search_columns' => array('user_email'),
+				'search' => $restriction,
+				'fields' => array('user_email'),
+				'count_total' => false
+			)
+		);
 
-	$emails = array_merge($emails, array_column($user_emails, 'user_email'));
-    }
+		$emails = array_merge($emails, array_column($user_emails, 'user_email'));
+	}
 
-    return array_unique($emails);
+	return array_unique($emails);
+}
+
+/**
+ **** creates a coupon from a product ***
+ * 
+ * This method if passed a product creates a coupon
+ * 
+ * @param \WGC_Product $product
+ * @param \WC_Order_Item_Product $order_item
+ * @return boolean
+ */
+function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $order_item = null)
+{
+
+	/**
+	 * This is basically creating a post but of type coupon
+	 */
+
+	$post_date = "";
+	if ($product->get_coupon_schedule() == "yes" && is_a($order_item, "WC_Order_Item_Product")) {
+
+		//if coupon can be scheduled and is scheduled we want to schedule it's publication
+		$post_date =  date('Y-m-d 00:00:00', strtotime($order_item->get_meta('wgc-receiver-schedule')) ?: time());
+	}
+
+	$coupon_id = wp_insert_post(array(
+		'post_type' => 'shop_coupon',
+		'post_title' => apply_filters("wgc-coupon-code", "", $product),
+		'post_status' => 'publish',
+		'post_content' => '',
+		'post_date' => $post_date,
+
+		//Let's mark our territory by placing plugin name in coupon description
+		'post_excerpt' => get_plugin_data(plugin_dir_path(dirname(__DIR__)) .  "woo-gift-card.php")["Name"]
+	));
+
+	/**
+	 * Now onto the coupon meta data
+	 */
+	if ($coupon_id == 0) {
+		return false;
+	} else {
+		$coupon = new WC_Coupon($coupon_id);
+
+		//discount
+		$coupon->set_discount_type($product->get_coupon_discount());
+		$coupon->get_amount($product->get_coupon_discount_amount());
+
+		//restrictions
+		$coupon->set_minimum_amount($product->get_coupon_cart_min());
+		$coupon->set_maximum_amount($product->get_coupon_cart_max());
+
+		//email restrictions
+		if (is_a($order_item, "WC_Order_Item_Product")) {
+			$coupon->set_email_restrictions($order_item->get_meta('wgc-receiver-email'));
+		}
+
+		//options
+		$coupon->set_individual_use($product->get_coupon_individual());
+		$coupon->set_exclude_sale_items($product->get_coupon_sale());
+
+		//limits
+		$coupon->set_usage_limit($product->get_coupon_usage_limit());
+		$coupon->set_limit_usage_to_x_items($product->get_coupon_limit_usage_to_x_items());
+
+		//misc
+		$expiry_days = $product->get_coupon_expiry_days();
+		if ($expiry_days) {
+			//if can expire then add days depending on scheduled date
+			$days =  "+" . $expiry_days . " days";
+
+			$coupon->set_date_expires(strtotime($days, strtotime($post_date ?: "now")));
+		}
+
+		//linked products
+		$coupon->set_product_ids($product->get_coupon_products());
+		$coupon->set_excluded_product_ids($product->get_coupon_excluded_products());
+		$coupon->set_product_categories($product->get_coupon_product_categories());
+		$coupon->set_excluded_product_categories($product->get_coupon_excluded_product_categories());
+
+		//defaults
+		$coupon->set_free_shipping(false);
+
+		do_action("before-wgc-save-coupon", $coupon);
+
+		$coupon->save();
+		$coupon->save_meta_data();
+
+		do_action("after-wgc-save-coupon", $coupon);
+
+		return true;
+	}
 }

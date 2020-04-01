@@ -24,24 +24,18 @@
  * @subpackage Woo_gift_card/includes
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-class Woo_gift_card_i18n {
+class WGC_i18n {
 
+    /**
+     * Load the plugin text domain for translation.
+     *
+     * @since    1.0.0
+     */
+    public function load_plugin_textdomain() {
 
-	/**
-	 * Load the plugin text domain for translation.
-	 *
-	 * @since    1.0.0
-	 */
-	public function load_plugin_textdomain() {
-
-		load_plugin_textdomain(
-			'woo-gift-card',
-			false,
-			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
-		);
-
-	}
-
-
+	load_plugin_textdomain(
+		'woo-gift-card', false, dirname(dirname(plugin_basename(__FILE__))) . '/languages/'
+	);
+    }
 
 }
