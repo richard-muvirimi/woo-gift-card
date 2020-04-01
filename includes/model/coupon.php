@@ -67,7 +67,7 @@ class WGC_Coupon extends WC_Coupon
      */
     public function get_order_item_index($context = 'view')
     {
-        $this->get_meta("wgc-order-index", true, $context);
+        $this->get_meta("wgc-order-item-index", true, $context);
     }
 
     /*
@@ -106,6 +106,6 @@ class WGC_Coupon extends WC_Coupon
      */
     public function set_order_item_index($order_item_index)
     {
-        $this->update_meta_data("wgc-order-index", $order_item_index);
+        $this->update_meta_data("wgc-order-item-index", $order_item_index);
     }
 }

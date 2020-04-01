@@ -315,10 +315,15 @@ class WGC_Admin
 			$product->delete_meta_data("wgc-expiry-days");
 
 			//linked products
-			$product->delete_meta_data("wgc-product-ids");
-			$product->delete_meta_data("wgc-excluded-product-ids");
+			$product->delete_meta_data("wgc-products");
+			$product->delete_meta_data("wgc-excluded-products");
 			$product->delete_meta_data("wgc-product-categories");
 			$product->delete_meta_data("wgc-excluded-product-categories");
+		} else {
+
+			//stock management
+			$product->set_manage_stock(false);
+			$product->set_stock_status();
 		}
 	}
 
