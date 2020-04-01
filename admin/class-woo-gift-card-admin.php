@@ -470,6 +470,7 @@ class WGC_Admin
 				}
 
 				$order->update_meta_data("wgc-processed", $processed);
+				$order->save_meta_data();
 			}
 		}
 	}
