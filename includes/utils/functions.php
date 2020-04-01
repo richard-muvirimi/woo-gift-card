@@ -70,7 +70,7 @@ function wgc_get_coupon($which = "")
 function wgc_get_coupons()
 {
 	return array_map(function ($coupon) {
-		return new WC_Coupon($coupon->ID);
+		return new WGC_Coupon($coupon->ID);
 	}, get_posts(
 		array(
 			"numberposts" => -1,
@@ -101,7 +101,7 @@ function wgc_get_coupons_for_customer()
 
 function wgc_has_coupon($coupon)
 {
-	return is_a(wgc_get_coupon($coupon), "WC_Coupon");
+	return is_a(wgc_get_coupon($coupon), "WGC_Coupon");
 }
 
 /**
@@ -138,9 +138,10 @@ function wgc_get_emails_for_coupon($coupon)
  * 
  * @param \WGC_Product $product
  * @param \WC_Order_Item_Product $order_item
+ * @param int $order_item_index
  * @return boolean
  */
-function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $order_item = null)
+function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $order_item = null, $order_item_index = 0)
 {
 
 	/**
@@ -171,7 +172,7 @@ function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $or
 	if ($coupon_id == 0) {
 		return false;
 	} else {
-		$coupon = new WC_Coupon($coupon_id);
+		$coupon = new WGC_Coupon($coupon_id);
 
 		//discount
 		$coupon->set_discount_type($product->get_coupon_discount());
@@ -210,6 +211,11 @@ function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $or
 		$coupon->set_excluded_product_ids($product->get_coupon_excluded_products());
 		$coupon->set_product_categories($product->get_coupon_product_categories());
 		$coupon->set_excluded_product_categories($product->get_coupon_excluded_product_categories());
+
+		//order details
+		$coupon->set_order_id($order_item->get_order_id());
+		$coupon->set_order_item_id($order_item->get_product_id());
+		$coupon->set_order_item_index($order_item_index);
 
 		do_action("before-wgc-save-coupon", $coupon);
 

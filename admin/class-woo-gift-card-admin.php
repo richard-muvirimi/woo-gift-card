@@ -190,6 +190,7 @@ class WGC_Admin
 
 		require_once apply_filters("wgc-model-data", plugin_dir_path(__DIR__) . "/includes/model/wgc-data.php");
 		require_once apply_filters("wgc-model-product", plugin_dir_path(__DIR__) . "/includes/model/product.php");
+		require_once apply_filters("wgc-model-coupon", plugin_dir_path(__DIR__) . "/includes/model/coupon.php");
 
 		do_action("wgc-loaded");
 	}
