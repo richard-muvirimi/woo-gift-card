@@ -304,8 +304,9 @@ class WGC_Admin
 			$product->delete_meta_data("wgc-sale");
 
 			//limits
-			$product->delete_meta_data("wgc-usability");
-			$product->delete_meta_data("wgc-multiple");
+			$product->delete_meta_data("wgc-limit-usage-to-x-items");
+			$product->delete_meta_data("wgc-usage-limit");
+			$product->delete_meta_data("wgc-usage-limit-per-user");
 
 			//misc
 			$product->delete_meta_data("wgc-schedule");
@@ -343,8 +344,9 @@ class WGC_Admin
 		$product->set_coupon_sale(wgc_get_post_var('wgc-sale'));
 
 		//limits
-		$product->set_coupon_limit_usage_to_x_items(wgc_get_post_var('wgc-usability'));
-		$product->set_coupon_usage_limit(wgc_get_post_var('wgc-multiple'));
+		$product->set_coupon_limit_usage_to_x_items(wgc_get_post_var('wgc-limit-usage-to-x-items'));
+		$product->set_coupon_usage_limit(wgc_get_post_var('wgc-usage-limit'));
+		$product->set_coupon_usage_limit_per_user(wgc_get_post_var('wgc-usage-limit-per-user'));
 
 		//misc
 		$product->set_coupon_schedule(wgc_get_post_var('wgc-schedule'));

@@ -129,7 +129,7 @@ class WGC_Product extends WC_Product_Simple
      */
     public function set_coupon_limit_usage_to_x_items($value = '')
     {
-        $this->update_meta_data("wgc-usability", $value);
+        $this->update_meta_data("wgc-limit-usage-to-x-items", $value);
     }
 
     /**
@@ -140,7 +140,18 @@ class WGC_Product extends WC_Product_Simple
      */
     public function set_coupon_usage_limit($value = '')
     {
-        $this->update_meta_data("wgc-multiple", $value);
+        $this->update_meta_data("wgc-usage-limit", $value);
+    }
+
+    /**
+     * Set Usage limit per user
+     *
+     * @since 1.0.0
+     * @param  string $value Coupon Usage limit per user.
+     */
+    public function set_coupon_usage_limit_per_user($value = '')
+    {
+        $this->update_meta_data("wgc-usage-limit-per-user", $value);
     }
 
     /**
@@ -311,7 +322,7 @@ class WGC_Product extends WC_Product_Simple
      */
     public function get_coupon_limit_usage_to_x_items($context = 'view')
     {
-        return $this->get_meta("wgc-usability", true, $context);
+        return $this->get_meta("wgc-limit-usage-to-x-items", true, $context);
     }
 
     /**
@@ -323,7 +334,19 @@ class WGC_Product extends WC_Product_Simple
      */
     public function get_coupon_usage_limit($context = 'view')
     {
-        return $this->get_meta("wgc-multiple", true, $context);
+        return $this->get_meta("wgc-usage-limit", true, $context);
+    }
+
+    /**
+     * Get Coupon Usage limit per user
+     *
+     * @since 1.0.0
+     * @param  string $context What the value is for. Valid values are 'view' and 'edit'.
+     * @return string
+     */
+    public function get_coupon_usage_limit_per_user($context = 'view')
+    {
+        return $this->get_meta("wgc-usage-limit-per-user", true, $context);
     }
 
     /**

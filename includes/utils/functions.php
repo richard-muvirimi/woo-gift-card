@@ -193,6 +193,7 @@ function wgc_product_to_coupon(\WGC_Product $product, \WC_Order_Item_Product $or
 		//limits
 		$coupon->set_usage_limit($product->get_coupon_usage_limit());
 		$coupon->set_limit_usage_to_x_items($product->get_coupon_limit_usage_to_x_items());
+		$coupon->set_usage_limit_per_user($product->get_coupon_usage_limit_per_user());
 
 		//misc
 		$expiry_days = $product->get_coupon_expiry_days();

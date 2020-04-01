@@ -54,7 +54,7 @@ defined('ABSPATH') || exit;
 	<div class="options_group show_if_woo-gift-card">
 		<?php
 		woocommerce_wp_text_input(array(
-			'id' => 'wgc-usability',
+			'id' => 'wgc-limit-usage-to-x-items',
 			'value' => $product->get_coupon_limit_usage_to_x_items('edit'),
 			'label' => __('Limit usage to X items', $plugin_name),
 			'description' => __('The maximum number of individual items this coupon can apply to when using product discounts. Leave blank to apply to all qualifying items in cart.', $plugin_name),
@@ -66,10 +66,22 @@ defined('ABSPATH') || exit;
 		));
 
 		woocommerce_wp_text_input(array(
-			'id' => 'wgc-multiple',
+			'id' => 'wgc-usage-limit',
 			'value' => $product->get_coupon_usage_limit('edit'),
-			'label' => __('Usage limit', $plugin_name),
+			'label' => __('Usage limit per coupon', $plugin_name),
 			'description' => __('How many times a coupon can be used before its void.', $plugin_name),
+			'desc_tip' => true,
+			'custom_attributes' => array(
+				"min" => 0
+			),
+			'type' => "number",
+		));
+
+		woocommerce_wp_text_input(array(
+			'id' => 'wgc-usage-limit-per-user',
+			'value' => $product->get_coupon_usage_limit_per_user('edit'),
+			'label' => __('Usage limit per user', $plugin_name),
+			'description' => __('How many times this coupon can be used by an individual user. Uses billing email for guests, and user ID for logged in users.', $plugin_name),
 			'desc_tip' => true,
 			'custom_attributes' => array(
 				"min" => 0
