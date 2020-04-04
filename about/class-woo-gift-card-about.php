@@ -96,16 +96,13 @@ class WGC_About
 	 */
 	public function on_admin_menu()
 	{
-		add_menu_page(__('Woo Gift Voucher', $this->plugin_name), __('Woo Gift Voucher', $this->plugin_name), 'manage_woocommerce', 'wgc-dashboard', wc_coupons_enabled() ? "" : array($this, 'render_about_page'), 'dashicons-businessman');
+		add_menu_page(__('Woo Gift Voucher', $this->plugin_name), __('Woo Gift Voucher', $this->plugin_name), 'manage_woocommerce', 'wgc-dashboard',  array($this, 'render_plugin_page'), 'dashicons-businessman');
 
 		if (wc_coupons_enabled()) {
 			include_once plugin_dir_path(__DIR__) . "/about/partials/options/class-wgc-options.php";
 
 			//options
 			add_submenu_page('wgc-dashboard', __('Options', $this->plugin_name), __('Options', $this->plugin_name), 'manage_options', 'wgc-options', array($this, 'render_options_page'));
-
-			//about
-			add_submenu_page('wgc-dashboard', __('About', $this->plugin_name), __('About', $this->plugin_name), 'manage_options', 'wgc-dashboard', array($this, 'render_about_page'));
 		}
 	}
 
@@ -114,7 +111,7 @@ class WGC_About
 		include_once plugin_dir_path(__DIR__) . "/about/partials/options/wgc-options.php";
 	}
 
-	public function render_about_page()
+	public function render_plugin_page()
 	{
 		$plugin = get_plugin_data(plugin_dir_path(__DIR__) . $this->plugin_name . ".php");
 
@@ -128,6 +125,9 @@ class WGC_About
 		wc_get_template("wgc-about.php", $data, "", plugin_dir_path(__DIR__) . "/about/partials/admin/");
 	}
 
+	/**
+	 * Render the plugins status tab, where users can view if their environment supports the plugin
+	 */
 	public function	render_status_tab()
 	{
 		$plugin = get_plugin_data(plugin_dir_path(__DIR__) . $this->plugin_name . ".php");
@@ -147,5 +147,32 @@ class WGC_About
 		);
 
 		wc_get_template("wgc-about-status.php", $data, "", plugin_dir_path(__DIR__) . "about/partials/admin/");
+	}
+
+	/**
+	 * Render the plugins home tab, which summaries the purpose of the plugin
+	 */
+	public function render_home_tab()
+	{
+
+		wc_get_template("wgc-about-home.php", array(), "", plugin_dir_path(__DIR__) . "/about/partials/admin/");
+	}
+
+	/**
+	 * Render the plugins help tab, which shows help info for using the plugin
+	 */
+	public function render_help_tab()
+	{
+
+		wc_get_template("wgc-about-help.php", array(), "", plugin_dir_path(__DIR__) . "/about/partials/admin/");
+	}
+
+	/**
+	 * Render the plugins about tab, which sshows mainly contact info
+	 */
+	public function render_about_tab()
+	{
+
+		wc_get_template("wgc-about-about.php", array(), "", plugin_dir_path(__DIR__) . "/about/partials/admin/");
 	}
 }

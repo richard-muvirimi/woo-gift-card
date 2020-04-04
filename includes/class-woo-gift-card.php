@@ -186,9 +186,18 @@ class Woo_gift_card
 
         //admin menu initialising
         $this->loader->add_action('admin_menu', $plugin_about, 'on_admin_menu');
-        
+
         //admin status tab
         $this->loader->add_action('wgc-tabcontent-system-status', $plugin_about, 'render_status_tab');
+
+        //admin home tab
+        $this->loader->add_action('wgc-tabcontent-home', $plugin_about, 'render_home_tab');
+
+        //admin help tab
+        $this->loader->add_action('wgc-tabcontent-help', $plugin_about, 'render_help_tab');
+
+        //admin about tab
+        $this->loader->add_action('wgc-tabcontent-about', $plugin_about, 'render_about_tab');
     }
     /**
      * Register all of the hooks related to the admin area functionality
