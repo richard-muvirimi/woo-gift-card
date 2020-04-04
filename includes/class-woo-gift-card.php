@@ -79,6 +79,7 @@ class Woo_gift_card
         $this->load_dependencies();
         $this->set_locale();
         $this->define_admin_hooks();
+        $this->define_about_hooks();
         $this->define_public_hooks();
         $this->define_email_hooks();
         $this->define_ajax_hooks();
@@ -119,6 +120,11 @@ class Woo_gift_card
          * The class responsible for defining all actions that occur in the admin area.
          */
         require_once plugin_dir_path(__DIR__) . 'admin/class-woo-gift-card-admin.php';
+
+        /**
+         * The class responsible for defining all actions that occur in the admin area.
+         */
+        require_once plugin_dir_path(__DIR__) . 'about/class-woo-gift-card-about.php';
 
         /**
          * The class responsible for defining all actions that occur in the public-facing
@@ -163,6 +169,27 @@ class Woo_gift_card
         $this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
     }
 
+    /**
+     * Register all of the hooks related to the about area functionality
+     * of the plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_about_hooks()
+    {
+
+        $plugin_about = new WGC_About($this->get_plugin_name(), $this->get_version());
+
+        $this->loader->add_action('admin_enqueue_scripts', $plugin_about, 'enqueue_styles');
+        $this->loader->add_action('admin_enqueue_scripts', $plugin_about, 'enqueue_scripts');
+
+        //admin menu initialising
+        $this->loader->add_action('admin_menu', $plugin_about, 'on_admin_menu');
+        
+        //admin status tab
+        $this->loader->add_action('wgc-tabcontent-system-status', $plugin_about, 'render_status_tab');
+    }
     /**
      * Register all of the hooks related to the admin area functionality
      * of the plugin.

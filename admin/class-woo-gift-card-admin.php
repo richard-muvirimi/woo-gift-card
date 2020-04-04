@@ -63,24 +63,7 @@ class WGC_Admin
 	public function enqueue_styles()
 	{
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Woo_gift_card_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Woo_gift_card_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-		//if list wgc-templates screen
-		switch (get_current_screen()->id) {
-			case 'toplevel_page_wgc-dashboard':
-			case 'woo-gift-voucher_page_wgc-about':
-				wp_enqueue_style($this->plugin_name . "-about", plugin_dir_url(__FILE__) . 'css/wgc-admin.css', array(), $this->version, 'all');
-				break;
-		}
+
 	}
 
 	/**
@@ -91,17 +74,7 @@ class WGC_Admin
 	public function enqueue_scripts()
 	{
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Woo_gift_card_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Woo_gift_card_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+
 		switch (get_post_type()) {
 			case "product":
 				wp_enqueue_script($this->plugin_name . "-product", plugin_dir_url(__FILE__) . 'js/wgc-product.js', array('jquery'), $this->version, false);
@@ -109,13 +82,6 @@ class WGC_Admin
 			default:
 		}
 
-		//if list wgc-templates screen
-		switch (get_current_screen()->id) {
-			case 'toplevel_page_wgc-dashboard':
-			case 'woo-gift-voucher_page_wgc-about':
-				wp_enqueue_script($this->plugin_name . "-about", plugin_dir_url(__FILE__) . 'js/wgc-admin.js', array('jquery'), $this->version, false);
-				break;
-		}
 	}
 
 	/**
@@ -139,46 +105,9 @@ class WGC_Admin
 	 */
 	public function on_admin_menu()
 	{
-		add_menu_page(__('Woo Gift Voucher', $this->plugin_name), __('Woo Gift Voucher', $this->plugin_name), 'manage_woocommerce', 'wgc-dashboard', wc_coupons_enabled() ? "" : array($this, 'render_about_page'), 'dashicons-businessman');
-
-		if (wc_coupons_enabled()) {
-			include_once plugin_dir_path(__DIR__) . "/admin/partials/options/class-wgc-options.php";
-
-			//options
-			add_submenu_page('wgc-dashboard', __('Options', $this->plugin_name), __('Options', $this->plugin_name), 'manage_options', 'wgc-options', array($this, 'render_options_page'));
-
-			//about
-			add_submenu_page('wgc-dashboard', __('About', $this->plugin_name), __('About', $this->plugin_name), 'manage_options', 'wgc-dashboard', array($this, 'render_about_page'));
-		}
 	}
 
-	public function render_options_page()
-	{
-		include_once plugin_dir_path(__DIR__) . "/admin/partials/options/wgc-options.php";
-	}
 
-	public function render_about_page()
-	{
-		$plugin = get_plugin_data(plugin_dir_path(__DIR__) . $this->plugin_name . ".php");
-
-		$data = array(
-			"plugin_name" => $plugin["Name"],
-			"plugin_description" => $plugin["Description"],
-			"plugin_version" => $plugin["Version"],
-			"wp_version" => get_bloginfo("version"),
-			"wp_required_version" => $plugin["RequiresWP"],
-			"wc_version" => function_exists("WC") ? WC()->version : "0",
-			"wc_required_version" => $plugin['WC requires at least'],
-			"php_version" => phpversion(),
-			"php_required_version" => $plugin["RequiresPHP"],
-			"MBString" => extension_loaded("MBString"),
-			"DOM" => extension_loaded("DOM"),
-			"GD" => function_exists('imagecreate'),
-			"Imagick" => extension_loaded('imagick'),
-		);
-
-		wc_get_template("wgc-admin-about.php", $data, "", plugin_dir_path(__DIR__) . "/admin/partials/about/");
-	}
 
 	/**
 	 * require custom product type
