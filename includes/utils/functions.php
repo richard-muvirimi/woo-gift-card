@@ -2,6 +2,14 @@
 
 defined('ABSPATH') || exit;
 
+/**
+ * Getb the internal code name for plugin
+ */
+function wgc_plugin_name()
+{
+	return apply_filters("wgc-plugin-name", "");
+}
+
 function wgc_get_post_var($name)
 {
 
