@@ -22,19 +22,21 @@ if (!defined('ABSPATH')) {
  * @subpackage Woo_gift_card/includes/model/wgc-data
  * @author     Richard Muvirimi <tygalive@gmail.com>
  */
-abstract class WGC_Data extends WC_Data {
+abstract class WGC_Data extends WC_Data
+{
 
     /**
      * If the object has an ID, read using the data store.
      *
      * @since 1.0.0
      */
-    protected function read_object_from_database() {
-	$this->data_store = WC_Data_Store::load($this->get_object_name());
+    protected function read_object_from_database()
+    {
+        $this->data_store = WC_Data_Store::load($this->get_object_name());
 
-	if ($this->get_id() > 0) {
-	    $this->data_store->read($this);
-	}
+        if ($this->get_id() > 0) {
+            $this->data_store->read($this);
+        }
     }
 
     /**

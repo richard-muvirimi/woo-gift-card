@@ -236,8 +236,8 @@ class Woo_gift_card
         $this->loader->add_action('woocommerce_product_options_general_product_data', $plugin_admin, 'setup_woo_gift_card_product');
 
         //save product type
-        $this->loader->add_filter('woocommerce_admin_process_product_object', $plugin_admin, 'save_product_object');
-        $this->loader->add_filter('woocommerce_process_product_meta_' . $this->get_plugin_name(), $plugin_admin, 'save_woo_gift_card_product');
+        $this->loader->add_action('woocommerce_admin_process_product_object', $plugin_admin, 'save_product_object');
+        $this->loader->add_action('woocommerce_process_product_meta_' . $this->get_plugin_name(), $plugin_admin, 'save_woo_gift_card_product');
 
         //on init
         $this->loader->add_action('init', $plugin_admin, 'init');
