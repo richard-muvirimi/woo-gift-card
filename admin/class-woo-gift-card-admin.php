@@ -62,8 +62,6 @@ class WGC_Admin
 	 */
 	public function enqueue_styles()
 	{
-
-
 	}
 
 	/**
@@ -81,7 +79,6 @@ class WGC_Admin
 				break;
 			default:
 		}
-
 	}
 
 	/**
@@ -431,11 +428,6 @@ class WGC_Admin
 		}
 
 		return $coupon;
-	}
-
-	public function get_default_plugin_name()
-	{
-		return $this->plugin_name;
 	}
 
 	/**

@@ -83,6 +83,9 @@ class Woo_gift_card
         $this->define_public_hooks();
         $this->define_email_hooks();
         $this->define_ajax_hooks();
+
+        //get main plugin name
+        $this->loader->add_filter('wgc-plugin-name', $this, 'get_plugin_name');
     }
 
     /**
