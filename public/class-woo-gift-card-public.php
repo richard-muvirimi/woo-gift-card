@@ -210,11 +210,11 @@ class WGC_Public
 	/**
 	 * Save coupon product custom user options
 	 *
-	 * @param type $cart_item_data
-	 * @param type $product_id
-	 * @param type $variation_id
-	 * @param type $quantity
-	 * @return type
+	 * @param array $cart_item_data
+	 * @param int $product_id
+	 * @param int $variation_id
+	 * @param int $quantity
+	 * @return array
 	 * @throws Exception
 	 */
 	public function woocommerce_add_cart_item_data($cart_item_data, $product_id, $variation_id, $quantity)
