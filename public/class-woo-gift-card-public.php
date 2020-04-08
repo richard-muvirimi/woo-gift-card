@@ -358,15 +358,13 @@ class WGC_Public
 				switch ($meta->key) {
 					case 'wgc-receiver-email':
 						//hide if same with logged in user
-						if ($meta->value == get_user_option("user_email")) {
-							return false;
-						}
-						break;
+						return $meta->value == get_user_option("user_email");
 					case "wgc-receiver-schedule":
 						//if less than a day or past do not show scheduled
 						return strtotime($meta->value) - time() > 60 * 60 * 24;
 				}
-				return true;
+				//hide if not explicitly supported
+				return false;
 			});
 		}
 
